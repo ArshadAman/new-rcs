@@ -22,6 +22,7 @@ class Review(models.Model):
     is_flagged_red = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     auto_publish_at = models.DateTimeField(null=True, blank=True)
+    reply = models.TextField(blank=True)  # Store/admin reply to review
 
     def save(self, *args, **kwargs):
         # If recommend is yes, auto 5-star and sub-ratings default to 5 if not given

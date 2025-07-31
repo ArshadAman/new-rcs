@@ -1,3 +1,17 @@
+# Celery Beat schedule for periodic tasks
+from celery.schedules import crontab
+CELERY_BEAT_SCHEDULE = {
+    'auto-publish-reviews-every-hour': {
+        'task': 'reviews.tasks.periodic_auto_publish_reviews',
+        'schedule': crontab(minute=0, hour='*'),
+    },
+}
+# Celery settings
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -30,6 +44,7 @@ INSTALLED_APPS = [
     'users',
     'orders',
     'payment',
+    'reviews',
 
     # third-party apps
     'rest_framework',
