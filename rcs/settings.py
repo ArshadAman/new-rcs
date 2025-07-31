@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'django_filters',
-    'drf_yasg',
+    # 'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -137,3 +137,5 @@ SIMPLE_JWT = {
     'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+AUTH_USER_MODEL = 'users.CustomUser'
