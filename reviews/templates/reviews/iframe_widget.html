@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Service Ratings Widget</title>
+    <style>
+        body { margin:0; padding:0; background:transparent; }
+        #rcs-widget-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            font-family: Arial, sans-serif;
+        }
+        #rcs-widget-collapsed {
+            background: #2a7ae2;
+            color: #fff;
+            border-radius: 20px 0 0 20px;
+            padding: 0.7em 1.5em 0.7em 1em;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #0002;
+            font-size: 1.1em;
+            min-width: 120px;
+            text-align: left;
+        }
+        #rcs-widget-expanded {
+            display: none;
+            background: #fff;
+            color: #222;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px #0003;
+            padding: 1.2em 1.5em 1em 1.5em;
+            min-width: 220px;
+            margin-top: 0.5em;
+        }
+        .rcs-stars { color: #f5b301; font-size: 1.2em; }
+        .rcs-label { color: #888; font-size: 0.98em; margin-bottom: 0.2em; }
+        .rcs-row { margin-bottom: 0.7em; }
+        .rcs-btn {
+            display: inline-block;
+            margin-top: 0.7em;
+            background: #2a7ae2;
+            color: #fff;
+            border-radius: 4px;
+            padding: 0.4em 1.2em;
+            text-decoration: none;
+            font-size: 1em;
+            transition: background 0.2s;
+        }
+        .rcs-btn:hover { background: #1a5ab8; }
+    </style>
+</head>
+<body>
+<div id="rcs-widget-container">
+    <div id="rcs-widget-collapsed" onclick="expandRcsWidget()">
+        <span style="font-weight:bold;">★ {{ avg_main|default:'-' }}/5</span> <span style="font-size:0.95em;">Service Rating</span>
+    </div>
+    <div id="rcs-widget-expanded">
+        <div class="rcs-row">
+            <span class="rcs-label">Main Rating:</span>
+            <span class="rcs-stars">{{ avg_main|default:'-' }}/5</span>
+        </div>
+        <div class="rcs-row">
+            <span class="rcs-label">Logistics:</span>
+            <span class="rcs-stars">{{ avg_logistics|default:'-' }}/5</span>
+        </div>
+        <div class="rcs-row">
+            <span class="rcs-label">Communication:</span>
+            <span class="rcs-stars">{{ avg_communication|default:'-' }}/5</span>
+        </div>
+        <div class="rcs-row">
+            <span class="rcs-label">Website Usability:</span>
+            <span class="rcs-stars">{{ avg_website|default:'-' }}/5</span>
+        </div>
+        <a class="rcs-btn" href="/public-reviews/{{ user.id }}/" target="_blank">View all reviews</a>
+    </div>
+</div>
+<script>
+function expandRcsWidget() {
+    document.getElementById('rcs-widget-collapsed').style.display = 'none';
+    document.getElementById('rcs-widget-expanded').style.display = 'block';
+}
+document.addEventListener('click', function(e) {
+    var widget = document.getElementById('rcs-widget-container');
+    if (!widget.contains(e.target)) {
+        document.getElementById('rcs-widget-collapsed').style.display = 'block';
+        document.getElementById('rcs-widget-expanded').style.display = 'none';
+    }
+});
+</script>
+</body>
+</html>

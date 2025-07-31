@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Latest Rating</title>
+    <style>
+        body { margin:0; padding:0; background:transparent; }
+        .widget-box {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px #0002;
+            padding: 1em 1.5em;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            min-width: 180px;
+        }
+        .stars {
+            color: #f5b301;
+            font-size: 1.5em;
+            letter-spacing: 2px;
+        }
+        .label { color: #888; font-size: 1em; margin-bottom: 0.2em; }
+        .link-btn {
+            display: inline-block;
+            margin-top: 0.7em;
+            background: #2a7ae2;
+            color: #fff;
+            border-radius: 4px;
+            padding: 0.4em 1.2em;
+            text-decoration: none;
+            font-size: 1em;
+            transition: background 0.2s;
+        }
+        .link-btn:hover { background: #1a5ab8; }
+    </style>
+</head>
+<body>
+<div class="widget-box">
+    <div class="label">Latest Rating</div>
+    <div class="stars">
+        {% if review %}
+            {% for i in "12345"|slice:":review.main_rating" %}★{% endfor %}
+            {% for i in "12345"|slice:"review.main_rating:" %}<span style="color:#ddd">★</span>{% endfor %}
+        {% else %}
+            <span style="color:#bbb">No ratings yet</span>
+        {% endif %}
+    </div>
+    <a class="link-btn" href="/public-reviews/{{ user.id }}/" target="_blank">See all reviews</a>
+</div>
+</body>
+</html>

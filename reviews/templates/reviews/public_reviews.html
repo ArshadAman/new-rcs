@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ user.get_full_name|default:user.username }} - Reviews</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
+        .container { max-width: 700px; margin: 30px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 2em; }
+        h2 { color: #2a7ae2; }
+        .review { border-bottom: 1px solid #eee; padding: 1em 0; }
+        .review:last-child { border-bottom: none; }
+        .rating { color: #f5b301; font-size: 1.2em; }
+        .reply { background: #f0f8ff; border-left: 3px solid #2a7ae2; margin: 0.5em 0 0 1em; padding: 0.5em 1em; font-size: 0.95em; }
+        .meta { color: #888; font-size: 0.95em; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Reviews for {{ user.get_full_name|default:user.username }}</h2>
+    {% if reviews %}
+        {% for review in reviews %}
+            <div class="review">
+                <div class="rating">
+                    {% for i in "12345"|slice:":review.main_rating" %}★{% endfor %}
+                    {% for i in "12345"|slice:"review.main_rating:" %}<span style="color:#ddd">★</span>{% endfor %}
+                </div>
+                <div class="meta">
+                    {{ review.created_at|date:"M d, Y" }}
+                    {% if review.recommend == 'yes' %} - <span style="color:green;">Recommended</span>{% else %} - <span style="color:red;">Not Recommended</span>{% endif %}
+                </div>
+                <div>{{ review.comment|linebreaksbr }}</div>
+                {% if review.reply %}
+                    <div class="reply"><b>Store reply:</b> {{ review.reply|linebreaksbr }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No reviews yet.</p>
+    {% endif %}
+</div>
+</body>
+</html>
