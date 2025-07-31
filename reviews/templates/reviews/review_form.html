@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Submit Your Review</title>
+    <style>
+        label { display: block; margin-top: 1em; }
+        input[readonly], input[disabled] { background: #f0f0f0; }
+        textarea { width: 100%; min-height: 80px; }
+    </style>
+</head>
+<body>
+    <h2>Order Review</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label>Customer Name:
+            <input type="text" name="customer_name" value="{{ order.customer_name }}" readonly>
+        </label>
+        <label>Email:
+            <input type="email" name="email" value="{{ order.email }}" readonly>
+        </label>
+        <label>Order ID:
+            <input type="text" name="order_id" value="{{ order.order_id }}" readonly>
+        </label>
+        <label>Would you recommend this store to your friends or family?
+            <select name="recommend" required>
+                <option value="">--Select--</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+            </select>
+        </label>
+        <div id="subratings" style="display:none;">
+            <label>Logistics Rating (1-5):
+                <input type="number" name="logistics_rating" min="1" max="5">
+            </label>
+            <label>Communication Rating (1-5):
+                <input type="number" name="communication_rating" min="1" max="5">
+            </label>
+            <label>Website Usability Rating (1-5):
+                <input type="number" name="website_usability_rating" min="1" max="5">
+            </label>
+        </div>
+        <label>Comment (optional for Yes, required for No):
+            <textarea name="comment"></textarea>
+        </label>
+        <button type="submit">Submit Review</button>
+    </form>
+    <script>
+        // Show subratings if recommend is selected
+        document.querySelector('select[name="recommend"]').addEventListener('change', function() {
+            var subratings = document.getElementById('subratings');
+            if (this.value === 'no') {
+                subratings.style.display = 'block';
+            } else {
+                subratings.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
