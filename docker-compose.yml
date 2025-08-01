@@ -40,6 +40,7 @@ services:
       - ./nginx/certs:/etc/nginx/certs
       - ./webroot:/var/www/html
       - ./certbot/www:/var/www/certbot   
+      - static_volume:/var/www/html/static
     depends_on:
       - web
 
