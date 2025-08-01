@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Step 1: Separate service for collectstatic
+  collectstatic:
+    build: .
+    command: python manage.py collectstatic --noinput
+    volumes:
+      - static_volume:/var/www/html/static
+    depends_on:
+      - db
+
+  web:
+    build: .
+    volumes:
+      - static_volume:/var/www/html/static
+      - media_volume:/var/www/html/media
+    depends_on:
+      - db
+    command: >
+      sh -c "python manage.py migrate &&
+             gunicorn rcs.wsgi:application --bind 0.0.0.0:8000"
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - static_volume:/var/www/html/static
+      - media_volume:/var/www/html/media
+    depends_on:
+      - web
+
+  celery:
+    build: .
+    command: celery -A rcs worker --loglevel=info
+    volumes:
+      - static_volume:/var/www/html/static
+      - media_volume:/var/www/html/media
+    depends_on:
+      - db
+      - web
+
+  celery-beat:
+    build: .
+    command: celery -A rcs beat --loglevel=info
+    volumes:
+      - static_volume:/var/www/html/static
+      - media_volume:/var/www/html/media
+    depends_on:
+      - db
+      - web
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+  redis_data:
