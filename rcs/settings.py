@@ -171,3 +171,7 @@ SIMPLE_JWT = {
 
 AUTH_USER_MODEL = 'users.CustomUser'
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
+CSRF_TRUSTED_ORIGINS = [
+    "https://api.level-4u.com",
+    "http://api.level-4u.com",
+]

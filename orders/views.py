@@ -50,3 +50,18 @@ def upload_orders_csv(request):
             pass  # Optionally log the error
         created += 1
     return Response({'message': f'{created} orders uploaded successfully.'}, status=status.HTTP_201_CREATED)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_user_orders(request):
+    orders = Order.objects.filter(user=request.user)
+    data = []
+    for order in orders:
+        data.append({
+            'order_id': order.order_id,
+            'customer_name': order.customer_name,
+            'email': order.email,
+            'phone_number': order.phone_number,
+        })
+    return Response({'orders': data})
+
