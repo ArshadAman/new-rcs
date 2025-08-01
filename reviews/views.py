@@ -88,6 +88,7 @@ def user_reviews_api(request):
     for review in reviews:
         data.append({
             'order_id': review.order.order_id,
+            'customer_name': review.order.customer_name,  # <-- Add this line
             'main_rating': review.main_rating,
             'logistics_rating': review.logistics_rating,
             'communication_rating': review.communication_rating,
