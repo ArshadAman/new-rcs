@@ -38,8 +38,8 @@ services:
     volumes:
       - ./nginx:/etc/nginx/conf.d
       - ./nginx/certs:/etc/nginx/certs
-      - static_volume:/var/www/html/static
-      - media_volume:/var/www/html/media
+      - ./webroot:/var/www/html
+      - ./certbot/www:/var/www/certbot   
     depends_on:
       - web
 
@@ -76,6 +76,7 @@ services:
       - ./nginx/certs:/etc/letsencrypt
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./webroot:/var/www/html
+      - ./certbot/www:/var/www/certbot   # <-- add this line
     entrypoint: /bin/sh -c
     command: >
       "trap exit TERM; while :; do sleep 6h & wait $${!}; certbot renew --webroot -w /var/www/html; done"
