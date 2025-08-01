@@ -34,8 +34,10 @@ services:
     image: nginx:alpine
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx:/etc/nginx/conf.d
+      - ./nginx/certs:/etc/nginx/certs
       - static_volume:/var/www/html/static
       - media_volume:/var/www/html/media
     depends_on:
@@ -67,6 +69,18 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./nginx/certs:/etc/letsencrypt
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./webroot:/var/www/html
+    entrypoint: /bin/sh -c
+    command: >
+      "trap exit TERM; while :; do sleep 6h & wait $${!}; certbot renew --webroot -w /var/www/html; done"
+    depends_on:
+      - nginx
 
 volumes:
   postgres_data:
