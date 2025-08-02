@@ -20,36 +20,69 @@ def upload_orders_csv(request):
     if 'file' not in request.FILES:
         return Response({'error': 'No file uploaded.'}, status=status.HTTP_400_BAD_REQUEST)
     file = request.FILES['file']
-    decoded_file = TextIOWrapper(file, encoding='utf-8')
-    reader = csv.DictReader(decoded_file)
+    try:
+        decoded_file = TextIOWrapper(file, encoding='utf-8')
+        reader = csv.DictReader(decoded_file)
+    except Exception as e:
+        return Response({'error': 'Invalid CSV file.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    required_fields = ['Order ID', 'Customer Name', 'Email', 'Phone Number']
     created = 0
-    for row in reader:
-        order = Order.objects.create(
-            user=request.user,
-            order_id=row['Order ID'],
-            customer_name=row['Customer Name'],
-            email=row['Email'],
-            phone_number=row['Phone Number']
-        )
-        # Send review email
-        review_link = request.build_absolute_uri(
-            reverse('review_form', args=[str(order.review_token)])
-        )
-        subject = 'We value your feedback! Please review your order'
-        message = f"Dear {order.customer_name},\n\nThank you for your order (Order ID: {order.order_id}). Please take a moment to review your experience by clicking the link below:\n\n{review_link}\n\nThank you!"
-        sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
-        email_message = Mail(
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to_emails=order.email,
-            subject=subject,
-            plain_text_content=message
-        )
+    errors = []
+    for idx, row in enumerate(reader, start=2):  # start=2 to account for header row
+        # Check for missing columns
+        if not all(field in row for field in required_fields):
+            errors.append(f"Row {idx}: Missing required columns.")
+            continue
+
+        # Handle null/empty values
+        order_id = row.get('Order ID', '').strip()
+        customer_name = row.get('Customer Name', '').strip()
+        email = row.get('Email', '').strip()
+        phone_number = row.get('Phone Number', '').strip()
+
+        if not order_id or not customer_name or not email or not phone_number:
+            errors.append(f"Row {idx}: One or more required fields are empty.")
+            continue
+
         try:
-            sg.send(email_message)
+            order = Order.objects.create(
+                user=request.user,
+                order_id=order_id,
+                customer_name=customer_name,
+                email=email,
+                phone_number=phone_number
+            )
+            # Send review email
+            review_link = request.build_absolute_uri(
+                reverse('review_form', args=[str(order.review_token)])
+            )
+            subject = 'We value your feedback! Please review your order'
+            message = (
+                f"Dear {order.customer_name},\n\n"
+                f"Thank you for your order (Order ID: {order.order_id}). Please take a moment to review your experience by clicking the link below:\n\n"
+                f"{review_link}\n\nThank you!"
+            )
+            sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
+            email_message = Mail(
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to_emails=order.email,
+                subject=subject,
+                plain_text_content=message
+            )
+            try:
+                sg.send(email_message)
+            except Exception:
+                pass  # Optionally log the error
+            created += 1
         except Exception as e:
-            pass  # Optionally log the error
-        created += 1
-    return Response({'message': f'{created} orders uploaded successfully.'}, status=status.HTTP_201_CREATED)
+            errors.append(f"Row {idx}: Failed to create order. Error: {str(e)}")
+            continue
+
+    response_data = {'message': f'{created} orders uploaded successfully.'}
+    if errors:
+        response_data['errors'] = errors
+    return Response(response_data, status=status.HTTP_201_CREATED if created else status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

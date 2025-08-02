@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from orders.models import Order
 from django.utils import timezone
+import uuid
 
 class Review(models.Model):
     RECOMMEND_CHOICES = [
@@ -23,6 +24,7 @@ class Review(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     auto_publish_at = models.DateTimeField(null=True, blank=True)
     reply = models.TextField(blank=True)  # Store/admin reply to review
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
 
     def save(self, *args, **kwargs):
         # If recommend is yes, auto 5-star and sub-ratings default to 5 if not given
