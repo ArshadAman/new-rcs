@@ -1,67 +1,172 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>{{ user.get_full_name|default:user.username }} - Reviews</title>
+    <title>Reviews for {{ user.business_name|default:user.get_full_name|default:user.username }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
-        .container { max-width: 700px; margin: 30px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 2em; }
-        h2 { color: #2a7ae2; }
-        .review { border-bottom: 1px solid #eee; padding: 1em 0; }
-        .review:last-child { border-bottom: none; }
-        .rating { color: #f5b301; font-size: 1.2em; }
-        .reply { background: #f0f8ff; border-left: 3px solid #2a7ae2; margin: 0.5em 0 0 1em; padding: 0.5em 1em; font-size: 0.95em; }
-        .meta { color: #888; font-size: 0.95em; }
-        .reviewer { color: #555; font-size: 0.95em; margin-bottom: 0.2em; }
+        body {
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            background: #f4f6fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 32px #0002;
+            padding: 2.5em 2em 2em 2em;
+        }
+        h2 {
+            color: #2156c9;
+            font-size: 2.1em;
+            font-weight: 800;
+            margin-bottom: 1.5em;
+            letter-spacing: -1px;
+        }
+        .review {
+            border-radius: 12px;
+            margin-bottom: 2em;
+            box-shadow: 0 2px 12px #0001;
+            padding: 1.5em 1.5em 1.2em 1.5em;
+            background: #f9fafc;
+            border: 1.5px solid #e5e9f2;
+            transition: box-shadow 0.2s;
+            position: relative;
+        }
+        .review.flagged {
+            border: 2.5px solid #e74c3c;
+            background: #fff6f6;
+        }
+        .review-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.7em;
+        }
+        .badge {
+            background: #2ecc40;
+            color: #fff;
+            font-size: 0.92em;
+            font-weight: 600;
+            padding: 0.3em 1em;
+            border-radius: 16px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 1px 4px #0001;
+        }
+        .flag-badge {
+            background: #e74c3c;
+            color: #fff;
+            font-size: 0.92em;
+            font-weight: 600;
+            padding: 0.3em 1em;
+            border-radius: 16px;
+            margin-left: 0.7em;
+            letter-spacing: 0.5px;
+        }
+        .meta {
+            color: #7a859a;
+            font-size: 0.98em;
+            margin-bottom: 0.7em;
+        }
+        .recommended {
+            color: #219150;
+            font-weight: 700;
+            margin-left: 1em;
+        }
+        .not-recommended {
+            color: #e74c3c;
+            font-weight: 700;
+            margin-left: 1em;
+        }
+        .ratings-row {
+            display: flex;
+            gap: 2em;
+            margin-bottom: 0.7em;
+            flex-wrap: wrap;
+        }
+        .rating-label {
+            color: #2156c9;
+            font-weight: 600;
+            font-size: 1em;
+        }
+        .rating-value {
+            color: #222;
+            font-weight: 700;
+            margin-left: 0.3em;
+            font-size: 1.06em;
+        }
+        .comment {
+            margin-bottom: 0.7em;
+            color: #222;
+            font-size: 1.08em;
+            line-height: 1.6;
+        }
+        .reply {
+            background: #eaf3ff;
+            border-left: 4px solid #2156c9;
+            margin: 0.7em 0 0 0;
+            padding: 0.7em 1em;
+            font-size: 0.98em;
+            color: #2156c9;
+            border-radius: 0 8px 8px 0;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 1em; }
+            .review { padding: 1em; }
+            .ratings-row { flex-direction: column; gap: 0.5em; }
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <h2>
-        Reviews for {{ user.business_name|default:user.get_full_name|default:user.username }}
-    </h2>
+    <h2>Reviews for {{ user.business_name|default:user.get_full_name|default:user.username }}</h2>
     {% if reviews %}
         {% for review in reviews %}
-            <div class="review"
-  {% if review.is_flagged_red %}
-    style="border: 2px solid #e74c3c; background: #fff6f6; border-radius: 6px; margin-bottom: 1.5em; box-shadow: 0 1px 4px #0001;"
-  {% else %}
-    style="border-radius: 6px; margin-bottom: 1.5em; box-shadow: 0 1px 4px #0001;"
-  {% endif %}
->
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <div class="rating">
-                        <span style="font-weight:600;">Overall:</span>
-                        <span style="font-size:1.1em; color:#222; margin-left:0.5em;">{{ review.main_rating|default:"-" }}/5</span>
+            <div class="review{% if review.is_flagged_red %} flagged{% endif %}">
+                <div class="review-header">
+                    <div>
+                        <span class="badge">Verified Customer</span>
+                        {% if review.is_flagged_red %}
+                            <span class="flag-badge">Flagged</span>
+                        {% endif %}
                     </div>
-                    <span style="background:#2ecc40; color:#fff; font-size:0.85em; padding:0.2em 0.7em; border-radius:12px; margin-left:1em;">Verified Customer</span>
-                </div>
-                <div class="meta" style="margin-bottom:0.5em;">
-                    {{ review.created_at|date:"M d, Y" }}
-                    {% if review.recommend == 'yes' %}
-                        <span style="color:green; font-weight:600; margin-left:1em;">Recommended</span>
-                    {% else %}
-                        <span style="color:#e74c3c; font-weight:600; margin-left:1em;">Not Recommended</span>
-                    {% endif %}
-                </div>
-                <div style="display:flex; gap:1.5em; margin-bottom:0.5em;">
-                    <div><span style="font-weight:600;">Logistics:</span> 
-                        <span style="margin-left:0.3em;">{{ review.logistics_rating|default:"-" }}/5</span>
-                    </div>
-                    <div><span style="font-weight:600;">Communication:</span> 
-                        <span style="margin-left:0.3em;">{{ review.communication_rating|default:"-" }}/5</span>
-                    </div>
-                    <div><span style="font-weight:600;">Website Usability:</span> 
-                        <span style="margin-left:0.3em;">{{ review.website_usability_rating|default:"-" }}/5</span>
+                    <div class="meta">
+                        {{ review.created_at|date:"M d, Y" }}
+                        {% if review.recommend == 'yes' %}
+                            <span class="recommended">Recommended</span>
+                        {% else %}
+                            <span class="not-recommended">Not Recommended</span>
+                        {% endif %}
                     </div>
                 </div>
-                <div style="margin-bottom:0.5em;">{{ review.comment|linebreaksbr }}</div>
+                <div class="ratings-row">
+                    <div>
+                        <span class="rating-label">Overall:</span>
+                        <span class="rating-value">{{ review.main_rating|default:"-" }}/5</span>
+                    </div>
+                    <div>
+                        <span class="rating-label">Logistics:</span>
+                        <span class="rating-value">{{ review.logistics_rating|default:"-" }}/5</span>
+                    </div>
+                    <div>
+                        <span class="rating-label">Communication:</span>
+                        <span class="rating-value">{{ review.communication_rating|default:"-" }}/5</span>
+                    </div>
+                    <div>
+                        <span class="rating-label">Website Usability:</span>
+                        <span class="rating-value">{{ review.website_usability_rating|default:"-" }}/5</span>
+                    </div>
+                </div>
+                <div class="comment">{{ review.comment|linebreaksbr }}</div>
                 {% if review.reply %}
                     <div class="reply"><b>Store reply:</b> {{ review.reply|linebreaksbr }}</div>
                 {% endif %}
             </div>
         {% endfor %}
     {% else %}
-        <p>No reviews yet.</p>
+        <p style="color:#888; text-align:center; font-size:1.1em;">No reviews yet.</p>
     {% endif %}
 </div>
 </body>
