@@ -64,6 +64,8 @@ def upload_orders_csv(request):
                 f"{review_link}\n\nThank you!"
             )
             sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
+            print(settings.DEFAULT_FROM_EMAIL)
+            print(settings.SENDGRID_API_KEY)
             email_message = Mail(
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to_emails=order.email,
