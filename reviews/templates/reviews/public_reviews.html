@@ -21,16 +21,50 @@
     </h2>
     {% if reviews %}
         {% for review in reviews %}
-            <div class="review">
-                <div class="rating">
-                    {% for i in "12345"|slice:":review.main_rating" %}★{% endfor %}
-                    {% for i in "12345"|slice:"review.main_rating:" %}<span style="color:#ddd">★</span>{% endfor %}
+            <div class="review"
+  {% if review.is_flagged_red %}
+    style="border: 2px solid #e74c3c; background: #fff6f6; border-radius: 6px; margin-bottom: 1.5em; box-shadow: 0 1px 4px #0001;"
+  {% else %}
+    style="border-radius: 6px; margin-bottom: 1.5em; box-shadow: 0 1px 4px #0001;"
+  {% endif %}
+>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div class="rating">
+                        <span style="font-weight:600;">Overall:</span>
+                        {% for i in "12345"|slice":review.main_rating" %}★{% endfor %}
+                        {% for i in "12345"|slice:"review.main_rating:" %}<span style="color:#ddd">★</span>{% endfor %}
+                    </div>
+                    <span style="background:#2ecc40; color:#fff; font-size:0.85em; padding:0.2em 0.7em; border-radius:12px; margin-left:1em;">Verified Customer</span>
                 </div>
-                <div class="meta">
+                <div class="meta" style="margin-bottom:0.5em;">
                     {{ review.created_at|date:"M d, Y" }}
-                    {% if review.recommend == 'yes' %} - <span style="color:green;">Recommended</span>{% else %} - <span style="color:red;">Not Recommended</span>{% endif %}
+                    {% if review.recommend == 'yes' %}
+                        <span style="color:green; font-weight:600; margin-left:1em;">Recommended</span>
+                    {% else %}
+                        <span style="color:#e74c3c; font-weight:600; margin-left:1em;">Not Recommended</span>
+                    {% endif %}
                 </div>
-                <div>{{ review.comment|linebreaksbr }}</div>
+                <div style="display:flex; gap:1.5em; margin-bottom:0.5em;">
+                    <div><span style="font-weight:600;">Logistics:</span> 
+                        {% if review.logistics_rating %}
+                            {% for i in "12345"|slice":review.logistics_rating" %}★{% endfor %}
+                            {% for i in "12345"|slice:"review.logistics_rating:" %}<span style="color:#ddd">★</span>{% endfor %}
+                        {% else %}-{% endif %}
+                    </div>
+                    <div><span style="font-weight:600;">Communication:</span> 
+                        {% if review.communication_rating %}
+                            {% for i in "12345"|slice":review.communication_rating" %}★{% endfor %}
+                            {% for i in "12345"|slice:"review.communication_rating:" %}<span style="color:#ddd">★</span>{% endfor %}
+                        {% else %}-{% endif %}
+                    </div>
+                    <div><span style="font-weight:600;">Website Usability:</span> 
+                        {% if review.website_usability_rating %}
+                            {% for i in "12345"|slice":review.website_usability_rating" %}★{% endfor %}
+                            {% for i in "12345"|slice:"review.website_usability_rating:" %}<span style="color:#ddd">★</span>{% endfor %}
+                        {% else %}-{% endif %}
+                    </div>
+                </div>
+                <div style="margin-bottom:0.5em;">{{ review.comment|linebreaksbr }}</div>
                 {% if review.reply %}
                     <div class="reply"><b>Store reply:</b> {{ review.reply|linebreaksbr }}</div>
                 {% endif %}
