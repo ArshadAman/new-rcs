@@ -43,7 +43,7 @@ class Review(models.Model):
         else:
             # If NO, require sub-ratings and min 10 char comment for completion
             self.is_flagged_red = True
-            if (self.comment and len(self.comment.strip()) >= 10):
+            if (self.comment and len(self.comment.strip()) >= 10 and self.reply):
                 self.is_complete = True
             else:
                 self.is_complete = False
