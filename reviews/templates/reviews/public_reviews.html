@@ -31,8 +31,8 @@
                 <div style="display: flex; align-items: center; justify-content: space-between;">
                     <div class="rating">
                         <span style="font-weight:600;">Overall:</span>
-                        {% for i in "12345"|slice":review.main_rating" %}★{% endfor %}
-                        {% for i in "12345"|slice:"review.main_rating:" %}<span style="color:#ddd">★</span>{% endfor %}
+                        {% for i in "12345"|slice:"0:review.main_rating" %}★{% endfor %}
+                        {% for i in "12345"|slice:"review.main_rating:5" %}<span style="color:#ddd">★</span>{% endfor %}
                     </div>
                     <span style="background:#2ecc40; color:#fff; font-size:0.85em; padding:0.2em 0.7em; border-radius:12px; margin-left:1em;">Verified Customer</span>
                 </div>
@@ -47,20 +47,20 @@
                 <div style="display:flex; gap:1.5em; margin-bottom:0.5em;">
                     <div><span style="font-weight:600;">Logistics:</span> 
                         {% if review.logistics_rating %}
-                            {% for i in "12345"|slice":review.logistics_rating" %}★{% endfor %}
-                            {% for i in "12345"|slice:"review.logistics_rating:" %}<span style="color:#ddd">★</span>{% endfor %}
+                            {% for i in "12345"|slice:"0:review.logistics_rating" %}★{% endfor %}
+                            {% for i in "12345"|slice:"review.logistics_rating:5" %}<span style="color:#ddd">★</span>{% endfor %}
                         {% else %}-{% endif %}
                     </div>
                     <div><span style="font-weight:600;">Communication:</span> 
                         {% if review.communication_rating %}
-                            {% for i in "12345"|slice":review.communication_rating" %}★{% endfor %}
-                            {% for i in "12345"|slice:"review.communication_rating:" %}<span style="color:#ddd">★</span>{% endfor %}
+                            {% for i in "12345"|slice:"0:review.communication_rating" %}★{% endfor %}
+                            {% for i in "12345"|slice:"review.communication_rating:5" %}<span style="color:#ddd">★</span>{% endfor %}
                         {% else %}-{% endif %}
                     </div>
                     <div><span style="font-weight:600;">Website Usability:</span> 
                         {% if review.website_usability_rating %}
-                            {% for i in "12345"|slice":review.website_usability_rating" %}★{% endfor %}
-                            {% for i in "12345"|slice:"review.website_usability_rating:" %}<span style="color:#ddd">★</span>{% endfor %}
+                            {% for i in "12345"|slice:"0:review.website_usability_rating" %}★{% endfor %}
+                            {% for i in "12345"|slice:"review.website_usability_rating:5" %}<span style="color:#ddd">★</span>{% endfor %}
                         {% else %}-{% endif %}
                     </div>
                 </div>
