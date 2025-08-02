@@ -32,11 +32,12 @@
             padding: 1.5em 1.5em 1.2em 1.5em;
             background: #f9fafc;
             border: 1.5px solid #e5e9f2;
-            transition: box-shadow 0.2s;
+            transition: box-shadow 0.2s, border 0.2s;
             position: relative;
         }
         .review.flagged {
-            border: 2.5px solid #e74c3c;
+            border: 2.5px solid #1877f2;
+            border-color: #e74c3c !important;
             background: #fff6f6;
         }
         .review-header {
@@ -45,30 +46,31 @@
             justify-content: space-between;
             margin-bottom: 0.7em;
         }
-        .badge {
-            background: #2ecc40;
-            color: #fff;
-            font-size: 0.92em;
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.98em;
+            color: #1877f2;
+            background: #eaf1fb;
+            border-radius: 12px;
+            padding: 2px 10px 2px 7px;
             font-weight: 600;
-            padding: 0.3em 1em;
-            border-radius: 16px;
-            letter-spacing: 0.5px;
-            box-shadow: 0 1px 4px #0001;
+            letter-spacing: 0.2px;
+            margin-right: 0.5em;
+            box-shadow: 0 1px 4px #00000008;
         }
-        .flag-badge {
-            background: #e74c3c;
-            color: #fff;
-            font-size: 0.92em;
-            font-weight: 600;
-            padding: 0.3em 1em;
-            border-radius: 16px;
-            margin-left: 0.7em;
-            letter-spacing: 0.5px;
+        .verified-badge svg {
+            width: 1em;
+            height: 1em;
+            margin-right: 0.3em;
+            vertical-align: -2px;
         }
         .meta {
             color: #7a859a;
             font-size: 0.98em;
             margin-bottom: 0.7em;
+            text-align: right;
+            flex-shrink: 0;
         }
         .recommended {
             color: #219150;
@@ -116,6 +118,8 @@
             .container { padding: 1em; }
             .review { padding: 1em; }
             .ratings-row { flex-direction: column; gap: 0.5em; }
+            .review-header { flex-direction: column; align-items: flex-start; gap: 0.5em; }
+            .meta { text-align: left; margin-left: 0; }
         }
     </style>
 </head>
@@ -126,12 +130,13 @@
         {% for review in reviews %}
             <div class="review{% if review.is_flagged_red %} flagged{% endif %}">
                 <div class="review-header">
-                    <div>
-                        <span class="badge">Verified Customer</span>
-                        {% if review.is_flagged_red %}
-                            <span class="flag-badge">Flagged</span>
-                        {% endif %}
-                    </div>
+                    <span class="verified-badge">
+                        <svg viewBox="0 0 20 20" fill="#1877f2" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="10" cy="10" r="10" fill="#1877f2"/>
+                            <path d="M7.5 10.5l2 2 3-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Verified Customer
+                    </span>
                     <div class="meta">
                         {{ review.created_at|date:"M d, Y" }}
                         {% if review.recommend == 'yes' %}
