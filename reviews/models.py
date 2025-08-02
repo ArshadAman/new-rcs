@@ -41,9 +41,9 @@ class Review(models.Model):
             self.is_published = True
             self.auto_publish_at = None
         else:
-            # If NO, require sub-ratings and min 50 char comment for completion
+            # If NO, require sub-ratings and min 10 char comment for completion
             self.is_flagged_red = True
-            if (self.logistics_rating and self.communication_rating and self.website_usability_rating and self.comment and len(self.comment.strip()) >= 50):
+            if (self.comment and len(self.comment.strip()) >= 10):
                 self.is_complete = True
             else:
                 self.is_complete = False

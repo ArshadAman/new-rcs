@@ -99,6 +99,8 @@ def user_reviews_api(request):
             'reply': review.reply,
             'is_published': review.is_published,
             'created_at': review.created_at,
+            'red_flagged': review.is_flagged_red,
+            'auto_publish_at': review.auto_publish_at,
         })
     return Response({'reviews': data}, status=status.HTTP_200_OK)
 
@@ -108,7 +110,7 @@ def reply_to_negative_review(request, review_id):
     user = request.user
     try:
         review = Review.objects.get(id=review_id, user=user, is_published=False)
-        if review.main_rating >= 3:
+        if review.main_rating >= 3 or not review.is_flagged_red:
             return Response({'error': 'Only negative reviews (main rating below 3) can be replied to.'}, status=status.HTTP_400_BAD_REQUEST)
     except Review.DoesNotExist:
         return Response({'error': 'Review not found or not eligible for reply.'}, status=status.HTTP_404_NOT_FOUND)
@@ -116,6 +118,6 @@ def reply_to_negative_review(request, review_id):
     if not reply:
         return Response({'error': 'Reply cannot be empty.'}, status=status.HTTP_400_BAD_REQUEST)
     review.reply = reply
-    review.is_published = True
+    # review.is_complete = True
     review.save()
     return Response({'message': 'Reply added and review published.'}, status=status.HTTP_200_OK)
