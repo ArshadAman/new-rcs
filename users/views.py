@@ -29,3 +29,23 @@ def update_profile_view(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_statistics_api(request):
+    user = request.user
+    if user.plan not in ['extended', 'pro', 'unique']:
+        return Response({'error': 'Statistics are only available for Extended and higher plans.'}, status=status.HTTP_403_FORBIDDEN)
+    total_reviews = user.reviews.count()
+    published_reviews = user.reviews.filter(is_published=True).count()
+    unpublished_reviews = user.reviews.filter(is_published=False).count()
+    clicks = getattr(user, 'widget_clicks', 0)
+    
+    return Response({
+        'total_reviews': total_reviews,
+        'published_reviews': published_reviews,
+        'unpublished_reviews': unpublished_reviews,
+        'widget_clicks': clicks,
+    })
+

@@ -11,6 +11,8 @@ class Order(models.Model):
     email = models.EmailField()
     phone_number = models.CharField(max_length=20)
     review_token = models.UUIDField(default=uuid.uuid4, editable=False, null=True, blank=True)
+    shipment_date = models.DateField(null=True, blank=True)
+    review_email_sent = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.order_id} - {self.customer_name}"

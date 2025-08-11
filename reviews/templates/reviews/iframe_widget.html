@@ -49,6 +49,13 @@
         }
         .rcs-btn:hover { background: #1a5ab8; }
     </style>
+    {% if user.plan == 'pro' and user.widget_color %}
+    <style>
+        #rcs-widget-collapsed, .rcs-btn {
+            background: {{ user.widget_color|default_if_none:'#2a7ae2' }};
+        }
+    </style>
+    {% endif %}
 </head>
 <body>
 <div id="rcs-widget-container">
@@ -56,22 +63,97 @@
         <span style="font-weight:bold;">★ {{ avg_main|default:'-' }}/5</span> <span style="font-size:0.95em;">Service Rating</span>
     </div>
     <div id="rcs-widget-expanded">
-        <div class="rcs-row">
-            <span class="rcs-label">Main Rating:</span>
-            <span class="rcs-stars">{{ avg_main|default:'-' }}/5</span>
-        </div>
-        <div class="rcs-row">
-            <span class="rcs-label">Logistics:</span>
-            <span class="rcs-stars">{{ avg_logistics|default:'-' }}/5</span>
-        </div>
-        <div class="rcs-row">
-            <span class="rcs-label">Communication:</span>
-            <span class="rcs-stars">{{ avg_communication|default:'-' }}/5</span>
-        </div>
-        <div class="rcs-row">
-            <span class="rcs-label">Website Usability:</span>
-            <span class="rcs-stars">{{ avg_website|default:'-' }}/5</span>
-        </div>
+        {% if user.plan == 'basic' %}
+            <div>
+                <div class="rcs-row">
+                    <span class="rcs-label">Main Rating:</span>
+                    <span class="rcs-stars">{{ avg_main|default:'-' }}/5</span>
+                </div>
+                <div>
+                    Latest Review: 
+                    {% if reviews %}
+                        {{ reviews.last.comment }}
+                    {% else %}
+                        No reviews yet.
+                    {% endif %}
+                </div>
+            </div>
+        {% elif user.plan == 'extended' %}
+            <div>
+                <div class="rcs-row">
+                    <span class="rcs-label">Main Rating:</span>
+                    <span class="rcs-stars">{{ avg_main|default:'-' }}/5</span>
+                </div>
+                <div class="rcs-row">
+                    <span class="rcs-label">Logistics:</span>
+                    <span class="rcs-stars">{{ avg_logistics|default:'-' }}/5</span>
+                </div>
+                <div class="rcs-row">
+                    <span class="rcs-label">Communication:</span>
+                    <span class="rcs-stars">{{ avg_communication|default:'-' }}/5</span>
+                </div>
+                <div class="rcs-row">
+                    <span class="rcs-label">Website Usability:</span>
+                    <span class="rcs-stars">{{ avg_website|default:'-' }}/5</span>
+                </div>
+                <div>
+                    Latest Review: 
+                    {% if reviews %}
+                        {{ reviews.last.comment }}
+                    {% else %}
+                        No reviews yet.
+                    {% endif %}
+                </div>
+            </div>
+        {% elif user.plan == 'pro' %}
+            <div>
+                <div class="rcs-row">
+                    <span class="rcs-label">Main Rating:</span>
+                    <span class="rcs-stars">{{ avg_main|default:'-' }}/5</span>
+                </div>
+                <div class="rcs-row">
+                    <span class="rcs-label">Logistics:</span>
+                    <span class="rcs-stars">{{ avg_logistics|default:'-' }}/5</span>
+                </div>
+                <div class="rcs-row">
+                    <span class="rcs-label">Communication:</span>
+                    <span class="rcs-stars">{{ avg_communication|default:'-' }}/5</span>
+                </div>
+                <div class="rcs-row">
+                    <span class="rcs-label">Website Usability:</span>
+                    <span class="rcs-stars">{{ avg_website|default:'-' }}/5</span>
+                </div>
+                <div class="rcs-row">
+                    <span class="rcs-label">Business:</span>
+                    <span>{{ user.business_name|default:user.get_full_name|default:user.username }}</span>
+                </div>
+                <div class="rcs-row">
+                    <span class="rcs-label">Website:</span>
+                    <span>{{ user.website_url }}</span>
+                </div>
+                <div>
+                    Latest Review: 
+                    {% if reviews %}
+                        {{ reviews.last.comment }}
+                    {% else %}
+                        No reviews yet.
+                    {% endif %}
+                </div>
+                {% if marketing_banner %}
+                    <div style="margin-top:1em;">
+                        <img src="{{ marketing_banner }}" alt="Promotion" style="max-width:100%;border-radius:8px;">
+                    </div>
+                {% endif %}
+                {% if social_links %}
+                    <div style="margin-top:0.7em;">
+                        <span class="rcs-label">Follow us:</span>
+                        {% for link in social_links %}
+                            <a href="{{ link.url }}" target="_blank" style="margin-right:0.5em;">{{ link.platform }}</a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
         <a class="rcs-btn" href="/api/reviews/public-reviews/{{ user.id }}/" target="_blank">View all reviews</a>
     </div>
 </div>

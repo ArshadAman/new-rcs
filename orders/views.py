@@ -6,6 +6,7 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+import datetime
 
 from .models import Order
 import sendgrid
@@ -26,7 +27,7 @@ def upload_orders_csv(request):
     except Exception as e:
         return Response({'error': 'Invalid CSV file.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    required_fields = ['Order ID', 'Customer Name', 'Email', 'Phone Number']
+    required_fields = ['Order ID', 'Customer Name', 'Email', 'Phone Number', 'Shipment Date']
     created = 0
     errors = []
     for idx, row in enumerate(reader, start=2):  # start=2 to account for header row
@@ -45,37 +46,22 @@ def upload_orders_csv(request):
             errors.append(f"Row {idx}: One or more required fields are empty.")
             continue
 
+        shipment_date_str = row.get('Shipment Date')
+        try:
+            shipment_date = datetime.datetime.strptime(shipment_date_str, '%Y-%m-%d').date() if shipment_date_str else None
+        except Exception:
+            errors.append(f"Row {idx}: Invalid shipment date format.")
+            continue
+
         try:
             order = Order.objects.create(
                 user=request.user,
                 order_id=order_id,
                 customer_name=customer_name,
                 email=email,
-                phone_number=phone_number
+                phone_number=phone_number,
+                shipment_date=shipment_date,
             )
-            # Send review email
-            review_link = request.build_absolute_uri(
-                reverse('review_form', args=[str(order.review_token)])
-            )
-            subject = 'We value your feedback! Please review your order'
-            message = (
-                f"Dear {order.customer_name},\n\n"
-                f"Thank you for your order (Order ID: {order.order_id}). Please take a moment to review your experience by clicking the link below:\n\n"
-                f"{review_link}\n\nThank you!"
-            )
-            sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
-            print(settings.DEFAULT_FROM_EMAIL)
-            print(settings.SENDGRID_API_KEY)
-            email_message = Mail(
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to_emails=order.email,
-                subject=subject,
-                plain_text_content=message
-            )
-            try:
-                sg.send(email_message)
-            except Exception:
-                pass  # Optionally log the error
             created += 1
         except Exception as e:
             errors.append(f"Row {idx}: Failed to create order. Error: {str(e)}")
