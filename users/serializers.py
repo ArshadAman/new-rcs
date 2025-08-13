@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import CustomUser
+from django.utils import timezone
+from datetime import timedelta
 
 class UserSignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -16,6 +18,8 @@ class UserSignupSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password')
         user = CustomUser(**validated_data)
         user.set_password(password)
+        user.trial_start = timezone.now()
+        user.trial_end = timezone.now() + timedelta(days=14)
         user.save()
         return user
 

@@ -176,3 +176,6 @@ CSRF_TRUSTED_ORIGINS = [
     "https://api.level-4u.com",
     "http://api.level-4u.com",
 ]
+
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
+STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY")

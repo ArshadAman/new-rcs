@@ -18,6 +18,12 @@ class CustomUser(AbstractUser):
         ('pro', 'Pro'),
     ]
     plan = models.CharField(max_length=10, choices=PLAN_CHOICES, default='basic')
+    plan_expiration = models.DateTimeField(null=True, blank=True)
+    monthly_review_count = models.PositiveIntegerField(default=0)
+    monthly_reply_count = models.PositiveIntegerField(default=0)
+    trial_start = models.DateTimeField(null=True, blank=True)
+    trial_end = models.DateTimeField(null=True, blank=True)
+
 
     def __str__(self):
         return self.username
