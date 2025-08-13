@@ -25,6 +25,7 @@ djangorestframework==3.16.0
 djangorestframework_simplejwt==5.5.0
 drf-spectacular==0.28.0
 gunicorn==23.0.0
+h11==0.16.0
 idna==3.10
 inflection==0.5.1
 jsonschema==4.24.0
@@ -54,9 +55,11 @@ sendgrid==6.11.0
 six==1.17.0
 sqlparse==0.5.3
 starkbank-ecdsa==2.2.0
+stripe==12.4.0
 typing_extensions==4.14.1
 tzdata==2025.2
 uritemplate==4.2.0
 urllib3==2.5.0
+uvicorn==0.35.0
 vine==5.1.0
 wcwidth==0.2.13

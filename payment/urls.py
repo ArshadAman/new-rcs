@@ -1,4 +1,4 @@
-from django.conf.urls import path
+from django.urls import path
 from .views import repurchase_plan, upgrade_plan
 from .webhook import stripe_webhook
 urlpatterns = [

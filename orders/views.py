@@ -16,7 +16,7 @@ from utils.utitily import is_trail_active, is_plan_active
 def upload_orders_csv(request):
     user = request.user
     monthly_count = user.monthly_review_count
-    limit = 50 if user.plan is "basic" else 150 if user.plan is "extended" else 1000
+    limit = 50 if user.plan == "basic" else 150 if user.plan == "extended" else 1000
     if monthly_count >= limit or not is_plan_active(user):
         return Response({
             'error': "You have reached the monthly limit or plan expired, please upgrade or repurchase the plan"

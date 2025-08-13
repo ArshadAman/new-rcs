@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import iframe_, review_form, public_reviews, user_reviews_api, reply_to_negative_review, review_limit_status_api
+from .views import iframe_, review_form, public_reviews, user_reviews_api, reply_to_negative_review
 
 urlpatterns = [
     path('widget/iframe/<uuid:user_id>/', iframe_, name='iframe_widget'),
@@ -7,5 +7,4 @@ urlpatterns = [
     path('public-reviews/<uuid:user_id>/', public_reviews, name='public_reviews'),
     path('my-reviews/', user_reviews_api, name='user_reviews_api'),
     path('reply-to-negative/<uuid:review_id>/', reply_to_negative_review, name='reply_to_negative_review'),
-    path('review-limit-status/', review_limit_status_api, name='review_limit_status_api'),
 ]

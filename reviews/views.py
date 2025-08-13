@@ -171,7 +171,7 @@ def user_reviews_api(request):
 def reply_to_negative_review(request, review_id):
     user = request.user
     monthly_count = user.monthly_reply_count
-    limit = 50 if user.plan is "basic" else 150 if user.plan is "extended" else 1000
+    limit = 50 if user.plan == "basic" else 150 if user.plan == "extended" else 1000
     if monthly_count >= limit or not is_plan_active(user):
         return Response({'error': 'Basic plan users can only reply to 50 reviews per month.'}, status=status.HTTP_403_FORBIDDEN)
     
@@ -189,36 +189,6 @@ def reply_to_negative_review(request, review_id):
         # review.is_complete = True
         review.save()
         return Response({'message': 'Reply added and review published.'}, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def user_plan_info(request):
-    user = request.user
-    monthly_count = user.monthly_review_count
-    limit_reached = False
-    limit = 0
-    if user.plan == 'basic':
-        limit = 50
-    elif user.plan == 'extended':
-        limit = 150
-    elif user.plan == 'pro':
-        limit = 1000
-    if monthly_count >= limit:
-        limit_reached = True
-    return Response({
-        'plan': user.plan,
-        'monthly_count': monthly_count,
-        'limit': limit,
-        'remaining': limit - monthly_count,
-        'limit_reached': limit_reached,
-        'plan_expired': is_plan_active(user),
-        'trial':"Active" if is_trail_active(user) else "Ended" ,
-        'message': (
-            f"You have reached your {user.plan.capitalize()} plan review limit ({limit}/month). "
-            "Please upgrade or repurchase to continue collecting reviews."
-            if limit_reached else "You are within your monthly review limit."
-        )
-    })
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
