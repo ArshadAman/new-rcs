@@ -15,4 +15,4 @@ COPY . /app/
 # Create logs directory
 RUN mkdir -p /app/logs
 
-CMD ["uvicorn", "rcs.wsgi:application", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "rcs.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
