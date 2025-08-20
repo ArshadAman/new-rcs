@@ -72,7 +72,7 @@ def user_plan_info(request):
         'remaining': limit - monthly_count,
         'limit_reached': limit_reached,
         'plan_expired': is_plan_active(user),
-        'trial':"Active" if is_trail_active(user) else "Ended" ,
+        'trial':True if is_trail_active(user) else False ,
         'message': (
             f"You have reached your {user.plan.capitalize()} plan review limit ({limit}/month). "
             "Please upgrade or repurchase to continue collecting reviews."
