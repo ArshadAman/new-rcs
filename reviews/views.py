@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from utils.utitily import is_trail_active, is_plan_active
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 
 def review_form(request, token):
@@ -74,6 +75,7 @@ def review_form(request, token):
     # GET request
     return render(request, 'reviews/review_form.html', {'order': order})
 
+@xframe_options_exempt
 def iframe_(request, user_id):
     user = get_object_or_404(CustomUser, id=user_id)
     reviews = Review.objects.filter(user=user, is_published=True)
