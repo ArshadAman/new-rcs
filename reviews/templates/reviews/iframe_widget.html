@@ -12,160 +12,412 @@
             z-index: 9999;
             font-family: Arial, sans-serif;
         }
+        
         #rcs-widget-collapsed {
-            background: #2a7ae2;
-            color: #fff;
-            border-radius: 20px 0 0 20px;
-            padding: 0.7em 1.5em 0.7em 1em;
+            background: #fff;
+            border-radius: 0 20px 20px 0;
+            padding: 0;
             cursor: pointer;
-            box-shadow: 0 2px 8px #0002;
-            font-size: 1.1em;
-            min-width: 120px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            font-size: 14px;
+            min-width: 300px;
             text-align: left;
+            display: flex;
+            align-items: stretch;
+            overflow: hidden;
+            position: relative;
+            clip-path: polygon(20px 0%, 100% 0%, 100% 100%, 20px 100%, 0% 80%, 0% 20%);
         }
+        
+        .star-icon {
+            font-size: 1.2em;
+            color: #fff;
+        }
+        
+        .rating-text {
+            font-size: 1em;
+            font-weight: 500;
+        }
+        
+        .collapsed-left-section {
+            background: #fff;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .collapsed-right-section {
+            background: linear-gradient(to bottom, #ff8c00, #ffd700);
+            width: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .collapsed-brackets {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .collapsed-bracket-left, .collapsed-bracket-right {
+            width: 20px;
+            height: 20px;
+            background: #000;
+            position: relative;
+        }
+        
+        .collapsed-bracket-left {
+            clip-path: polygon(0 0, 100% 0, 0 100%);
+        }
+        
+        .collapsed-bracket-right {
+            clip-path: polygon(0 0, 100% 0, 100% 100%);
+        }
+        
+        .collapsed-description {
+            text-align: center;
+            font-size: 12px;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+        
+        .collapsed-cta-button {
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        
+        .collapsed-verified-text {
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .collapsed-level-logo {
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            color: #000;
+        }
+        
+        .collapsed-expand-button {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        
         #rcs-widget-expanded {
             display: none;
             background: #fff;
             color: #222;
             border-radius: 12px;
-            box-shadow: 0 2px 12px #0003;
-            padding: 1.2em 1.5em 1em 1.5em;
-            min-width: 220px;
-            margin-top: 0.5em;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            padding: 20px;
+            min-width: 300px;
+            margin-top: 8px;
+            position: relative;
         }
-        .rcs-stars { color: #f5b301; font-size: 1.2em; }
-        .rcs-label { color: #888; font-size: 0.98em; margin-bottom: 0.2em; }
-        .rcs-row { margin-bottom: 0.7em; }
-        .rcs-btn {
-            display: inline-block;
-            margin-top: 0.7em;
-            background: #2a7ae2;
+        
+        .expanded-content {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .left-section {
+            flex: 1;
+            text-align: left;
+            padding: 20px;
+        }
+        
+        .rating-category {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .category-name {
+            color: #333;
+        }
+        
+        .category-stars {
+            color: #000;
+            font-size: 14px;
+        }
+        
+        .positive-reviews-box {
+            background: #000;
             color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        .positive-percentage {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .positive-text {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .brackets {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            height: 20px;
+            pointer-events: none;
+        }
+        
+        .bracket-left {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 15px;
+            height: 15px;
+            border-left: 2px solid #000;
+            border-top: 2px solid #000;
+        }
+        
+        .bracket-right {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 15px;
+            height: 15px;
+            border-right: 2px solid #000;
+            border-top: 2px solid #000;
+        }
+        
+        .right-section {
+            width: 60px;
+            {% if user.plan == 'basic' %}
+                background: linear-gradient(180deg, #28a745 0%, #1e7e34 100%);
+            {% elif user.plan == 'extended' %}
+                background: linear-gradient(180deg, #fd7e14 0%, #e55a00 100%);
+            {% elif user.plan == 'pro' %}
+                background: linear-gradient(180deg, #6f42c1 0%, #5a2d91 100%);
+            {% else %}
+                background: linear-gradient(180deg, #2a7ae2 0%, #1a5ab8 100%);
+            {% endif %}
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 15px 10px;
+        }
+        
+        .rating-description {
+            font-size: 12px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 500;
+            line-height: 1.3;
+        }
+        
+        .cta-button {
+            background: #000;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
             border-radius: 4px;
-            padding: 0.4em 1.2em;
-            text-decoration: none;
-            font-size: 1em;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
             transition: background 0.2s;
+            width: 100%;
+            max-width: 180px;
+            margin-bottom: 10px;
         }
-        .rcs-btn:hover { background: #1a5ab8; }
-    </style>
-    {% if user.plan == 'pro' and user.widget_color %}
-    <style>
-        #rcs-widget-collapsed, .rcs-btn {
-            background: {{ user.widget_color|default_if_none:'#2a7ae2' }};
+        
+        .cta-button:hover {
+            background: #333;
+        }
+        
+        .verified-text {
+            font-size: 10px;
+            color: #666;
+        }
+        
+        .level-logo {
+            font-size: 10px;
+            font-weight: bold;
+            color: #000;
+            margin-top: 5px;
+        }
+        
+        .level-logo img {
+            height: 20px;
+            width: auto;
+        }
+        
+        .stars-container {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        
+        .star {
+            font-size: 16px;
+            color: #fff;
+        }
+        
+        .star.filled {
+            color: #ffd700;
+        }
+        
+        .rating-number {
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 8px;
         }
     </style>
-    {% endif %}
 </head>
 <body>
 <div id="rcs-widget-container">
-    <div id="rcs-widget-collapsed" onclick="expandRcsWidget()">
-        <span style="font-weight:bold;">★ {{ avg_main|default:'-' }}/5</span> <span style="font-size:0.95em;">Service Rating</span>
+    <div id="rcs-widget-collapsed">
+        <div class="collapsed-left-section">
+            <div class="collapsed-brackets">
+                <div class="collapsed-bracket-left"></div>
+                <div class="collapsed-bracket-right"></div>
+            </div>
+            <div class="collapsed-description">
+                The rating is based on verified consumer reviews.
+            </div>
+            <button class="collapsed-cta-button" onclick="expandRcsWidget()">
+                CLICK HERE<br>TO SEE REVIEWS
+            </button>
+            <div class="collapsed-verified-text">VERIFIED BY</div>
+            <div class="collapsed-level-logo">LEVEL</div>
+        </div>
+        <div class="collapsed-right-section">
+            <div class="collapsed-star">★</div>
+            <div class="collapsed-star">★</div>
+            <div class="collapsed-star">★</div>
+            <div class="collapsed-star">★</div>
+            <div class="collapsed-star">★</div>
+        </div>
     </div>
     <div id="rcs-widget-expanded">
-        {% if user.plan == 'basic' %}
-            <div>
-                <div class="rcs-row">
-                    <span class="rcs-label">Main Rating:</span>
-                    <span class="rcs-stars">{{ avg_main|default:'-' }}/5</span>
+        <div class="expanded-content">
+            <div class="left-section">
+                <div class="brackets">
+                    <div class="bracket-left"></div>
+                    <div class="bracket-right"></div>
                 </div>
-                <div>
-                    Latest Review: 
-                    {% if reviews %}
-                        {{ reviews.last.comment }}
-                    {% else %}
-                        No reviews yet.
-                    {% endif %}
-                </div>
-            </div>
-        {% elif user.plan == 'extended' %}
-            <div>
-                <div class="rcs-row">
-                    <span class="rcs-label">Main Rating:</span>
-                    <span class="rcs-stars">{{ avg_main|default:'-' }}/5</span>
-                </div>
-                <div class="rcs-row">
-                    <span class="rcs-label">Logistics:</span>
-                    <span class="rcs-stars">{{ avg_logistics|default:'-' }}/5</span>
-                </div>
-                <div class="rcs-row">
-                    <span class="rcs-label">Communication:</span>
-                    <span class="rcs-stars">{{ avg_communication|default:'-' }}/5</span>
-                </div>
-                <div class="rcs-row">
-                    <span class="rcs-label">Website Usability:</span>
-                    <span class="rcs-stars">{{ avg_website|default:'-' }}/5</span>
-                </div>
-                <div>
-                    Latest Review: 
-                    {% if reviews %}
-                        {{ reviews.last.comment }}
-                    {% else %}
-                        No reviews yet.
-                    {% endif %}
-                </div>
-            </div>
-        {% elif user.plan == 'pro' %}
-            <div>
-                <div class="rcs-row">
-                    <span class="rcs-label">Main Rating:</span>
-                    <span class="rcs-stars">{{ avg_main|default:'-' }}/5</span>
-                </div>
-                <div class="rcs-row">
-                    <span class="rcs-label">Logistics:</span>
-                    <span class="rcs-stars">{{ avg_logistics|default:'-' }}/5</span>
-                </div>
-                <div class="rcs-row">
-                    <span class="rcs-label">Communication:</span>
-                    <span class="rcs-stars">{{ avg_communication|default:'-' }}/5</span>
-                </div>
-                <div class="rcs-row">
-                    <span class="rcs-label">Website Usability:</span>
-                    <span class="rcs-stars">{{ avg_website|default:'-' }}/5</span>
-                </div>
-                <div class="rcs-row">
-                    <span class="rcs-label">Business:</span>
-                    <span>{{ user.business_name|default:user.get_full_name|default:user.username }}</span>
-                </div>
-                <div class="rcs-row">
-                    <span class="rcs-label">Website:</span>
-                    <span>{{ user.website_url }}</span>
-                </div>
-                <div>
-                    Latest Review: 
-                    {% if reviews %}
-                        {{ reviews.last.comment }}
-                    {% else %}
-                        No reviews yet.
-                    {% endif %}
-                </div>
-                {% if marketing_banner %}
-                    <div style="margin-top:1em;">
-                        <img src="{{ marketing_banner }}" alt="Promotion" style="max-width:100%;border-radius:8px;">
-                    </div>
-                {% endif %}
-                {% if social_links %}
-                    <div style="margin-top:0.7em;">
-                        <span class="rcs-label">Follow us:</span>
-                        {% for link in social_links %}
-                            <a href="{{ link.url }}" target="_blank" style="margin-right:0.5em;">{{ link.platform }}</a>
+                
+                <div class="rating-category">
+                    <span class="category-name">LOGISTICS</span>
+                    <span class="category-stars">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= avg_logistics|default:5 %}
+                                ★
+                            {% else %}
+                                <span style="color:#ddd">★</span>
+                            {% endif %}
                         {% endfor %}
-                    </div>
-                {% endif %}
+                    </span>
+                </div>
+                
+                <div class="rating-category">
+                    <span class="category-name">DELIVERY</span>
+                    <span class="category-stars">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= avg_communication|default:5 %}
+                                ★
+                            {% else %}
+                                <span style="color:#ddd">★</span>
+                            {% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+                
+                <div class="rating-category">
+                    <span class="category-name">COMMUNICATION</span>
+                    <span class="category-stars">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= avg_communication|default:5 %}
+                                ★
+                            {% else %}
+                                <span style="color:#ddd">★</span>
+                            {% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+                
+                <div class="positive-reviews-box">
+                    <div class="positive-percentage">{{ positive_percentage }}%</div>
+                    <div class="positive-text">POSITIVE REVIEWS</div>
+                </div>
+                
+                <button class="cta-button" onclick="parent.location.href='/api/reviews/public-reviews/{{ user.id }}/'">
+                    Click Here<br>To See Reviews
+                </button>
+                
+                <div class="verified-text">VERIFIED BY</div>
+                <div class="level-logo">
+                    <img src="/static/images/levellogo.png" alt="LEVEL" />
+                </div>
             </div>
-        {% endif %}
-        <a class="rcs-btn" href="/api/reviews/public-reviews/{{ user.id }}/" target="_blank">View all reviews</a>
+            <div class="right-section">
+                <div class="stars-container">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= avg_main|default:4 %}
+                            <div class="star filled">★</div>
+                        {% else %}
+                            <div class="star">★</div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="rating-number">{{ avg_main|default:'4' }}/5</div>
+            </div>
+        </div>
     </div>
 </div>
+
 <script>
 function expandRcsWidget() {
     document.getElementById('rcs-widget-collapsed').style.display = 'none';
     document.getElementById('rcs-widget-expanded').style.display = 'block';
 }
+
 document.addEventListener('click', function(e) {
     var widget = document.getElementById('rcs-widget-container');
     if (!widget.contains(e.target)) {
-        document.getElementById('rcs-widget-collapsed').style.display = 'block';
+        document.getElementById('rcs-widget-collapsed').style.display = 'flex';
         document.getElementById('rcs-widget-expanded').style.display = 'none';
     }
 });

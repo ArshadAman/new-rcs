@@ -87,11 +87,20 @@ def iframe_(request, user_id):
     user.widget_clicks += 1
     user.save()
 
+    # Calculate positive review percentage
+    total_reviews = reviews.count()
+    positive_reviews = reviews.filter(recommend='yes').count()
+    positive_percentage = round((positive_reviews / total_reviews * 100), 0) if total_reviews > 0 else 0
+
     # Plan-based widget logic
     context = {
         'user': user,
         'avg_main': avg('main_rating'),
+        'avg_logistics': avg('logistics_rating'),
+        'avg_communication': avg('communication_rating'),
+        'avg_website': avg('website_usability_rating'),
         'reviews': reviews,
+        'positive_percentage': int(positive_percentage),
     }
 
     if user.plan == 'basic':
