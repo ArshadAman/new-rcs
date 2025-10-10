@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from utils.utitily import is_trail_active, is_plan_active
+from utils.utitily import is_trial_active, is_plan_active
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 
@@ -24,7 +24,7 @@ def review_form(request, token):
             messages.error(request, 'Thank you for your feedback! Reviews are currently closed for this business.')
             return render(request, 'reviews/review_form.html')
         
-        elif (is_trail_active(company) and monthly_count<limit) or monthly_count < limit:
+        elif (is_trial_active(company) and monthly_count<limit) or monthly_count < limit:
             recommend = request.POST.get('recommend')
             comment = request.POST.get('comment', '').strip()
             logistics_rating = request.POST.get('logistics_rating')
@@ -186,7 +186,7 @@ def reply_to_negative_review(request, review_id):
     if monthly_count >= limit or not is_plan_active(user):
         return Response({'error': 'Basic plan users can only reply to 50 reviews per month.'}, status=status.HTTP_403_FORBIDDEN)
     
-    elif (is_trail_active(user) and monthly_count<limit) or monthly_count < limit:
+    elif (is_trial_active(user) and monthly_count<limit) or monthly_count < limit:
         try:
             review = Review.objects.get(id=review_id, user=user, is_published=False)
             if review.main_rating >= 3 or not review.is_flagged_red:

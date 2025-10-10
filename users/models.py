@@ -12,10 +12,12 @@ class CustomUser(AbstractUser):
     widget_clicks = models.PositiveIntegerField(default=0)
     marketing_banner = models.ImageField(upload_to='marketing_banners/', null=True, blank=True)
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    email = models.EmailField(unique=True)  # Make email unique
     PLAN_CHOICES = [
-        ('basic', 'Basic'),
-        ('extended', 'Extended'),
-        ('pro', 'Pro'),
+        ('basic', 'Basic Level'),
+        ('advanced', 'Advanced Level'),
+        ('pro', 'Pro Level'),
+        ('unique', 'Unique Level'),
     ]
     plan = models.CharField(max_length=10, choices=PLAN_CHOICES, default='basic')
     plan_expiration = models.DateTimeField(null=True, blank=True)

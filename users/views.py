@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .serializers import UserSignupSerializer, UserProfileSerializer
-from utils.utitily import is_plan_active, is_trail_active
+from .models import CustomUser
+from utils.utitily import is_plan_active, is_trial_active
 
 # Create your views here.
 
@@ -15,6 +16,16 @@ def signup_view(request):
         serializer.save()
         return Response({'message': 'User created successfully.'}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def check_email_view(request):
+    """Check if email already exists"""
+    email = request.data.get('email')
+    if not email:
+        return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    exists = CustomUser.objects.filter(email=email).exists()
+    return Response({'exists': exists}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -72,7 +83,7 @@ def user_plan_info(request):
         'remaining': limit - monthly_count,
         'limit_reached': limit_reached,
         'plan_expired': is_plan_active(user),
-        'trial':True if is_trail_active(user) else False ,
+        'trial': True if is_trial_active(user) else False,
         'message': (
             f"You have reached your {user.plan.capitalize()} plan review limit ({limit}/month). "
             "Please upgrade or repurchase to continue collecting reviews."

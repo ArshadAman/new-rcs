@@ -8,7 +8,7 @@ from rest_framework import status
 import datetime
 
 from .models import Order
-from utils.utitily import is_trail_active, is_plan_active
+from utils.utitily import is_trial_active, is_plan_active
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser])
@@ -21,7 +21,7 @@ def upload_orders_csv(request):
         return Response({
             'error': "You have reached the monthly limit or plan expired, please upgrade or repurchase the plan"
         }, status= status.HTTP_403_FORBIDDEN)
-    elif (is_trail_active(user) and monthly_count<limit) or monthly_count < limit: 
+    elif (is_trial_active(user) and monthly_count<limit) or monthly_count < limit: 
         if 'file' not in request.FILES:
             return Response({'error': 'No file uploaded.'}, status=status.HTTP_400_BAD_REQUEST)
         file = request.FILES['file']

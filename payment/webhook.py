@@ -2,7 +2,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from django.conf import settings
 import stripe
-from .tasks import handle_stripe_payment_intent
+from .tasks import handle_stripe_payment_intent, handle_stripe_checkout_session
 
 @csrf_exempt
 def stripe_webhook(request):
@@ -22,5 +22,12 @@ def stripe_webhook(request):
         plan = intent['metadata'].get('plan')
         # Queue the DB logic to Celery
         handle_stripe_payment_intent.delay(user_id, plan)
+    
+    elif event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        user_id = session['metadata'].get('user_id')
+        plan = session['metadata'].get('plan')
+        # Queue the DB logic to Celery for checkout session
+        handle_stripe_checkout_session.delay(user_id, plan)
 
     return HttpResponse(status=200)

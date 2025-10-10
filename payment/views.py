@@ -3,6 +3,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.conf import settings
 import stripe
+from django.utils import timezone
+from datetime import timedelta
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -35,22 +37,184 @@ def repurchase_plan(request):
 def upgrade_plan(request):
     stripe.api_key = settings.STRIPE_SECRET_KEY
     user = request.user
-    plan = request.data.get('plan')  # Target plan to upgrade to: 'extended' or 'pro'
+    plan = request.data.get('plan')  # Target plan to upgrade to: 'advanced', 'pro', or 'unique'
 
-    if plan == 'extended':
-        amount = 3000
+    if plan == 'advanced':
+        amount = 45000  # €450 in cents
     elif plan == 'pro':
-        amount = 10000
+        amount = 85000  # €850 in cents
+    elif plan == 'unique':
+        amount = 0  # Custom pricing for unique level
     else:
         return Response({'error': 'Invalid upgrade plan'}, status=400)
 
     try:
         intent = stripe.PaymentIntent.create(
             amount=amount,
-            currency='usd',
+            currency='eur',
             metadata={'user_id': user.id, 'plan': plan, 'action': 'upgrade'},
         )
         return Response({'clientSecret': intent.client_secret})
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_checkout_session(request):
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    user = request.user
+    plan = request.data.get('plan')
+    
+    print(f"DEBUG: Received plan parameter: {plan}")
+    print(f"DEBUG: Request data: {request.data}")
+    
+    # Map plan to Stripe Price IDs (you'll need to get these from Stripe Dashboard)
+    price_mapping = {
+        'basic': 'price_basic_level_monthly',      # Replace with actual price ID
+        'advanced': 'price_advanced_level_monthly', # Replace with actual price ID  
+        'pro': 'price_pro_level_monthly',           # Replace with actual price ID
+        'unique': 'price_unique_level_custom'       # Replace with actual price ID
+    }
+    
+    price_id = price_mapping.get(plan)
+    if not price_id:
+        return Response({'error': 'Invalid plan'}, status=400)
+    
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price': price_id,  # Use Stripe Price ID instead of custom amount
+                'quantity': 1,
+            }],
+            mode='subscription',  # Changed from 'payment' to 'subscription'
+            success_url=f'http://localhost:5173/payment-success?success=true&plan={plan}&session_id={{CHECKOUT_SESSION_ID}}',
+            cancel_url=f'http://localhost:5173/?canceled=true',
+            metadata={
+                'user_id': str(user.id),
+                'plan': plan,
+                'action': 'subscription'
+            }
+        )
+        return Response({'sessionId': checkout_session.id, 'url': checkout_session.url})
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_plan_from_session(request):
+    """Get plan from Stripe session ID"""
+    session_id = request.data.get('session_id')
+    
+    if not session_id:
+        return Response({'error': 'Session ID required'}, status=400)
+    
+    try:
+        # Retrieve the session from Stripe
+        session = stripe.checkout.Session.retrieve(session_id)
+        
+        # Get plan from metadata
+        plan = session.metadata.get('plan', 'basic')
+        
+        return Response({
+            'plan': plan,
+            'session_id': session_id,
+            'message': f'Retrieved plan {plan} from session'
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_plan_from_amount(request):
+    """Get plan based on payment amount"""
+    amount = request.data.get('amount')  # Amount in cents from Stripe
+    
+    # Match amount to plan (amounts in cents)
+    if amount == 25000:  # €250.00
+        plan = 'basic'
+    elif amount == 45000:  # €450.00
+        plan = 'advanced'
+    elif amount == 85000:  # €850.00
+        plan = 'pro'
+    elif amount == 0:  # Custom pricing
+        plan = 'unique'
+    else:
+        plan = 'basic'  # Default fallback
+    
+    return Response({
+        'plan': plan,
+        'amount': amount,
+        'message': f'Detected {plan} plan from amount €{amount/100}'
+    })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_recent_payment_plan(request):
+    """Get the most recent plan that user tried to purchase"""
+    user = request.user
+    
+    # Check what plan the user currently has and suggest the next logical upgrade
+    current_plan = user.plan
+    
+    if current_plan == 'basic':
+        # If user has basic, they probably want to upgrade to extended
+        plan = 'extended'
+    elif current_plan == 'extended':
+        # If user has extended, they probably want to upgrade to pro
+        plan = 'pro'
+    else:
+        # If user has pro or no plan, default to basic
+        plan = 'basic'
+    
+    return Response({
+        'plan': plan,
+        'current_plan': current_plan,
+        'message': f'Detected upgrade from {current_plan} to {plan}'
+    })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def manual_plan_update(request):
+    """Manual plan update endpoint for when webhooks fail"""
+    user = request.user
+    plan = request.data.get('plan')
+    
+    if plan not in ['basic', 'extended', 'pro']:
+        return Response({'error': 'Invalid plan'}, status=400)
+    
+    try:
+        # Update user plan directly
+        user.plan = plan
+        user.monthly_reply_count = 0
+        user.monthly_review_count = 0
+        user.plan_expiration = timezone.now() + timedelta(days=30)
+        user.save()
+        
+        return Response({
+            'message': f'Successfully updated user {user.username} to {plan} plan',
+            'plan': plan,
+            'plan_expiration': user.plan_expiration
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def test_webhook(request):
+    """Test function to manually trigger webhook logic"""
+    user = request.user
+    plan = request.data.get('plan', 'pro')
+    
+    try:
+        # Manually trigger the webhook logic
+        from .tasks import handle_stripe_checkout_session
+        handle_stripe_checkout_session.delay(str(user.id), plan)
+        
+        return Response({
+            'message': f'Webhook triggered for user {user.username} to {plan} plan',
+            'user_id': str(user.id),
+            'plan': plan
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)

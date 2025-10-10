@@ -14,10 +14,10 @@ def monthly_review_count(user, is_reply = False):
     ).count()
 
 
-def is_trail_active(user):
-    return user.trial_end and timezone.now <= user.trial_end
+def is_trial_active(user):
+    return user.trial_end and timezone.now() <= user.trial_end
 
 def is_plan_active(user):
     if user.plan_expiration is None:
         return True
-    return user.plan_expiration and timezone.now <= user.plan_expiration
+    return user.plan_expiration and timezone.now() <= user.plan_expiration
