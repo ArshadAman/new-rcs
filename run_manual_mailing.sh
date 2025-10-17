@@ -49,3 +49,5 @@ echo "   docker-compose logs -f celery"
 echo ""
 echo "🛑 To stop:"
 echo "   docker-compose down"
+
+

@@ -3,42 +3,70 @@
 <head>
     <title>Reviews for {{ user.business_name|default:user.get_full_name|default:user.username }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Goldman:wght@400;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-            background: #f4f6fa;
+            font-family: 'Montserrat', 'Inter', 'Segoe UI', Arial, sans-serif;
+            background: #000000;
             margin: 0;
             padding: 0;
+            color: #ffffff;
+        }
+        .header {
+            background: #000000;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 1px;
+        }
+        .logo img {
+            height: 40px;
+            width: auto;
         }
         .container {
-            max-width: 700px;
+            max-width: 900px;
             margin: 40px auto;
-            background: #fff;
-            border-radius: 18px;
-            box-shadow: 0 4px 32px #0002;
+            background: #111111;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
             padding: 2.5em 2em 2em 2em;
+            border: 1px solid #333;
         }
         h2 {
-            color: #2156c9;
+            color: #ffffff;
+            font-family: 'Goldman', sans-serif;
             font-size: 2.1em;
             font-weight: 800;
             margin-bottom: 1.5em;
             letter-spacing: -1px;
+            text-align: center;
         }
         .review {
-            border-radius: 12px;
+            border-radius: 16px;
             margin-bottom: 2em;
-            box-shadow: 0 2px 12px #0001;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
             padding: 1.5em 1.5em 1.2em 1.5em;
-            background: #f9fafc;
-            border: 1.5px solid #e5e9f2;
-            transition: box-shadow 0.2s, border 0.2s;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border: 1px solid #ffd700;
+            transition: all 0.3s ease;
             position: relative;
+            font-family: 'Montserrat', sans-serif;
+            color: #000000;
+        }
+        .review:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
         }
         .review.flagged {
-            border: 2.5px solid #1877f2;
-            border-color: #e74c3c !important;
-            background: #fff6f6;
+            border: 2px solid #e74c3c;
+            background: #fff5f5;
         }
         .review-header {
             display: flex;
@@ -49,15 +77,16 @@
         .verified-badge {
             display: inline-flex;
             align-items: center;
-            font-size: 0.98em;
-            color: #1877f2;
-            background: #eaf1fb;
-            border-radius: 12px;
-            padding: 2px 10px 2px 7px;
+            font-size: 0.9em;
+            color: #000000;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 4px 12px 4px 8px;
             font-weight: 600;
-            letter-spacing: 0.2px;
+            letter-spacing: 0.3px;
             margin-right: 0.5em;
-            box-shadow: 0 1px 4px #00000008;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            font-family: 'Montserrat', sans-serif;
         }
         .verified-badge svg {
             width: 1em;
@@ -66,21 +95,25 @@
             vertical-align: -2px;
         }
         .meta {
-            color: #7a859a;
-            font-size: 0.98em;
+            color: #000000;
+            font-size: 0.9em;
             margin-bottom: 0.7em;
             text-align: right;
             flex-shrink: 0;
+            font-family: 'Montserrat', sans-serif;
+            opacity: 0.8;
         }
         .recommended {
-            color: #219150;
-            font-weight: 700;
+            color: #10b981;
+            font-weight: 600;
             margin-left: 1em;
+            font-family: 'Montserrat', sans-serif;
         }
         .not-recommended {
-            color: #e74c3c;
-            font-weight: 700;
+            color: #ef4444;
+            font-weight: 600;
             margin-left: 1em;
+            font-family: 'Montserrat', sans-serif;
         }
         .ratings-row {
             display: flex;
@@ -89,41 +122,76 @@
             flex-wrap: wrap;
         }
         .rating-label {
-            color: #2156c9;
+            color: #000000;
             font-weight: 600;
-            font-size: 1em;
+            font-size: 0.95em;
+            font-family: 'Montserrat', sans-serif;
+            opacity: 0.8;
         }
         .rating-value {
-            color: #222;
+            color: #000000;
             font-weight: 700;
             margin-left: 0.3em;
-            font-size: 1.06em;
+            font-size: 1em;
+            font-family: 'Montserrat', sans-serif;
         }
         .comment {
             margin-bottom: 0.7em;
-            color: #222;
-            font-size: 1.08em;
+            color: #000000;
+            font-size: 1em;
             line-height: 1.6;
+            font-family: 'Montserrat', sans-serif;
         }
         .reply {
-            background: #eaf3ff;
-            border-left: 4px solid #2156c9;
+            background: #ffffff;
+            border-left: 4px solid #000000;
             margin: 0.7em 0 0 0;
-            padding: 0.7em 1em;
-            font-size: 0.98em;
-            color: #2156c9;
-            border-radius: 0 8px 8px 0;
+            padding: 0.8em 1em;
+            font-size: 0.95em;
+            color: #000000;
+            border-radius: 0 12px 12px 0;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .no-reviews {
+            color: #9ca3af;
+            text-align: center;
+            font-size: 1.1em;
+            font-family: 'Montserrat', sans-serif;
+            padding: 2em;
         }
         @media (max-width: 600px) {
-            .container { padding: 1em; }
-            .review { padding: 1em; }
-            .ratings-row { flex-direction: column; gap: 0.5em; }
-            .review-header { flex-direction: column; align-items: flex-start; gap: 0.5em; }
-            .meta { text-align: left; margin-left: 0; }
+            .container { 
+                padding: 1em; 
+                margin: 20px;
+            }
+            .review { 
+                padding: 1em; 
+            }
+            .ratings-row { 
+                flex-direction: column; 
+                gap: 0.5em; 
+            }
+            .review-header { 
+                flex-direction: column; 
+                align-items: flex-start; 
+                gap: 0.5em; 
+            }
+            .meta { 
+                text-align: left; 
+                margin-left: 0; 
+            }
+            h2 {
+                font-size: 1.5em;
+            }
         }
     </style>
 </head>
 <body>
+<div class="header">
+    <div class="logo">
+        <img src="https://www.level-4u.com/images/logo.png" alt="Level-4u Logo" />
+    </div>
+</div>
 <div class="container">
     <h2>Reviews for {{ user.business_name|default:user.get_full_name|default:user.username }}</h2>
     {% if reviews %}
@@ -171,7 +239,7 @@
             </div>
         {% endfor %}
     {% else %}
-        <p style="color:#888; text-align:center; font-size:1.1em;">No reviews yet.</p>
+        <p class="no-reviews">No reviews yet.</p>
     {% endif %}
 </div>
 </body>
