@@ -8,8 +8,12 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
 """
 
 import os
+from dotenv import load_dotenv
 
 from django.core.asgi import get_asgi_application
+
+# Load .env for ASGI workers
+load_dotenv()
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'rcs.settings')
 

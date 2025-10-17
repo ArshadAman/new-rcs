@@ -13,4 +13,5 @@ urlpatterns = [
     path('api/orders/', include('orders.urls')),
     path('api/reviews/', include('reviews.urls')),
     path('api/payment/', include('payment.urls')),
+    # Manual Mailing endpoints are included in orders.urls
 ]

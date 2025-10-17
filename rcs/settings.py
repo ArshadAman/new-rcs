@@ -16,10 +16,11 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Explicitly load .env from project root so Docker workers can find it
+load_dotenv(dotenv_path=BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -172,6 +173,7 @@ SIMPLE_JWT = {
 AUTH_USER_MODEL = 'users.CustomUser'
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@example.com')
+SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
 CSRF_TRUSTED_ORIGINS = [
     "https://api.level-4u.com",
     "http://api.level-4u.com",
