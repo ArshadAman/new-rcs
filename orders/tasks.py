@@ -26,6 +26,9 @@ def send_scheduled_review_emails():
             subject=subject,
             plain_text_content=message
         )
+        # Disable link tracking for review URLs
+        email_message.tracking_settings = sendgrid.helpers.mail.TrackingSettings()
+        email_message.tracking_settings.click_tracking = sendgrid.helpers.mail.ClickTracking(False, False)
         try:
             sg.send(email_message)
             order.review_email_sent = True
@@ -68,6 +71,9 @@ def send_mailing_emails(campaign_id: int) -> str:
                     subject=subject,
                     plain_text_content=body,
                 )
+                # Disable link tracking for review URLs
+                email_message.tracking_settings = sendgrid.helpers.mail.TrackingSettings()
+                email_message.tracking_settings.click_tracking = sendgrid.helpers.mail.ClickTracking(False, False)
 
                 sg.send(email_message)
 
