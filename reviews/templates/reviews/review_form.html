@@ -318,15 +318,15 @@
             
             // Show/hide subratings based on recommendation
             recommendSelect.addEventListener('change', function() {
-                if (this.value === 'no') {
+                if (this.value === 'yes' || this.value === 'no') {
                     subratings.classList.remove('hidden');
-                    // Make sub-ratings required
+                    // Make sub-ratings required for both yes and no
                     subratings.querySelectorAll('input[type="number"]').forEach(input => {
                         input.required = true;
                     });
                 } else {
                     subratings.classList.add('hidden');
-                    // Make sub-ratings optional
+                    // Make sub-ratings optional when no selection
                     subratings.querySelectorAll('input[type="number"]').forEach(input => {
                         input.required = false;
                     });
@@ -343,7 +343,7 @@
             }
             
             // Initialize subratings visibility based on current value
-            if (recommendSelect.value === 'no') {
+            if (recommendSelect.value === 'yes' || recommendSelect.value === 'no') {
                 subratings.classList.remove('hidden');
                 subratings.querySelectorAll('input[type="number"]').forEach(input => {
                     input.required = true;
