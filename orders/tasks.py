@@ -12,7 +12,7 @@ def send_scheduled_review_emails():
     target_date = date.today() - timedelta(days=5)
     orders = Order.objects.filter(shipment_date=target_date, review_email_sent=False)
     for order in orders:
-        review_link = settings.SITE_URL + reverse('review_form', args=[str(order.review_token)])
+        review_link = f"https://api.level-4u.com/api/reviews/review/{order.review_token}/"
         subject = 'We value your feedback! Please review your order'
         message = (
             f"Dear {order.customer_name},\n\n"
@@ -57,7 +57,7 @@ def send_mailing_emails(campaign_id: int) -> str:
                     '[Customer Name]': recipient.name or 'Valued Customer',
                     '[Order Number]': recipient.order_number or '',
                     '[Company Name]': campaign.user.business_name or campaign.user.email,
-                    '[Review Link]': f"{settings.SITE_URL}/api/reviews/review/{recipient.review_token}/",
+                    '[Review Link]': f"https://api.level-4u.com/api/reviews/review/{recipient.review_token}/",
                 }
 
                 for placeholder, value in replacements.items():
