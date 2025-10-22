@@ -173,7 +173,7 @@ SIMPLE_JWT = {
 AUTH_USER_MODEL = 'users.CustomUser'
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@example.com')
-SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
+SITE_URL = os.environ.get('SITE_URL', 'https://api.level-4u.com')
 CSRF_TRUSTED_ORIGINS = [
     "https://api.level-4u.com",
     "http://api.level-4u.com",
