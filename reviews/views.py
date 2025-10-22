@@ -15,9 +15,20 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 
 
 def review_form(request, token):
-    order = get_object_or_404(Order, review_token=token)
-    if request.method == 'POST':
+    # Try to find order first (for order-based reviews)
+    try:
+        order = Order.objects.get(review_token=token)
         company = order.user
+    except Order.DoesNotExist:
+        # For manual mailing - no order needed, use a default company
+        # You can modify this to get company from URL parameter or session
+        company = CustomUser.objects.filter(plan__in=['basic', 'advanced', 'pro', 'unique']).first()
+        if not company:
+            messages.error(request, 'No company found for manual review submission.')
+            return render(request, 'reviews/review_form.html')
+        order = None
+    
+    if request.method == 'POST':
         monthly_count = company.monthly_review_count
         limit = 50 if company.plan == 'basic' else 150 if company.plan == 'extended' else 1000
         if monthly_count >= limit or not is_plan_active(company):
@@ -36,8 +47,8 @@ def review_form(request, token):
             if recommend == 'yes':
                 # All sub-ratings default to 5 if not provided
                 review = Review.objects.create(
-                    order=order,
-                    user=order.user,
+                    order=order,  # Can be None for manual reviews
+                    user=company,
                     recommend='yes',
                     comment=comment,
                     logistics_rating=logistics_rating or 5,
@@ -57,8 +68,8 @@ def review_form(request, token):
                 if errors:
                     return render(request, 'reviews/review_form.html', {'order': order, 'errors': errors, 'form': request.POST})
                 review = Review.objects.create(
-                    order=order,
-                    user=order.user,
+                    order=order,  # Can be None for manual reviews
+                    user=company,
                     recommend='no',
                     comment=comment,
                     logistics_rating=logistics_rating,
@@ -74,6 +85,81 @@ def review_form(request, token):
                 return render(request, 'reviews/review_form.html', {'order': order, 'errors': errors, 'form': request.POST})
     # GET request
     return render(request, 'reviews/review_form.html', {'order': order})
+
+def manual_review_form(request):
+    """Manual review form that doesn't require an order token"""
+    # Get company from URL parameter or use default
+    company_id = request.GET.get('company_id')
+    if company_id:
+        try:
+            company = CustomUser.objects.get(id=company_id)
+        except CustomUser.DoesNotExist:
+            messages.error(request, 'Company not found.')
+            return render(request, 'reviews/review_form.html')
+    else:
+        # Use first available company for manual reviews
+        company = CustomUser.objects.filter(plan__in=['basic', 'advanced', 'pro', 'unique']).first()
+        if not company:
+            messages.error(request, 'No company found for manual review submission.')
+            return render(request, 'reviews/review_form.html')
+    
+    if request.method == 'POST':
+        monthly_count = company.monthly_review_count
+        limit = 50 if company.plan == 'basic' else 150 if company.plan == 'extended' else 1000
+        if monthly_count >= limit or not is_plan_active(company):
+            messages.error(request, 'Thank you for your feedback! Reviews are currently closed for this business.')
+            return render(request, 'reviews/review_form.html')
+        
+        elif (is_trial_active(company) and monthly_count<limit) or monthly_count < limit:
+            recommend = request.POST.get('recommend')
+            comment = request.POST.get('comment', '').strip()
+            logistics_rating = request.POST.get('logistics_rating')
+            communication_rating = request.POST.get('communication_rating')
+            website_usability_rating = request.POST.get('website_usability_rating')
+
+            # Validation
+            errors = {}
+            if recommend == 'yes':
+                # All sub-ratings default to 5 if not provided
+                review = Review.objects.create(
+                    order=None,  # No order for manual reviews
+                    user=company,
+                    recommend='yes',
+                    comment=comment,
+                    logistics_rating=logistics_rating or 5,
+                    communication_rating=communication_rating or 5,
+                    website_usability_rating=website_usability_rating or 5,
+                )
+                company.monthly_review_count += 1
+                company.save()
+                messages.success(request, 'Thank you for your positive review!')
+                return render(request, 'reviews/review_form.html', {'order': None, 'success': True})
+            elif recommend == 'no':
+                # All sub-ratings and min 50 char comment required
+                if not (logistics_rating and communication_rating and website_usability_rating):
+                    errors['sub_ratings'] = 'All sub-ratings are required for a NO review.'
+                if not comment or len(comment) < 50:
+                    errors['comment'] = 'A detailed comment (min 50 characters) is required for a NO review.'
+                if errors:
+                    return render(request, 'reviews/review_form.html', {'order': None, 'errors': errors, 'form': request.POST})
+                review = Review.objects.create(
+                    order=None,  # No order for manual reviews
+                    user=company,
+                    recommend='no',
+                    comment=comment,
+                    logistics_rating=logistics_rating,
+                    communication_rating=communication_rating,
+                    website_usability_rating=website_usability_rating,
+                )
+                company.monthly_review_count += 1
+                company.save()
+                messages.success(request, 'Thank you for your feedback. Your review will be processed.')
+                return render(request, 'reviews/review_form.html', {'order': None, 'success': True})
+            else:
+                errors['recommend'] = 'Please select Yes or No.'
+                return render(request, 'reviews/review_form.html', {'order': None, 'errors': errors, 'form': request.POST})
+    # GET request
+    return render(request, 'reviews/review_form.html', {'order': None})
 
 @xframe_options_exempt
 def iframe_(request, user_id):
