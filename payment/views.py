@@ -68,37 +68,76 @@ def create_checkout_session(request):
     print(f"DEBUG: Received plan parameter: {plan}")
     print(f"DEBUG: Request data: {request.data}")
     
-    # Map plan to Stripe Price IDs (you'll need to get these from Stripe Dashboard)
-    price_mapping = {
-        'basic': 'price_basic_level_monthly',      # Replace with actual price ID
-        'advanced': 'price_advanced_level_monthly', # Replace with actual price ID  
-        'pro': 'price_pro_level_monthly',           # Replace with actual price ID
-        'unique': 'price_unique_level_custom'       # Replace with actual price ID
+    # Map plan to pricing (amounts in cents)
+    plan_pricing = {
+        'basic': {
+            'amount': 25000,  # €250.00
+            'name': 'Basic Level',
+            'description': 'Basic Level Plan - Monthly'
+        },
+        'advanced': {
+            'amount': 45000,  # €450.00
+            'name': 'Advanced Level', 
+            'description': 'Advanced Level Plan - Monthly'
+        },
+        'pro': {
+            'amount': 85000,  # €850.00
+            'name': 'Pro Level',
+            'description': 'Pro Level Plan - Monthly'
+        },
+        'unique': {
+            'amount': 0,  # Custom pricing
+            'name': 'Unique Level',
+            'description': 'Unique Level Plan - Custom Pricing'
+        }
     }
     
-    price_id = price_mapping.get(plan)
-    if not price_id:
+    plan_info = plan_pricing.get(plan)
+    if not plan_info:
         return Response({'error': 'Invalid plan'}, status=400)
     
     try:
+        # Create checkout session with line items instead of price IDs
+        line_items = [{
+            'price_data': {
+                'currency': 'eur',
+                'product_data': {
+                    'name': plan_info['name'],
+                    'description': plan_info['description'],
+                },
+                'unit_amount': plan_info['amount'],
+                'recurring': {
+                    'interval': 'month',
+                },
+            },
+            'quantity': 1,
+        }]
+        
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
-            line_items=[{
-                'price': price_id,  # Use Stripe Price ID instead of custom amount
-                'quantity': 1,
-            }],
-            mode='subscription',  # Changed from 'payment' to 'subscription'
+            line_items=line_items,
+            mode='subscription',
             success_url=f'http://localhost:5173/payment-success?success=true&plan={plan}&session_id={{CHECKOUT_SESSION_ID}}',
             cancel_url=f'http://localhost:5173/?canceled=true',
             metadata={
                 'user_id': str(user.id),
                 'plan': plan,
                 'action': 'subscription'
-            }
+            },
+            customer_email=user.email,  # Pre-fill customer email
         )
-        return Response({'sessionId': checkout_session.id, 'url': checkout_session.url})
+        
+        print(f"DEBUG: Created checkout session: {checkout_session.id}")
+        print(f"DEBUG: Checkout URL: {checkout_session.url}")
+        
+        return Response({
+            'sessionId': checkout_session.id, 
+            'url': checkout_session.url,
+            'message': f'Redirecting to Stripe for {plan_info["name"]} plan'
+        })
     except Exception as e:
-        return Response({'error': str(e)}, status=500)
+        print(f"ERROR: Stripe checkout session creation failed: {str(e)}")
+        return Response({'error': f'Failed to create checkout session: {str(e)}'}, status=500)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

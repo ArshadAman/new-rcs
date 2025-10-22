@@ -103,7 +103,18 @@ def iframe_(request, user_id):
         'positive_percentage': int(positive_percentage),
     }
 
-    if user.plan == 'basic':
+    if user.plan == 'expired':
+        # Show expired plan message
+        context.update({
+            'show_logistics': False,
+            'show_communication': False,
+            'show_website': False,
+            'show_company_info': False,
+            'show_customization': False,
+            'show_expired_message': True,
+            'latest_comment': reviews.last().comment if reviews.exists() else '',
+        })
+    elif user.plan == 'basic':
         # Only main rating and latest comment
         context.update({
             'show_logistics': False,

@@ -30,7 +30,7 @@ def send_scheduled_review_emails():
             sg.send(email_message)
             order.review_email_sent = True
             order.save()
-        except Exception as e:
+        except Exception as e:  
             print(e)
 
 
@@ -54,7 +54,7 @@ def send_mailing_emails(campaign_id: int) -> str:
                     '[Customer Name]': recipient.name or 'Valued Customer',
                     '[Order Number]': recipient.order_number or '',
                     '[Company Name]': campaign.user.business_name or campaign.user.email,
-                    '[Review Link]': f"{settings.SITE_URL}/review/{recipient.review_token}/",
+                    '[Review Link]': f"{settings.SITE_URL}/api/reviews/review/{recipient.review_token}/",
                 }
 
                 for placeholder, value in replacements.items():

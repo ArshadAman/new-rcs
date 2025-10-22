@@ -1,57 +1,353 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Submit Your Review</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Review - {{ order.user.business_name|default:"Our Store" }}</title>
     <style>
-        label { display: block; margin-top: 1em; }
-        input[readonly], input[disabled] { background: #f0f0f0; }
-        textarea { width: 100%; min-height: 80px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 1em;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-group input[readonly] {
+            background: #f1f3f4;
+            color: #666;
+            cursor: not-allowed;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .subratings {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .subratings h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .rating-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .rating-group label {
+            flex: 1;
+            margin-bottom: 0;
+            margin-right: 15px;
+        }
+        
+        .rating-group input {
+            width: 80px;
+            text-align: center;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #c3e6cb;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #f5c6cb;
+            margin-bottom: 20px;
+        }
+        
+        .error-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .error-list li {
+            margin-bottom: 5px;
+        }
+        
+        .stars {
+            color: #ffc107;
+            font-size: 1.2em;
+            margin-right: 5px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
     </style>
 </head>
 <body>
-    <h2>Order Review</h2>
-    <form method="post">
-        {% csrf_token %}
-        <label>Customer Name:
-            <input type="text" name="customer_name" value="{{ order.customer_name }}" readonly>
-        </label>
-        <label>Email:
-            <input type="email" name="email" value="{{ order.email }}" readonly>
-        </label>
-        <label>Order ID:
-            <input type="text" name="order_id" value="{{ order.order_id }}" readonly>
-        </label>
-        <label>Would you recommend this store to your friends or family?
-            <select name="recommend" required>
-                <option value="">--Select--</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-            </select>
-        </label>
-        <div id="subratings" style="display:none;">
-            <label>Logistics Rating (1-5):
-                <input type="number" name="logistics_rating" min="1" max="5">
-            </label>
-            <label>Communication Rating (1-5):
-                <input type="number" name="communication_rating" min="1" max="5">
-            </label>
-            <label>Website Usability Rating (1-5):
-                <input type="number" name="website_usability_rating" min="1" max="5">
-            </label>
+    <div class="container fade-in">
+        <div class="header">
+            <h1>⭐ Order Review</h1>
+            <p>Help us improve by sharing your experience</p>
         </div>
-        <label>Comment (optional for Yes, required for No):
-            <textarea name="comment"></textarea>
-        </label>
-        <button type="submit">Submit Review</button>
-    </form>
+        
+        {% if success %}
+            <div class="success-message">
+                <h3>🎉 Thank You!</h3>
+                <p>Your feedback has been successfully submitted. We appreciate your time and valuable input!</p>
+            </div>
+        {% else %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="error-message">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            {% if errors %}
+                <div class="error-message">
+                    <h4>Please correct the following errors:</h4>
+                    <ul class="error-list">
+                        {% for field, error in errors.items %}
+                            <li><strong>{{ field|title }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            
+            <form method="post" id="reviewForm">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label>Customer Name</label>
+                    <input type="text" name="customer_name" value="{{ order.customer_name }}" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" value="{{ order.email }}" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label>Order ID</label>
+                    <input type="text" name="order_id" value="{{ order.order_id }}" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label>Would you recommend this store to your friends or family?</label>
+                    <select name="recommend" required id="recommendSelect">
+                        <option value="">-- Please select --</option>
+                        <option value="yes" {% if form.recommend.value == 'yes' %}selected{% endif %}>Yes, I would recommend</option>
+                        <option value="no" {% if form.recommend.value == 'no' %}selected{% endif %}>No, I would not recommend</option>
+                    </select>
+                </div>
+                
+                <div id="subratings" class="subratings hidden">
+                    <h3>Please rate the following aspects (1-5 stars):</h3>
+                    
+                    <div class="rating-group">
+                        <label>Logistics & Delivery</label>
+                        <input type="number" name="logistics_rating" min="1" max="5" placeholder="1-5" value="{{ form.logistics_rating.value|default:'' }}">
+                    </div>
+                    
+                    <div class="rating-group">
+                        <label>Communication</label>
+                        <input type="number" name="communication_rating" min="1" max="5" placeholder="1-5" value="{{ form.communication_rating.value|default:'' }}">
+                    </div>
+                    
+                    <div class="rating-group">
+                        <label>Website Usability</label>
+                        <input type="number" name="website_usability_rating" min="1" max="5" placeholder="1-5" value="{{ form.website_usability_rating.value|default:'' }}">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Additional Comments</label>
+                    <textarea name="comment" placeholder="Tell us about your experience... (Required for negative reviews)">{{ form.comment.value|default:'' }}</textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    <span class="submit-text">Submit Review</span>
+                </button>
+            </form>
+        {% endif %}
+    </div>
+    
     <script>
-        // Show subratings if recommend is selected
-        document.querySelector('select[name="recommend"]').addEventListener('change', function() {
-            var subratings = document.getElementById('subratings');
-            if (this.value === 'no') {
-                subratings.style.display = 'block';
-            } else {
-                subratings.style.display = 'none';
+        document.addEventListener('DOMContentLoaded', function() {
+            const recommendSelect = document.getElementById('recommendSelect');
+            const subratings = document.getElementById('subratings');
+            const form = document.getElementById('reviewForm');
+            const submitBtn = document.querySelector('.submit-btn');
+            const submitText = document.querySelector('.submit-text');
+            
+            // Show/hide subratings based on recommendation
+            recommendSelect.addEventListener('change', function() {
+                if (this.value === 'no') {
+                    subratings.classList.remove('hidden');
+                    // Make sub-ratings required
+                    subratings.querySelectorAll('input[type="number"]').forEach(input => {
+                        input.required = true;
+                    });
+                } else {
+                    subratings.classList.add('hidden');
+                    // Make sub-ratings optional
+                    subratings.querySelectorAll('input[type="number"]').forEach(input => {
+                        input.required = false;
+                    });
+                }
+            });
+            
+            // Form submission with loading state
+            if (form) {
+                form.addEventListener('submit', function() {
+                    submitBtn.disabled = true;
+                    submitText.textContent = 'Submitting...';
+                    submitBtn.style.opacity = '0.7';
+                });
+            }
+            
+            // Initialize subratings visibility based on current value
+            if (recommendSelect.value === 'no') {
+                subratings.classList.remove('hidden');
+                subratings.querySelectorAll('input[type="number"]').forEach(input => {
+                    input.required = true;
+                });
             }
         });
     </script>

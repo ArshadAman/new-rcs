@@ -18,6 +18,7 @@ class CustomUser(AbstractUser):
         ('advanced', 'Advanced Level'),
         ('pro', 'Pro Level'),
         ('unique', 'Unique Level'),
+        ('expired', 'Expired'),
     ]
     plan = models.CharField(max_length=10, choices=PLAN_CHOICES, default='basic')
     plan_expiration = models.DateTimeField(null=True, blank=True)
