@@ -3,6 +3,146 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 
+class BusinessCategory(models.Model):
+    CATEGORY_CHOICES = [
+        ('medical', 'Medical Services / Dentistry'),
+        ('beauty', 'Beauty Industry / Salon / Barbershop'),
+        ('retail', 'Retail Store (Offline)'),
+        ('ecommerce', 'Online Store (E-commerce)'),
+        ('hotel', 'Hotel / Apartments / Guesthouse'),
+        ('auto_service', 'Auto Service / Car Wash / Tire Shop'),
+        ('car_dealership', 'Car Dealership / Auto Sales'),
+        ('education', 'Education / Courses / Online School'),
+        ('tourism', 'Tourism / Travel Agency / Excursions'),
+        ('renovation', 'Renovation / Construction / Finishing'),
+        ('it_services', 'IT Services / Development / Support'),
+        ('logistics', 'Logistics / Delivery / Courier Service'),
+        ('real_estate', 'Real Estate / Agency / Rental'),
+        ('household', 'Household Services / Cleaning / Appliance Repair'),
+        ('veterinary', 'Veterinary / Grooming / Pet Care'),
+        ('financial', 'Financial / Insurance / Legal Services'),
+        ('wellness', 'Health & Wellness (Fitness, Massage, Spa)'),
+        ('photography', 'Photography / Video Production'),
+        ('furniture', 'Furniture / Interior Design'),
+        ('telecom', 'Telecommunications / Internet Providers'),
+    ]
+    
+    name = models.CharField(max_length=50, choices=CATEGORY_CHOICES, unique=True)
+    display_name = models.CharField(max_length=100)
+    icon = models.CharField(max_length=10, default='🏢')
+    questions = models.JSONField(default=list)  # Store category-specific questions
+    
+    def __str__(self):
+        return self.display_name
+    
+    @classmethod
+    def get_default_questions(cls):
+        """Return default questions for each category"""
+        return {
+            'medical': [
+                {'field': 'treatment_quality', 'label': 'Treatment Quality', 'required': True},
+                {'field': 'staff_attentiveness', 'label': 'Staff Attentiveness', 'required': True},
+                {'field': 'service_comfort', 'label': 'Service Comfort', 'required': True}
+            ],
+            'beauty': [
+                {'field': 'service_result', 'label': 'Service Result', 'required': True},
+                {'field': 'customer_care', 'label': 'Customer Care', 'required': True},
+                {'field': 'atmosphere_comfort', 'label': 'Atmosphere / Comfort', 'required': True}
+            ],
+            'retail': [
+                {'field': 'product_range', 'label': 'Product Range', 'required': True},
+                {'field': 'staff_service', 'label': 'Staff Service', 'required': True},
+                {'field': 'shopping_comfort', 'label': 'Shopping Comfort', 'required': True}
+            ],
+            'ecommerce': [
+                {'field': 'website_usability', 'label': 'Website Usability', 'required': True},
+                {'field': 'delivery_speed', 'label': 'Delivery Speed', 'required': True},
+                {'field': 'product_quality', 'label': 'Product Quality', 'required': True},
+                {'field': 'customer_support', 'label': 'Customer Support', 'required': True}
+            ],
+            'hotel': [
+                {'field': 'cleanliness_comfort', 'label': 'Cleanliness & Comfort', 'required': True},
+                {'field': 'staff_service', 'label': 'Staff Service', 'required': True},
+                {'field': 'value_money', 'label': 'Value for Money', 'required': True}
+            ],
+            'auto_service': [
+                {'field': 'work_quality', 'label': 'Work Quality', 'required': True},
+                {'field': 'service_speed', 'label': 'Service Speed', 'required': True},
+                {'field': 'price_transparency', 'label': 'Price Transparency', 'required': True}
+            ],
+            'car_dealership': [
+                {'field': 'vehicle_quality', 'label': 'Vehicle Quality', 'required': True},
+                {'field': 'sales_consultant', 'label': 'Sales Consultant Service', 'required': True},
+                {'field': 'deal_transparency', 'label': 'Transparency of Deal', 'required': True},
+                {'field': 'delivery_process', 'label': 'Delivery / Handover Process', 'required': True}
+            ],
+            'education': [
+                {'field': 'teaching_quality', 'label': 'Teaching Quality', 'required': True},
+                {'field': 'material_usefulness', 'label': 'Usefulness of Material', 'required': True},
+                {'field': 'learning_convenience', 'label': 'Learning Convenience', 'required': True}
+            ],
+            'tourism': [
+                {'field': 'trip_organization', 'label': 'Trip Organization', 'required': True},
+                {'field': 'manager_service', 'label': 'Manager Service', 'required': True},
+                {'field': 'expectations_match', 'label': 'Match with Expectations', 'required': True}
+            ],
+            'renovation': [
+                {'field': 'work_quality', 'label': 'Work Quality', 'required': True},
+                {'field': 'deadline_compliance', 'label': 'Deadline Compliance', 'required': True},
+                {'field': 'cleanliness_accuracy', 'label': 'Cleanliness & Accuracy', 'required': True}
+            ],
+            'it_services': [
+                {'field': 'result_quality', 'label': 'Result Quality', 'required': True},
+                {'field': 'response_speed', 'label': 'Response Speed', 'required': True},
+                {'field': 'communication_quality', 'label': 'Communication Quality', 'required': True}
+            ],
+            'logistics': [
+                {'field': 'delivery_speed', 'label': 'Delivery Speed', 'required': True},
+                {'field': 'shipment_condition', 'label': 'Shipment Condition', 'required': True},
+                {'field': 'delivery_convenience', 'label': 'Delivery Convenience', 'required': True}
+            ],
+            'real_estate': [
+                {'field': 'agent_professionalism', 'label': 'Agent Professionalism', 'required': True},
+                {'field': 'deal_transparency', 'label': 'Transparency of Deal', 'required': True},
+                {'field': 'property_accuracy', 'label': 'Property Accuracy', 'required': True}
+            ],
+            'household': [
+                {'field': 'service_quality', 'label': 'Service Quality', 'required': True},
+                {'field': 'responsiveness', 'label': 'Responsiveness', 'required': True},
+                {'field': 'price_value', 'label': 'Price / Value', 'required': True}
+            ],
+            'veterinary': [
+                {'field': 'care_quality', 'label': 'Care Quality', 'required': True},
+                {'field': 'pet_attitude', 'label': 'Attitude Toward Pet', 'required': True},
+                {'field': 'booking_convenience', 'label': 'Booking Convenience', 'required': True}
+            ],
+            'financial': [
+                {'field': 'staff_competence', 'label': 'Staff Competence', 'required': True},
+                {'field': 'terms_transparency', 'label': 'Transparency of Terms', 'required': True},
+                {'field': 'resolution_speed', 'label': 'Resolution Speed', 'required': True}
+            ],
+            'wellness': [
+                {'field': 'service_quality', 'label': 'Service Quality', 'required': True},
+                {'field': 'staff_professionalism', 'label': 'Staff Professionalism', 'required': True},
+                {'field': 'atmosphere_comfort', 'label': 'Atmosphere & Comfort', 'required': True}
+            ],
+            'photography': [
+                {'field': 'result_quality', 'label': 'Result Quality', 'required': True},
+                {'field': 'creativity_approach', 'label': 'Creativity & Approach', 'required': True},
+                {'field': 'communication_punctuality', 'label': 'Communication & Punctuality', 'required': True}
+            ],
+            'furniture': [
+                {'field': 'product_quality', 'label': 'Product Quality', 'required': True},
+                {'field': 'design_functionality', 'label': 'Design & Functionality', 'required': True},
+                {'field': 'delivery_assembly', 'label': 'Delivery & Assembly', 'required': True}
+            ],
+            'telecom': [
+                {'field': 'connection_quality', 'label': 'Connection Quality', 'required': True},
+                {'field': 'customer_support', 'label': 'Customer Support', 'required': True},
+                {'field': 'price_performance', 'label': 'Price / Performance', 'required': True}
+            ]
+        }
+
 class CustomUser(AbstractUser):
     business_name = models.CharField(max_length=100, blank=True)
     website_url = models.URLField(max_length=200, blank=True)
@@ -13,6 +153,7 @@ class CustomUser(AbstractUser):
     marketing_banner = models.ImageField(upload_to='marketing_banners/', null=True, blank=True)
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     email = models.EmailField(unique=True)  # Make email unique
+    business_category = models.ForeignKey(BusinessCategory, on_delete=models.SET_NULL, null=True, blank=True)
     PLAN_CHOICES = [
         ('basic', 'Basic Level'),
         ('advanced', 'Advanced Level'),

@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .serializers import UserSignupSerializer, UserProfileSerializer
-from .models import CustomUser
+from .models import CustomUser, BusinessCategory
 from utils.utitily import is_plan_active, is_trial_active
 
 # Create your views here.
@@ -90,3 +90,18 @@ def user_plan_info(request):
             if limit_reached else "You are within your monthly review limit."
         )
     })
+
+@api_view(['GET'])
+def business_categories_view(request):
+    """Get all business categories"""
+    categories = BusinessCategory.objects.all()
+    categories_data = []
+    for category in categories:
+        categories_data.append({
+            'id': category.id,
+            'name': category.name,
+            'display_name': category.display_name,
+            'icon': category.icon,
+            'questions': BusinessCategory.get_default_questions().get(category.name, [])
+        })
+    return Response(categories_data, status=status.HTTP_200_OK)

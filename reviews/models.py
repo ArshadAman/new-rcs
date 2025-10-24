@@ -17,6 +17,8 @@ class Review(models.Model):
     logistics_rating = models.PositiveSmallIntegerField(null=True, blank=True)
     communication_rating = models.PositiveSmallIntegerField(null=True, blank=True)
     website_usability_rating = models.PositiveSmallIntegerField(null=True, blank=True)
+    # Dynamic category-specific ratings stored as JSON
+    category_ratings = models.JSONField(default=dict, blank=True)
     comment = models.TextField(blank=True)
     is_complete = models.BooleanField(default=False)
     is_published = models.BooleanField(default=False)
@@ -36,6 +38,16 @@ class Review(models.Model):
                 self.communication_rating = 5
             if self.website_usability_rating is None:
                 self.website_usability_rating = 5
+            
+            # Set category-specific ratings to 5 if not provided
+            if self.user.business_category:
+                from users.models import BusinessCategory
+                category_questions = BusinessCategory.get_default_questions().get(self.user.business_category.name, [])
+                for question in category_questions:
+                    field_name = question['field']
+                    if field_name not in self.category_ratings or self.category_ratings[field_name] is None:
+                        self.category_ratings[field_name] = 5
+            
             self.is_complete = True
             self.is_flagged_red = False
             self.is_published = True

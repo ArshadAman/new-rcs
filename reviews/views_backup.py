@@ -28,12 +28,6 @@ def review_form(request, token):
             return render(request, 'reviews/review_form.html')
         order = None
     
-    # Get category-specific questions
-    category_questions = []
-    if company.business_category:
-        from users.models import BusinessCategory
-        category_questions = BusinessCategory.get_default_questions().get(company.business_category.name, [])
-    
     if request.method == 'POST':
         monthly_count = company.monthly_review_count
         limit = 50 if company.plan == 'basic' else 150 if company.plan == 'extended' else 1000
@@ -47,77 +41,50 @@ def review_form(request, token):
             logistics_rating = request.POST.get('logistics_rating')
             communication_rating = request.POST.get('communication_rating')
             website_usability_rating = request.POST.get('website_usability_rating')
-            
-            # Process category-specific ratings
-            category_ratings = {}
-            if company.business_category and category_questions:
-                for question in category_questions:
-                    field_name = question['field']
-                    rating_value = request.POST.get(f'category_rating_{field_name}')
-                    if rating_value:
-                        category_ratings[field_name] = int(rating_value)
 
             # Validation
             errors = {}
             if recommend == 'yes':
                 # All sub-ratings default to 5 if not provided
-                review_data = {
-                    'order': order,  # Can be None for manual reviews
-                    'user': company,
-                    'recommend': 'yes',
-                    'comment': comment,
-                    'logistics_rating': logistics_rating or 5,
-                    'communication_rating': communication_rating or 5,
-                    'website_usability_rating': website_usability_rating or 5,
-                    'category_ratings': category_ratings,
-                }
-                review = Review.objects.create(**review_data)
+                review = Review.objects.create(
+                    order=order,  # Can be None for manual reviews
+                    user=company,
+                    recommend='yes',
+                    comment=comment,
+                    logistics_rating=logistics_rating or 5,
+                    communication_rating=communication_rating or 5,
+                    website_usability_rating=website_usability_rating or 5,
+                )
                 company.monthly_review_count += 1
                 company.save()
                 messages.success(request, 'Thank you for your positive review!')
                 return render(request, 'reviews/review_form.html', {'order': order, 'success': True})
             elif recommend == 'no':
                 # All sub-ratings and min 50 char comment required
-                if company.business_category and category_questions:
-                    # Check category-specific ratings
-                    missing_ratings = []
-                    for question in category_questions:
-                        if question.get('required', False):
-                            field_name = question['field']
-                            if field_name not in category_ratings or not category_ratings[field_name]:
-                                missing_ratings.append(question['label'])
-                    if missing_ratings:
-                        errors['sub_ratings'] = f'Required ratings missing: {", ".join(missing_ratings)}'
-                else:
-                    # Check default ratings
-                    if not (logistics_rating and communication_rating and website_usability_rating):
-                        errors['sub_ratings'] = 'All sub-ratings are required for a NO review.'
-                
+                if not (logistics_rating and communication_rating and website_usability_rating):
+                    errors['sub_ratings'] = 'All sub-ratings are required for a NO review.'
                 if not comment or len(comment) < 50:
                     errors['comment'] = 'A detailed comment (min 50 characters) is required for a NO review.'
                 if errors:
-                    return render(request, 'reviews/review_form.html', {'order': order, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
-                
-                review_data = {
-                    'order': order,  # Can be None for manual reviews
-                    'user': company,
-                    'recommend': 'no',
-                    'comment': comment,
-                    'logistics_rating': logistics_rating,
-                    'communication_rating': communication_rating,
-                    'website_usability_rating': website_usability_rating,
-                    'category_ratings': category_ratings,
-                }
-                review = Review.objects.create(**review_data)
+                    return render(request, 'reviews/review_form.html', {'order': order, 'errors': errors, 'form': request.POST})
+                review = Review.objects.create(
+                    order=order,  # Can be None for manual reviews
+                    user=company,
+                    recommend='no',
+                    comment=comment,
+                    logistics_rating=logistics_rating,
+                    communication_rating=communication_rating,
+                    website_usability_rating=website_usability_rating,
+                )
                 company.monthly_review_count += 1
                 company.save()
                 messages.success(request, 'Thank you for your feedback. Your review will be processed.')
                 return render(request, 'reviews/review_form.html', {'order': order, 'success': True})
             else:
                 errors['recommend'] = 'Please select Yes or No.'
-                return render(request, 'reviews/review_form.html', {'order': order, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
+                return render(request, 'reviews/review_form.html', {'order': order, 'errors': errors, 'form': request.POST})
     # GET request
-    return render(request, 'reviews/review_form.html', {'order': order, 'user': company, 'category_questions': category_questions})
+    return render(request, 'reviews/review_form.html', {'order': order})
 
 def manual_review_form(request):
     """Manual review form that doesn't require an order token"""
@@ -136,12 +103,6 @@ def manual_review_form(request):
             messages.error(request, 'No company found for manual review submission.')
             return render(request, 'reviews/review_form.html')
     
-    # Get category-specific questions
-    category_questions = []
-    if company.business_category:
-        from users.models import BusinessCategory
-        category_questions = BusinessCategory.get_default_questions().get(company.business_category.name, [])
-    
     if request.method == 'POST':
         monthly_count = company.monthly_review_count
         limit = 50 if company.plan == 'basic' else 150 if company.plan == 'extended' else 1000
@@ -155,77 +116,50 @@ def manual_review_form(request):
             logistics_rating = request.POST.get('logistics_rating')
             communication_rating = request.POST.get('communication_rating')
             website_usability_rating = request.POST.get('website_usability_rating')
-            
-            # Process category-specific ratings
-            category_ratings = {}
-            if company.business_category and category_questions:
-                for question in category_questions:
-                    field_name = question['field']
-                    rating_value = request.POST.get(f'category_rating_{field_name}')
-                    if rating_value:
-                        category_ratings[field_name] = int(rating_value)
 
             # Validation
             errors = {}
             if recommend == 'yes':
                 # All sub-ratings default to 5 if not provided
-                review_data = {
-                    'order': None,  # No order for manual reviews
-                    'user': company,
-                    'recommend': 'yes',
-                    'comment': comment,
-                    'logistics_rating': logistics_rating or 5,
-                    'communication_rating': communication_rating or 5,
-                    'website_usability_rating': website_usability_rating or 5,
-                    'category_ratings': category_ratings,
-                }
-                review = Review.objects.create(**review_data)
+                review = Review.objects.create(
+                    order=None,  # No order for manual reviews
+                    user=company,
+                    recommend='yes',
+                    comment=comment,
+                    logistics_rating=logistics_rating or 5,
+                    communication_rating=communication_rating or 5,
+                    website_usability_rating=website_usability_rating or 5,
+                )
                 company.monthly_review_count += 1
                 company.save()
                 messages.success(request, 'Thank you for your positive review!')
                 return render(request, 'reviews/review_form.html', {'order': None, 'success': True})
             elif recommend == 'no':
                 # All sub-ratings and min 50 char comment required
-                if company.business_category and category_questions:
-                    # Check category-specific ratings
-                    missing_ratings = []
-                    for question in category_questions:
-                        if question.get('required', False):
-                            field_name = question['field']
-                            if field_name not in category_ratings or not category_ratings[field_name]:
-                                missing_ratings.append(question['label'])
-                    if missing_ratings:
-                        errors['sub_ratings'] = f'Required ratings missing: {", ".join(missing_ratings)}'
-                else:
-                    # Check default ratings
-                    if not (logistics_rating and communication_rating and website_usability_rating):
-                        errors['sub_ratings'] = 'All sub-ratings are required for a NO review.'
-                
+                if not (logistics_rating and communication_rating and website_usability_rating):
+                    errors['sub_ratings'] = 'All sub-ratings are required for a NO review.'
                 if not comment or len(comment) < 50:
                     errors['comment'] = 'A detailed comment (min 50 characters) is required for a NO review.'
                 if errors:
-                    return render(request, 'reviews/review_form.html', {'order': None, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
-                
-                review_data = {
-                    'order': None,  # No order for manual reviews
-                    'user': company,
-                    'recommend': 'no',
-                    'comment': comment,
-                    'logistics_rating': logistics_rating,
-                    'communication_rating': communication_rating,
-                    'website_usability_rating': website_usability_rating,
-                    'category_ratings': category_ratings,
-                }
-                review = Review.objects.create(**review_data)
+                    return render(request, 'reviews/review_form.html', {'order': None, 'errors': errors, 'form': request.POST})
+                review = Review.objects.create(
+                    order=None,  # No order for manual reviews
+                    user=company,
+                    recommend='no',
+                    comment=comment,
+                    logistics_rating=logistics_rating,
+                    communication_rating=communication_rating,
+                    website_usability_rating=website_usability_rating,
+                )
                 company.monthly_review_count += 1
                 company.save()
                 messages.success(request, 'Thank you for your feedback. Your review will be processed.')
                 return render(request, 'reviews/review_form.html', {'order': None, 'success': True})
             else:
                 errors['recommend'] = 'Please select Yes or No.'
-                return render(request, 'reviews/review_form.html', {'order': None, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
+                return render(request, 'reviews/review_form.html', {'order': None, 'errors': errors, 'form': request.POST})
     # GET request
-    return render(request, 'reviews/review_form.html', {'order': None, 'user': company, 'category_questions': category_questions})
+    return render(request, 'reviews/review_form.html', {'order': None})
 
 @xframe_options_exempt
 def iframe_(request, user_id):

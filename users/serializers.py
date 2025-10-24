@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser
+from .models import CustomUser, BusinessCategory
 from django.utils import timezone
 from datetime import timedelta
 
@@ -12,7 +12,7 @@ class UserSignupSerializer(serializers.ModelSerializer):
         fields = [
             'username', 'email', 'password', 'password_confirm', 'first_name', 'last_name',
             'business_name', 'website_url', 'contact_number',
-            'date_of_birth', 'country', 'plan'
+            'date_of_birth', 'country', 'plan', 'business_category'
         ]
 
     def validate_email(self, value):
@@ -37,12 +37,14 @@ class UserSignupSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    business_category_name = serializers.CharField(source='business_category.display_name', read_only=True)
+    
     class Meta:
         model = CustomUser
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
             'business_name', 'website_url', 'contact_number',
-            'date_of_birth', 'country', 'plan'
+            'date_of_birth', 'country', 'plan', 'business_category', 'business_category_name'
         ]
         read_only_fields = ['id', 'username', 'email', 'plan']
     

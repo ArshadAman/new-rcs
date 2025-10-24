@@ -280,20 +280,33 @@
                 <div id="subratings" class="subratings hidden">
                     <h3>Please rate the following aspects (1-5 stars):</h3>
                     
-                    <div class="rating-group">
-                        <label>Logistics & Delivery</label>
-                        <input type="number" name="logistics_rating" min="1" max="5" placeholder="1-5" value="{{ form.logistics_rating.value|default:'' }}">
-                    </div>
-                    
-                    <div class="rating-group">
-                        <label>Communication</label>
-                        <input type="number" name="communication_rating" min="1" max="5" placeholder="1-5" value="{{ form.communication_rating.value|default:'' }}">
-                    </div>
-                    
-                    <div class="rating-group">
-                        <label>Website Usability</label>
-                        <input type="number" name="website_usability_rating" min="1" max="5" placeholder="1-5" value="{{ form.website_usability_rating.value|default:'' }}">
-                    </div>
+                    {% if user.business_category %}
+                        <!-- Category-specific questions -->
+                        {% for question in category_questions %}
+                        <div class="rating-group">
+                            <label>{{ question.label }}</label>
+                            <input type="number" name="category_rating_{{ question.field }}" min="1" max="5" placeholder="1-5" 
+                                   value="{{ form.category_ratings|default:''|get_item:question.field|default:'' }}" 
+                                   {% if question.required %}required{% endif %}>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Default questions for users without category -->
+                        <div class="rating-group">
+                            <label>Logistics & Delivery</label>
+                            <input type="number" name="logistics_rating" min="1" max="5" placeholder="1-5" value="{{ form.logistics_rating.value|default:'' }}">
+                        </div>
+                        
+                        <div class="rating-group">
+                            <label>Communication</label>
+                            <input type="number" name="communication_rating" min="1" max="5" placeholder="1-5" value="{{ form.communication_rating.value|default:'' }}">
+                        </div>
+                        
+                        <div class="rating-group">
+                            <label>Website Usability</label>
+                            <input type="number" name="website_usability_rating" min="1" max="5" placeholder="1-5" value="{{ form.website_usability_rating.value|default:'' }}">
+                        </div>
+                    {% endif %}
                 </div>
                 
                 <div class="form-group">
