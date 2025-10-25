@@ -20,13 +20,28 @@ def review_form(request, token):
         order = Order.objects.get(review_token=token)
         company = order.user
     except Order.DoesNotExist:
-        # For manual mailing - no order needed, use a default company
-        # You can modify this to get company from URL parameter or session
-        company = CustomUser.objects.filter(plan__in=['basic', 'advanced', 'pro', 'unique']).first()
-        if not company:
-            messages.error(request, 'No company found for manual review submission.')
-            return render(request, 'reviews/review_form.html')
-        order = None
+        # Try to find mailing recipient (for manual mailing reviews)
+        try:
+            from orders.models import MailingRecipient
+            recipient = MailingRecipient.objects.get(review_token=token)
+            company = recipient.campaign.user
+            order = None
+        except MailingRecipient.DoesNotExist:
+            # Fallback to manual review form with company_id parameter
+            company_id = request.GET.get('company_id')
+            if company_id:
+                try:
+                    company = CustomUser.objects.get(id=company_id)
+                except CustomUser.DoesNotExist:
+                    messages.error(request, 'Company not found.')
+                    return render(request, 'reviews/review_form.html')
+            else:
+                # Use first available company for manual reviews (fallback)
+                company = CustomUser.objects.filter(plan__in=['basic', 'advanced', 'pro', 'unique']).first()
+                if not company:
+                    messages.error(request, 'No company found for manual review submission.')
+                    return render(request, 'reviews/review_form.html')
+            order = None
     
     # Get category-specific questions
     category_questions = []

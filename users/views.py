@@ -6,6 +6,14 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import UserSignupSerializer, UserProfileSerializer
 from .models import CustomUser, BusinessCategory
 from utils.utitily import is_plan_active, is_trial_active
+from .email_utils import send_welcome_email, send_password_reset_email
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
+from django.contrib.auth import get_user_model
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
@@ -13,8 +21,16 @@ from utils.utitily import is_plan_active, is_trial_active
 def signup_view(request):
     serializer = UserSignupSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
-        return Response({'message': 'User created successfully.'}, status=status.HTTP_201_CREATED)
+        user = serializer.save()
+        
+        # Send welcome email
+        try:
+            send_welcome_email(user)
+        except Exception as e:
+            logger.error(f"Failed to send welcome email: {str(e)}")
+            # Don't fail the signup if email fails
+        
+        return Response({'message': 'User created successfully. Welcome email sent!'}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
@@ -105,3 +121,46 @@ def business_categories_view(request):
             'questions': BusinessCategory.get_default_questions().get(category.name, [])
         })
     return Response(categories_data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def forgot_password_view(request):
+    """Send password reset email"""
+    email = request.data.get('email')
+    if not email:
+        return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        user = CustomUser.objects.get(email=email)
+        if send_password_reset_email(user, request):
+            return Response({'message': 'Password reset email sent successfully'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Failed to send password reset email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except CustomUser.DoesNotExist:
+        # Don't reveal if email exists or not for security
+        return Response({'message': 'If an account with this email exists, a password reset link has been sent'}, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Forgot password error: {str(e)}")
+        return Response({'error': 'An error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+def reset_password_view(request):
+    """Reset password with token"""
+    uidb64 = request.data.get('uid')
+    token = request.data.get('token')
+    new_password = request.data.get('new_password')
+    
+    if not all([uidb64, token, new_password]):
+        return Response({'error': 'All fields are required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = CustomUser.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+        user = None
+    
+    if user and default_token_generator.check_token(user, token):
+        user.set_password(new_password)
+        user.save()
+        return Response({'message': 'Password reset successfully'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'Invalid or expired reset link'}, status=status.HTTP_400_BAD_REQUEST)

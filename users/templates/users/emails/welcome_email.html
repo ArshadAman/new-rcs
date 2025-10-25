@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Welcome to Level4u</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎉 Welcome to Level4u!</h1>
+        <p>Your journey to better customer reviews starts here</p>
+    </div>
+    
+    <div class="content">
+        <h2>Hello {{ user.business_name|default:user.username }}!</h2>
+        
+        <p>Thank you for joining Level4u! We're excited to help you collect and manage customer reviews to grow your business.</p>
+        
+        <h3>What's next?</h3>
+        <ul>
+            <li>📊 Set up your business profile</li>
+            <li>🎯 Choose your business category</li>
+            <li>📝 Create your first review campaign</li>
+            <li>📈 Start collecting valuable customer feedback</li>
+        </ul>
+        
+        <div style="text-align: center;">
+            <a href="{{ dashboard_url }}" class="button">Go to Dashboard</a>
+        </div>
+        
+        <p>If you have any questions, feel free to reach out to our support team.</p>
+        
+        <p>Best regards,<br>The Level4u Team</p>
+    </div>
+    
+    <div class="footer">
+        <p>© 2024 Level4u. All rights reserved.</p>
+        <p>This email was sent to {{ user.email }}</p>
+    </div>
+</body>
+</html>
+
