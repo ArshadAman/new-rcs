@@ -49,3 +49,4 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS('Successfully populated business categories!')
         )
+

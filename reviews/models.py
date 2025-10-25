@@ -10,7 +10,7 @@ class Review(models.Model):
         ('no', 'No'),
     ]
 
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='reviews')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='reviews', null=True, blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews')
     recommend = models.CharField(max_length=3, choices=RECOMMEND_CHOICES)
     main_rating = models.PositiveSmallIntegerField(default=5)
@@ -66,4 +66,8 @@ class Review(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Review by {self.user} for {self.order} - {'Recommend' if self.recommend == 'yes' else 'Not Recommend'}"
+        if self.order_id:
+            order_info = f" for {self.order}"
+        else:
+            order_info = " (Manual Review)"
+        return f"Review by {self.user}{order_info} - {'Recommend' if self.recommend == 'yes' else 'Not Recommend'}"

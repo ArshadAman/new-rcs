@@ -322,14 +322,29 @@ def user_reviews_api(request):
         reviews = ReviewFilter(request.GET, queryset=reviews).qs
     data = []
     for review in reviews:
+        # Get business category information
+        business_category = None
+        category_questions = []
+        if review.user.business_category:
+            from users.models import BusinessCategory
+            business_category = {
+                'name': review.user.business_category.name,
+                'display_name': review.user.business_category.display_name,
+                'icon': review.user.business_category.icon
+            }
+            category_questions = BusinessCategory.get_default_questions().get(review.user.business_category.name, [])
+        
         data.append({
             'id': review.id,
-            'order_id': review.order.order_id,
-            'customer_name': review.order.customer_name,  # <-- Add this line
+            'order_id': review.order.order_id if review.order else None,
+            'customer_name': review.order.customer_name if review.order else 'Manual Review',
             'main_rating': review.main_rating,
             'logistics_rating': review.logistics_rating,
             'communication_rating': review.communication_rating,
             'website_usability_rating': review.website_usability_rating,
+            'category_ratings': review.category_ratings,
+            'business_category': business_category,
+            'category_questions': category_questions,
             'recommend': review.recommend,
             'comment': review.comment,
             'reply': review.reply,

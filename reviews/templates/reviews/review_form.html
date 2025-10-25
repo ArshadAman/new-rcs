@@ -286,7 +286,7 @@
                         <div class="rating-group">
                             <label>{{ question.label }}</label>
                             <input type="number" name="category_rating_{{ question.field }}" min="1" max="5" placeholder="1-5" 
-                                   value="{{ form.category_ratings|default:''|get_item:question.field|default:'' }}" 
+                                   value="{% for key, value in form.category_ratings.items %}{% if key == question.field %}{{ value }}{% endif %}{% endfor %}" 
                                    {% if question.required %}required{% endif %}>
                         </div>
                         {% endfor %}
