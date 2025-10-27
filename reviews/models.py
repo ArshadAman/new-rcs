@@ -29,17 +29,9 @@ class Review(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
 
     def save(self, *args, **kwargs):
-        # If recommend is yes, auto 5-star and sub-ratings default to 5 if not given
+        # If recommend is yes, calculate main_rating from sub-ratings
         if self.recommend == 'yes':
-            self.main_rating = 5
-            if self.logistics_rating is None:
-                self.logistics_rating = 5
-            if self.communication_rating is None:
-                self.communication_rating = 5
-            if self.website_usability_rating is None:
-                self.website_usability_rating = 5
-            
-            # Set category-specific ratings to 5 if not provided
+            # Set category-specific ratings to 5 if not provided (do this BEFORE calculating main_rating)
             if self.user.business_category:
                 from users.models import BusinessCategory
                 category_questions = BusinessCategory.get_default_questions().get(self.user.business_category.name, [])
@@ -48,14 +40,41 @@ class Review(models.Model):
                     if field_name not in self.category_ratings or self.category_ratings[field_name] is None:
                         self.category_ratings[field_name] = 5
             
+            # Default standard sub-ratings to 5 if not provided
+            if self.logistics_rating is None:
+                self.logistics_rating = 5
+            if self.communication_rating is None:
+                self.communication_rating = 5
+            if self.website_usability_rating is None:
+                self.website_usability_rating = 5
+            
+            # Calculate main_rating as average of sub-ratings
+            ratings = []
+            
+            # If business category exists with category ratings, use those
+            if self.category_ratings and len(self.category_ratings) > 0:
+                # Use only category-specific ratings
+                ratings = [int(v) for v in self.category_ratings.values() if v is not None and v != '']
+            else:
+                # Use standard sub-ratings
+                if self.logistics_rating is not None:
+                    ratings.append(int(self.logistics_rating))
+                if self.communication_rating is not None:
+                    ratings.append(int(self.communication_rating))
+                if self.website_usability_rating is not None:
+                    ratings.append(int(self.website_usability_rating))
+            
+            if ratings:
+                self.main_rating = sum(ratings) / len(ratings)
+            
             self.is_complete = True
             self.is_flagged_red = False
             self.is_published = True
             self.auto_publish_at = None
         else:
-            # If NO, require sub-ratings and min 10 char comment for completion
+            # If NO, require min 50 char comment for completion
             self.is_flagged_red = True
-            if (self.comment and len(self.comment.strip()) >= 10 and self.reply):
+            if (self.comment and len(self.comment.strip()) >= 50):
                 self.is_complete = True
             else:
                 self.is_complete = False

@@ -90,9 +90,10 @@ def send_mailing_emails(campaign_id: int) -> str:
                 recipient.save()
                 print(f"Failed to send email to {recipient.email}: {e}")
 
-        # Update campaign status
+        # Update campaign stats
         campaign.status = 'sent'
         campaign.sent_count = sent_count
+        campaign.delivered_count = sent_count  # Assuming sent = delivered (no bounce tracking)
         campaign.sent_at = timezone.now()
         campaign.save()
 

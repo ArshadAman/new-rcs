@@ -146,6 +146,7 @@ def get_mailing_history(request):
             'date': campaign.created_at.isoformat(),
             'recipientsCount': campaign.recipients_count,
             'status': campaign.status,
+            'sent': campaign.sent_count,
             'delivered': campaign.delivered_count,
             'opened': campaign.opened_count,
             'clicked': campaign.clicked_count,
@@ -162,22 +163,8 @@ def send_mailing(request):
     """Send a manual mailing campaign"""
     user = request.user
     
-    # Check plan limits
+    # Check plan limits - only check email limit, not monthly limit
     limits = get_plan_limits(user)
-    now = timezone.now()
-    
-    usage, created = MailingUsage.objects.get_or_create(
-        user=user,
-        year=now.year,
-        month=now.month,
-        defaults={'mailings_sent': 0, 'emails_sent': 0}
-    )
-    
-    if usage.mailings_sent >= limits['monthly_limit']:
-        return Response({
-            'success': False,
-            'message': f'Monthly mailing limit reached ({limits["monthly_limit"]} mailings)'
-        }, status=status.HTTP_403_FORBIDDEN)
     
     # Validate request data
     recipients = request.data.get('recipients', [])
@@ -214,11 +201,6 @@ def send_mailing(request):
                     name=recipient_data.get('name', ''),
                     order_number=recipient_data.get('orderNumber', '')
                 )
-            
-            # Update usage
-            usage.mailings_sent += 1
-            usage.emails_sent += len(recipients)
-            usage.save()
             
             # Start sending emails asynchronously (registered Celery task)
             send_mailing_emails.delay(campaign.id)

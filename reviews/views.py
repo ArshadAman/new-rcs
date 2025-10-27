@@ -75,15 +75,15 @@ def review_form(request, token):
             # Validation
             errors = {}
             if recommend == 'yes':
-                # All sub-ratings default to 5 if not provided
+                # Create review with submitted ratings (defaults to 5 if not provided handled in model)
                 review_data = {
                     'order': order,  # Can be None for manual reviews
                     'user': company,
                     'recommend': 'yes',
                     'comment': comment,
-                    'logistics_rating': logistics_rating or 5,
-                    'communication_rating': communication_rating or 5,
-                    'website_usability_rating': website_usability_rating or 5,
+                    'logistics_rating': int(logistics_rating) if logistics_rating else None,
+                    'communication_rating': int(communication_rating) if communication_rating else None,
+                    'website_usability_rating': int(website_usability_rating) if website_usability_rating else None,
                     'category_ratings': category_ratings,
                 }
                 review = Review.objects.create(**review_data)
@@ -92,36 +92,22 @@ def review_form(request, token):
                 messages.success(request, 'Thank you for your positive review!')
                 return render(request, 'reviews/review_form.html', {'order': order, 'success': True})
             elif recommend == 'no':
-                # All sub-ratings and min 50 char comment required
-                if company.business_category and category_questions:
-                    # Check category-specific ratings
-                    missing_ratings = []
-                    for question in category_questions:
-                        if question.get('required', False):
-                            field_name = question['field']
-                            if field_name not in category_ratings or not category_ratings[field_name]:
-                                missing_ratings.append(question['label'])
-                    if missing_ratings:
-                        errors['sub_ratings'] = f'Required ratings missing: {", ".join(missing_ratings)}'
-                else:
-                    # Check default ratings
-                    if not (logistics_rating and communication_rating and website_usability_rating):
-                        errors['sub_ratings'] = 'All sub-ratings are required for a NO review.'
-                
-                if not comment or len(comment) < 50:
+                # Only min 50 char comment required (no sub-ratings required)
+                if not comment or len(comment.strip()) < 50:
                     errors['comment'] = 'A detailed comment (min 50 characters) is required for a NO review.'
-                if errors:
                     return render(request, 'reviews/review_form.html', {'order': order, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
                 
+                # Create review with no sub-ratings (they're hidden in the form)
                 review_data = {
                     'order': order,  # Can be None for manual reviews
                     'user': company,
                     'recommend': 'no',
                     'comment': comment,
-                    'logistics_rating': logistics_rating,
-                    'communication_rating': communication_rating,
-                    'website_usability_rating': website_usability_rating,
-                    'category_ratings': category_ratings,
+                    # Sub-ratings are optional for negative reviews
+                    'logistics_rating': logistics_rating if logistics_rating else None,
+                    'communication_rating': communication_rating if communication_rating else None,
+                    'website_usability_rating': website_usability_rating if website_usability_rating else None,
+                    'category_ratings': category_ratings if category_ratings else {},
                 }
                 review = Review.objects.create(**review_data)
                 company.monthly_review_count += 1
@@ -200,36 +186,22 @@ def manual_review_form(request):
                 messages.success(request, 'Thank you for your positive review!')
                 return render(request, 'reviews/review_form.html', {'order': None, 'success': True})
             elif recommend == 'no':
-                # All sub-ratings and min 50 char comment required
-                if company.business_category and category_questions:
-                    # Check category-specific ratings
-                    missing_ratings = []
-                    for question in category_questions:
-                        if question.get('required', False):
-                            field_name = question['field']
-                            if field_name not in category_ratings or not category_ratings[field_name]:
-                                missing_ratings.append(question['label'])
-                    if missing_ratings:
-                        errors['sub_ratings'] = f'Required ratings missing: {", ".join(missing_ratings)}'
-                else:
-                    # Check default ratings
-                    if not (logistics_rating and communication_rating and website_usability_rating):
-                        errors['sub_ratings'] = 'All sub-ratings are required for a NO review.'
-                
-                if not comment or len(comment) < 50:
+                # Only min 50 char comment required (no sub-ratings required)
+                if not comment or len(comment.strip()) < 50:
                     errors['comment'] = 'A detailed comment (min 50 characters) is required for a NO review.'
-                if errors:
                     return render(request, 'reviews/review_form.html', {'order': None, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
                 
+                # Create review with no sub-ratings (they're hidden in the form)
                 review_data = {
                     'order': None,  # No order for manual reviews
                     'user': company,
                     'recommend': 'no',
                     'comment': comment,
-                    'logistics_rating': logistics_rating,
-                    'communication_rating': communication_rating,
-                    'website_usability_rating': website_usability_rating,
-                    'category_ratings': category_ratings,
+                    # Sub-ratings are optional for negative reviews
+                    'logistics_rating': logistics_rating if logistics_rating else None,
+                    'communication_rating': communication_rating if communication_rating else None,
+                    'website_usability_rating': website_usability_rating if website_usability_rating else None,
+                    'category_ratings': category_ratings if category_ratings else {},
                 }
                 review = Review.objects.create(**review_data)
                 company.monthly_review_count += 1

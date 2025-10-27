@@ -333,22 +333,27 @@
             recommendSelect.addEventListener('change', function() {
                 if (this.value === 'yes') {
                     subratings.classList.remove('hidden');
+                    subratings.querySelector('h3').textContent = 'Please rate the following aspects (1-5 stars):';
                     // Make sub-ratings required for yes
                     subratings.querySelectorAll('input[type="number"]').forEach(input => {
                         input.required = true;
+                        input.disabled = false;
                     });
                 } else {
+                    // Hide sub-ratings for 'no' or no selection
                     subratings.classList.add('hidden');
-                    // Make sub-ratings optional for no or no selection
+                    // Disable and clear sub-ratings when hidden
                     subratings.querySelectorAll('input[type="number"]').forEach(input => {
                         input.required = false;
+                        input.disabled = true;
+                        input.value = '';
                     });
                 }
             });
             
             // Form submission with loading state
             if (form) {
-                form.addEventListener('submit', function() {
+                form.addEventListener('submit', function(e) {
                     submitBtn.disabled = true;
                     submitText.textContent = 'Submitting...';
                     submitBtn.style.opacity = '0.7';
@@ -358,8 +363,18 @@
             // Initialize subratings visibility based on current value
             if (recommendSelect.value === 'yes') {
                 subratings.classList.remove('hidden');
+                subratings.querySelector('h3').textContent = 'Please rate the following aspects (1-5 stars):';
                 subratings.querySelectorAll('input[type="number"]').forEach(input => {
                     input.required = true;
+                    input.disabled = false;
+                });
+            } else {
+                // Hide sub-ratings for 'no' or no selection
+                subratings.classList.add('hidden');
+                subratings.querySelectorAll('input[type="number"]').forEach(input => {
+                    input.required = false;
+                    input.disabled = true;
+                    input.value = '';
                 });
             }
         });
