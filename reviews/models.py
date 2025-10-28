@@ -12,6 +12,9 @@ class Review(models.Model):
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='reviews', null=True, blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews')
+    manual_order_id = models.CharField(max_length=100, blank=True, null=True)
+    manual_customer_name = models.CharField(max_length=200, blank=True, null=True)
+    manual_customer_email = models.CharField(max_length=200, blank=True, null=True)
     recommend = models.CharField(max_length=3, choices=RECOMMEND_CHOICES)
     main_rating = models.PositiveSmallIntegerField(default=5)
     logistics_rating = models.PositiveSmallIntegerField(null=True, blank=True)

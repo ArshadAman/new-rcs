@@ -104,6 +104,11 @@ def review_form(request, token):
                     'website_usability_rating': int(website_usability_rating) if website_usability_rating else None,
                     'category_ratings': category_ratings,
                 }
+                # Add manual fields if no order (manual review)
+                if not order:
+                    review_data['manual_order_id'] = manual_order_id if 'manual_order_id' in locals() else request.POST.get('order_id', '').strip()
+                    review_data['manual_customer_name'] = manual_customer_name if 'manual_customer_name' in locals() else request.POST.get('customer_name', '').strip()
+                    review_data['manual_customer_email'] = manual_customer_email if 'manual_customer_email' in locals() else request.POST.get('email', '').strip()
                 review = Review.objects.create(**review_data)
                 company.monthly_review_count += 1
                 company.save()
@@ -127,6 +132,11 @@ def review_form(request, token):
                     'website_usability_rating': int(website_usability_rating) if website_usability_rating else None,
                     'category_ratings': category_ratings if category_ratings else {},
                 }
+                # Add manual fields if no order (manual review)
+                if not order:
+                    review_data['manual_order_id'] = manual_order_id if 'manual_order_id' in locals() else request.POST.get('order_id', '').strip()
+                    review_data['manual_customer_name'] = manual_customer_name if 'manual_customer_name' in locals() else request.POST.get('customer_name', '').strip()
+                    review_data['manual_customer_email'] = manual_customer_email if 'manual_customer_email' in locals() else request.POST.get('email', '').strip()
                 review = Review.objects.create(**review_data)
                 company.monthly_review_count += 1
                 company.save()
@@ -359,8 +369,9 @@ def user_reviews_api(request):
         
         data.append({
             'id': review.id,
-            'order_id': review.order.order_id if review.order else None,
-            'customer_name': review.order.customer_name if review.order else 'Manual Review',
+            'order_id': review.order.order_id if review.order else (review.manual_order_id if review.manual_order_id else None),
+            'customer_name': review.order.customer_name if review.order else (review.manual_customer_name if review.manual_customer_name else 'Anonymous Customer'),
+            'customer_email': review.order.email if review.order else (review.manual_customer_email if review.manual_customer_email else None),
             'main_rating': review.main_rating,
             'logistics_rating': review.logistics_rating,
             'communication_rating': review.communication_rating,

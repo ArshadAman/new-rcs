@@ -255,17 +255,17 @@
                 
                 <div class="form-group">
                     <label>Customer Name</label>
-                    <input type="text" name="customer_name" value="{{ order.customer_name }}" readonly>
+                    <input type="text" name="customer_name" value="{{ order.customer_name }}" {% if not order %}placeholder="Enter customer name"{% else %}readonly{% endif %}>
                 </div>
                 
                 <div class="form-group">
                     <label>Email Address</label>
-                    <input type="email" name="email" value="{{ order.email }}" readonly>
+                    <input type="email" name="email" value="{{ order.email }}" {% if not order %}placeholder="Enter email address"{% else %}readonly{% endif %}>
                 </div>
                 
                 <div class="form-group">
                     <label>Order ID</label>
-                    <input type="text" name="order_id" value="{{ order.order_id }}" readonly>
+                    <input type="text" name="order_id" value="{{ order.order_id }}" {% if not order %}placeholder="Enter order ID (optional)"{% else %}readonly{% endif %}>
                 </div>
                 
                 <div class="form-group">
