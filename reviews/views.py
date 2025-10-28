@@ -75,20 +75,20 @@ def review_form(request, token):
             # Validation
             errors = {}
             
-            # Check if any rating is below 2 (indicating dissatisfaction)
+            # Check if any rating is below 3 (indicating dissatisfaction)
             has_low_rating = False
-            if logistics_rating and int(logistics_rating) < 2:
+            if logistics_rating and int(logistics_rating) < 3:
                 has_low_rating = True
-            if communication_rating and int(communication_rating) < 2:
+            if communication_rating and int(communication_rating) < 3:
                 has_low_rating = True
-            if website_usability_rating and int(website_usability_rating) < 2:
+            if website_usability_rating and int(website_usability_rating) < 3:
                 has_low_rating = True
             if category_ratings:
                 for rating in category_ratings.values():
-                    if rating and int(rating) < 2:
+                    if rating and int(rating) < 3:
                         has_low_rating = True
             
-            # If user says 'yes' but has any rating below 2, treat as negative
+            # If user says 'yes' but has any rating below 3, treat as negative
             if recommend == 'yes' and has_low_rating:
                 recommend = 'no'
             
@@ -187,20 +187,20 @@ def manual_review_form(request):
             # Validation
             errors = {}
             
-            # Check if any rating is below 2 (indicating dissatisfaction)
+            # Check if any rating is below 3 (indicating dissatisfaction)
             has_low_rating = False
-            if logistics_rating and int(logistics_rating) < 2:
+            if logistics_rating and int(logistics_rating) < 3:
                 has_low_rating = True
-            if communication_rating and int(communication_rating) < 2:
+            if communication_rating and int(communication_rating) < 3:
                 has_low_rating = True
-            if website_usability_rating and int(website_usability_rating) < 2:
+            if website_usability_rating and int(website_usability_rating) < 3:
                 has_low_rating = True
             if category_ratings:
                 for rating in category_ratings.values():
-                    if rating and int(rating) < 2:
+                    if rating and int(rating) < 3:
                         has_low_rating = True
             
-            # If user says 'yes' but has any rating below 2, treat as negative
+            # If user says 'yes' but has any rating below 3, treat as negative
             if recommend == 'yes' and has_low_rating:
                 recommend = 'no'
             
