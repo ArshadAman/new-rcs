@@ -74,6 +74,24 @@ def review_form(request, token):
 
             # Validation
             errors = {}
+            
+            # Check if any rating is below 2 (indicating dissatisfaction)
+            has_low_rating = False
+            if logistics_rating and int(logistics_rating) < 2:
+                has_low_rating = True
+            if communication_rating and int(communication_rating) < 2:
+                has_low_rating = True
+            if website_usability_rating and int(website_usability_rating) < 2:
+                has_low_rating = True
+            if category_ratings:
+                for rating in category_ratings.values():
+                    if rating and int(rating) < 2:
+                        has_low_rating = True
+            
+            # If user says 'yes' but has any rating below 2, treat as negative
+            if recommend == 'yes' and has_low_rating:
+                recommend = 'no'
+            
             if recommend == 'yes':
                 # Create review with submitted ratings (defaults to 5 if not provided handled in model)
                 review_data = {
@@ -92,21 +110,21 @@ def review_form(request, token):
                 messages.success(request, 'Thank you for your positive review!')
                 return render(request, 'reviews/review_form.html', {'order': order, 'success': True})
             elif recommend == 'no':
-                # Only min 50 char comment required (no sub-ratings required)
+                # Only min 50 char comment required
                 if not comment or len(comment.strip()) < 50:
                     errors['comment'] = 'A detailed comment (min 50 characters) is required for a NO review.'
                     return render(request, 'reviews/review_form.html', {'order': order, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
                 
-                # Create review with no sub-ratings (they're hidden in the form)
+                # Create review with sub-ratings (now they're visible and optional for negative reviews)
                 review_data = {
                     'order': order,  # Can be None for manual reviews
                     'user': company,
                     'recommend': 'no',
                     'comment': comment,
-                    # Sub-ratings are optional for negative reviews
-                    'logistics_rating': logistics_rating if logistics_rating else None,
-                    'communication_rating': communication_rating if communication_rating else None,
-                    'website_usability_rating': website_usability_rating if website_usability_rating else None,
+                    # Sub-ratings are optional for negative reviews, but now captured
+                    'logistics_rating': int(logistics_rating) if logistics_rating else None,
+                    'communication_rating': int(communication_rating) if communication_rating else None,
+                    'website_usability_rating': int(website_usability_rating) if website_usability_rating else None,
                     'category_ratings': category_ratings if category_ratings else {},
                 }
                 review = Review.objects.create(**review_data)
@@ -168,6 +186,24 @@ def manual_review_form(request):
 
             # Validation
             errors = {}
+            
+            # Check if any rating is below 2 (indicating dissatisfaction)
+            has_low_rating = False
+            if logistics_rating and int(logistics_rating) < 2:
+                has_low_rating = True
+            if communication_rating and int(communication_rating) < 2:
+                has_low_rating = True
+            if website_usability_rating and int(website_usability_rating) < 2:
+                has_low_rating = True
+            if category_ratings:
+                for rating in category_ratings.values():
+                    if rating and int(rating) < 2:
+                        has_low_rating = True
+            
+            # If user says 'yes' but has any rating below 2, treat as negative
+            if recommend == 'yes' and has_low_rating:
+                recommend = 'no'
+            
             if recommend == 'yes':
                 # All sub-ratings default to 5 if not provided
                 review_data = {
@@ -175,9 +211,9 @@ def manual_review_form(request):
                     'user': company,
                     'recommend': 'yes',
                     'comment': comment,
-                    'logistics_rating': logistics_rating or 5,
-                    'communication_rating': communication_rating or 5,
-                    'website_usability_rating': website_usability_rating or 5,
+                    'logistics_rating': int(logistics_rating) if logistics_rating else None,
+                    'communication_rating': int(communication_rating) if communication_rating else None,
+                    'website_usability_rating': int(website_usability_rating) if website_usability_rating else None,
                     'category_ratings': category_ratings,
                 }
                 review = Review.objects.create(**review_data)
@@ -186,21 +222,21 @@ def manual_review_form(request):
                 messages.success(request, 'Thank you for your positive review!')
                 return render(request, 'reviews/review_form.html', {'order': None, 'success': True})
             elif recommend == 'no':
-                # Only min 50 char comment required (no sub-ratings required)
+                # Only min 50 char comment required
                 if not comment or len(comment.strip()) < 50:
                     errors['comment'] = 'A detailed comment (min 50 characters) is required for a NO review.'
                     return render(request, 'reviews/review_form.html', {'order': None, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
                 
-                # Create review with no sub-ratings (they're hidden in the form)
+                # Create review with sub-ratings (now they're visible and optional for negative reviews)
                 review_data = {
                     'order': None,  # No order for manual reviews
                     'user': company,
                     'recommend': 'no',
                     'comment': comment,
-                    # Sub-ratings are optional for negative reviews
-                    'logistics_rating': logistics_rating if logistics_rating else None,
-                    'communication_rating': communication_rating if communication_rating else None,
-                    'website_usability_rating': website_usability_rating if website_usability_rating else None,
+                    # Sub-ratings are optional for negative reviews, but now captured
+                    'logistics_rating': int(logistics_rating) if logistics_rating else None,
+                    'communication_rating': int(communication_rating) if communication_rating else None,
+                    'website_usability_rating': int(website_usability_rating) if website_usability_rating else None,
                     'category_ratings': category_ratings if category_ratings else {},
                 }
                 review = Review.objects.create(**review_data)

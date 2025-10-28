@@ -331,8 +331,10 @@
             
             // Show/hide subratings based on recommendation
             recommendSelect.addEventListener('change', function() {
+                // Always show sub-ratings, regardless of recommendation
+                subratings.classList.remove('hidden');
+                
                 if (this.value === 'yes') {
-                    subratings.classList.remove('hidden');
                     subratings.querySelector('h3').textContent = 'Please rate the following aspects (1-5 stars):';
                     // Make sub-ratings required for yes
                     subratings.querySelectorAll('input[type="number"]').forEach(input => {
@@ -340,13 +342,11 @@
                         input.disabled = false;
                     });
                 } else {
-                    // Hide sub-ratings for 'no' or no selection
-                    subratings.classList.add('hidden');
-                    // Disable and clear sub-ratings when hidden
+                    subratings.querySelector('h3').textContent = 'Please specify what didn\'t meet your expectations (1-5 stars):';
+                    // Optional for no, but enabled
                     subratings.querySelectorAll('input[type="number"]').forEach(input => {
                         input.required = false;
-                        input.disabled = true;
-                        input.value = '';
+                        input.disabled = false;
                     });
                 }
             });
@@ -361,20 +361,18 @@
             }
             
             // Initialize subratings visibility based on current value
+            subratings.classList.remove('hidden');
             if (recommendSelect.value === 'yes') {
-                subratings.classList.remove('hidden');
                 subratings.querySelector('h3').textContent = 'Please rate the following aspects (1-5 stars):';
                 subratings.querySelectorAll('input[type="number"]').forEach(input => {
                     input.required = true;
                     input.disabled = false;
                 });
             } else {
-                // Hide sub-ratings for 'no' or no selection
-                subratings.classList.add('hidden');
+                subratings.querySelector('h3').textContent = 'Please specify what didn\'t meet your expectations (1-5 stars):';
                 subratings.querySelectorAll('input[type="number"]').forEach(input => {
                     input.required = false;
-                    input.disabled = true;
-                    input.value = '';
+                    input.disabled = false;
                 });
             }
         });
