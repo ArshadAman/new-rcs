@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Welcome to Level4u</title>
+    <title>Review Your Experience</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -84,17 +84,19 @@
                 <img src="https://www.level-4u.com/images/logo.png" alt="Level 4 You Logo" class="logo">
             </div>
             
-            <h2>Thank you for choosing our rating collection service.</h2>
+            <h2>We value your feedback!</h2>
             
-            <p>We value your trust and are committed to providing a reliable and efficient platform for gathering feedback and insights.</p>
+            <p>Dear {{ customer_name }},</p>
             
-            <p>Our team continually works to enhance the quality and functionality of our service to better support your goals.</p>
+            <p>Thank you for your order (Order ID: {{ order_id }}).</p>
             
-            <p>Your continued engagement helps us improve — we appreciate your partnership.</p>
+            <p>Please take a moment to review your experience. Your feedback helps us improve our service and assists other customers in making informed decisions.</p>
             
             <div class="button-container">
-                <a href="{{ dashboard_url }}" class="button">Go to Dashboard</a>
+                <a href="{{ review_link }}" class="button">Click here to Review</a>
             </div>
+            
+            <p>Thank you for your time!</p>
         </div>
         
         <div class="footer">
@@ -106,3 +108,4 @@
     </div>
 </body>
 </html>
+

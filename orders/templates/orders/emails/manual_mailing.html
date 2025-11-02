@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Welcome to Level4u</title>
+    <title>{{ subject }}</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -39,24 +39,30 @@
             color: #666;
             font-size: 16px;
             margin-bottom: 15px;
+            white-space: pre-wrap;
         }
         .button {
             display: inline-block;
             background: #FFDB01;
             color: #0a0a0a;
-            padding: 15px 40px;
+            padding: 20px 50px;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 8px;
             margin: 30px 0 20px;
-            font-weight: 600;
-            font-size: 16px;
+            font-weight: 700;
+            font-size: 18px;
             transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .button:hover {
-            background: #e6c501;
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 219, 1, 0.4);
         }
         .button-container {
             text-align: center;
+            margin: 40px 0;
         }
         .footer {
             text-align: center;
@@ -84,17 +90,13 @@
                 <img src="https://www.level-4u.com/images/logo.png" alt="Level 4 You Logo" class="logo">
             </div>
             
-            <h2>Thank you for choosing our rating collection service.</h2>
-            
-            <p>We value your trust and are committed to providing a reliable and efficient platform for gathering feedback and insights.</p>
-            
-            <p>Our team continually works to enhance the quality and functionality of our service to better support your goals.</p>
-            
-            <p>Your continued engagement helps us improve — we appreciate your partnership.</p>
+            <div>{{ body_without_link|safe }}</div>
             
             <div class="button-container">
-                <a href="{{ dashboard_url }}" class="button">Go to Dashboard</a>
+                <a href="{{ review_link }}" class="button">Click Here to Review</a>
             </div>
+            
+            <p style="margin-top: 30px; font-size: 14px; color: #888;">Thank you for your valuable feedback. We appreciate your time and trust in our service.</p>
         </div>
         
         <div class="footer">
@@ -106,3 +108,4 @@
     </div>
 </body>
 </html>
+
