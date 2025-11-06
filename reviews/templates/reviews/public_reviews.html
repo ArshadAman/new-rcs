@@ -1,10 +1,16 @@
+{% load review_extras %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Reviews for {{ user.business_name|default:user.get_full_name|default:user.username }}</title>
+    <title>{{ user.business_name|default:user.get_full_name|default:user.username }} - Reviews</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Goldman:wght@400;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Montserrat', 'Inter', 'Segoe UI', Arial, sans-serif;
             background: #000000;
@@ -16,231 +22,727 @@
             background: #000000;
             padding: 20px 40px;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
-            border-bottom: 1px solid #333;
         }
         .logo {
             font-size: 24px;
             font-weight: 800;
             color: #ffffff;
             letter-spacing: 1px;
+            font-family: 'Goldman', sans-serif;
         }
         .logo img {
             height: 40px;
             width: auto;
         }
-        .container {
-            max-width: 900px;
-            margin: 40px auto;
-            background: #111111;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-            padding: 2.5em 2em 2em 2em;
-            border: 1px solid #333;
+        .hero-banner {
+            width: 100vw;
+            max-width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
         }
-        h2 {
-            color: #ffffff;
+        .main-content {
+            background: #000000;
+            padding: 60px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 60px;
+            margin-bottom: 80px;
+        }
+        .left-panel h1 {
             font-family: 'Goldman', sans-serif;
-            font-size: 2.1em;
+            font-size: 64px;
             font-weight: 800;
-            margin-bottom: 1.5em;
-            letter-spacing: -1px;
-            text-align: center;
+            color: #87CEEB;
+            margin-bottom: 10px;
+            line-height: 1;
         }
-        .review {
-            border-radius: 16px;
-            margin-bottom: 2em;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            padding: 1.5em 1.5em 1.2em 1.5em;
-            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-            border: 1px solid #ffd700;
-            transition: all 0.3s ease;
+        .left-panel .subtitle {
+            font-size: 24px;
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+        .rating-display {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stars {
+            display: flex;
+            gap: 3px;
+        }
+        .star {
+            color: #FF8C00;
+            font-size: 24px;
+        }
+        .star.half {
             position: relative;
-            font-family: 'Montserrat', sans-serif;
+        }
+        .star.half::after {
+            content: '★';
+            position: absolute;
+            left: 0;
+            width: 50%;
+            overflow: hidden;
+            color: #FF8C00;
+        }
+        .review-count {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 400;
+        }
+        .description {
+            color: #ffffff;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+        .description p {
+            margin-bottom: 15px;
+        }
+        .right-panel {
+            background: #1a1a1a;
+            border: none;
+            padding: 30px;
+            position: relative;
+        }
+        .corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+        }
+        .corner-top-left {
+            top: -2px;
+            left: -2px;
+            border-right: none;
+            border-bottom: none;
+        }
+        .corner-top-right {
+            top: -2px;
+            right: -2px;
+            border-left: none;
+            border-bottom: none;
+        }
+        .corner-bottom-left {
+            bottom: -2px;
+            left: -2px;
+            border-right: none;
+            border-top: none;
+        }
+        .corner-bottom-right {
+            bottom: -2px;
+            right: -2px;
+            border-left: none;
+            border-top: none;
+        }
+        .verified-badge {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .verified-badge img {
+            max-width: 120px;
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        .overall-rating {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .rating-hexagon {
+            display: inline-flex;
+            height: 150px;
+            width: 130px;
+            position: relative;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            z-index: 1;
+        }
+        .rating-hexagon span {
+            color: #000000;
+            font-size: 56px;
+            font-weight: 700;
+            font-family: 'Goldman', sans-serif;
+            position: relative;
+            z-index: 2;
+            display: block;
+        }
+        .star-distribution {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .star-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .star-label {
+            color: #FFDB01;
+            font-size: 16px;
+            width: 80px;
+            text-align: left;
+            display: flex;
+            gap: 2px;
+        }
+        .star-label .star-icon {
+            color: #FFDB01;
+        }
+        .star-bar-container {
+            flex: 1;
+            height: 20px;
+            background: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        .star-bar {
+            height: 100%;
+            background: #FFDB01;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        .testimonials-section {
+            background: #FFDB01;
+            padding: 80px 40px;
+        }
+        .testimonials-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .testimonial-card {
+            background: #ffffff;
+            border: 2px solid #ffffff;
+            padding: 25px;
+            position: relative;
             color: #000000;
         }
-        .review:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+        .testimonial-card .corner {
+            border-color: #000000;
         }
-        .review.flagged {
-            border: 2px solid #e74c3c;
-            background: #fff5f5;
+        .testimonial-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
         }
-        .review-header {
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #FFDB01;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #000000;
+            font-size: 18px;
+        }
+        .testimonial-name {
+            font-weight: 700;
+            font-size: 16px;
+            color: #000000;
+        }
+        .testimonial-text {
+            color: #000000;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .see-more-link {
+            color: #000000;
+            text-decoration: underline;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .see-all-reviews {
+            text-align: center;
+            margin-top: 40px;
+        }
+        .see-all-reviews a {
+            color: #000000;
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .footer {
+            background: #000000;
+            padding: 40px;
+            text-align: center;
+        }
+        .footer-logo {
+            margin-bottom: 20px;
+        }
+        .footer-logo img {
+            height: 40px;
+            width: auto;
+        }
+        .footer-copyright {
+            color: #ffffff;
+            font-size: 14px;
+        }
+        .all-reviews-section {
+            display: none;
+            background: #000000;
+            padding: 60px 40px;
+            min-height: 80vh;
+        }
+        .all-reviews-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .all-reviews-title {
+            font-family: 'Goldman', sans-serif;
+            font-size: 48px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        .review-card {
+            background: #1a1a1a;
+            border: none;
+            padding: 30px;
+            margin-bottom: 30px;
+            position: relative;
+            color: #ffffff;
+        }
+        .review-card .corner {
+            border-color: #ffffff;
+        }
+        .review-card-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 0.7em;
-        }
-        .verified-badge {
-            display: inline-flex;
-            align-items: center;
-            font-size: 0.9em;
-            color: #000000;
-            background: #ffffff;
-            border-radius: 20px;
-            padding: 4px 12px 4px 8px;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            margin-right: 0.5em;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            font-family: 'Montserrat', sans-serif;
-        }
-        .verified-badge svg {
-            width: 1em;
-            height: 1em;
-            margin-right: 0.3em;
-            vertical-align: -2px;
-        }
-        .meta {
-            color: #000000;
-            font-size: 0.9em;
-            margin-bottom: 0.7em;
-            text-align: right;
-            flex-shrink: 0;
-            font-family: 'Montserrat', sans-serif;
-            opacity: 0.8;
-        }
-        .recommended {
-            color: #10b981;
-            font-weight: 600;
-            margin-left: 1em;
-            font-family: 'Montserrat', sans-serif;
-        }
-        .not-recommended {
-            color: #ef4444;
-            font-weight: 600;
-            margin-left: 1em;
-            font-family: 'Montserrat', sans-serif;
-        }
-        .ratings-row {
-            display: flex;
-            gap: 2em;
-            margin-bottom: 0.7em;
+            margin-bottom: 20px;
             flex-wrap: wrap;
+            gap: 15px;
         }
-        .rating-label {
-            color: #000000;
-            font-weight: 600;
-            font-size: 0.95em;
-            font-family: 'Montserrat', sans-serif;
-            opacity: 0.8;
+        .review-card-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        .rating-value {
-            color: #000000;
+        .review-card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #FFDB01;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: 700;
-            margin-left: 0.3em;
-            font-size: 1em;
-            font-family: 'Montserrat', sans-serif;
-        }
-        .comment {
-            margin-bottom: 0.7em;
             color: #000000;
-            font-size: 1em;
+            font-size: 20px;
+        }
+        .review-card-name {
+            font-weight: 700;
+            font-size: 18px;
+            color: #ffffff;
+        }
+        .review-card-date {
+            color: #888;
+            font-size: 14px;
+        }
+        .review-card-rating {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .review-card-rating-stars {
+            display: flex;
+            gap: 3px;
+        }
+        .review-card-rating-value {
+            color: #FFDB01;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .review-card-comment {
+            color: #ffffff;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        .review-card-reply {
+            background: #0a0a0a;
+            border-left: 4px solid #FFDB01;
+            padding: 15px 20px;
+            margin-top: 15px;
+            color: #ffffff;
+            font-size: 14px;
             line-height: 1.6;
-            font-family: 'Montserrat', sans-serif;
         }
-        .reply {
-            background: #ffffff;
-            border-left: 4px solid #000000;
-            margin: 0.7em 0 0 0;
-            padding: 0.8em 1em;
-            font-size: 0.95em;
-            color: #000000;
-            border-radius: 0 12px 12px 0;
-            font-family: 'Montserrat', sans-serif;
+        .review-card-reply-label {
+            font-weight: 700;
+            color: #FFDB01;
+            margin-bottom: 8px;
+            display: block;
         }
-        .no-reviews {
-            color: #9ca3af;
-            text-align: center;
-            font-size: 1.1em;
-            font-family: 'Montserrat', sans-serif;
-            padding: 2em;
+        .review-card-recommend {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 15px;
         }
-        @media (max-width: 600px) {
-            .container { 
-                padding: 1em; 
-                margin: 20px;
+        .review-card-recommend.yes {
+            background: #4CAF50;
+            color: #ffffff;
+        }
+        .review-card-recommend.no {
+            background: #f44336;
+            color: #ffffff;
+        }
+        .review-card-category-ratings {
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+        .category-rating-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+        }
+        .category-rating-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .category-rating-label {
+            color: #ffffff;
+            font-size: 14px;
+            flex: 1;
+        }
+        .category-rating-stars {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+        }
+        .category-rating-stars .star {
+            color: #FF8C00;
+            font-size: 14px;
+        }
+        .category-rating-value {
+            color: #FFDB01;
+            font-weight: 600;
+            font-size: 14px;
+            margin-left: 8px;
+            min-width: 30px;
+        }
+        @media (max-width: 1024px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
             }
-            .review { 
-                padding: 1em; 
+            .testimonials-grid {
+                grid-template-columns: 1fr;
             }
-            .ratings-row { 
-                flex-direction: column; 
-                gap: 0.5em; 
+        }
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 40px 20px;
             }
-            .review-header { 
-                flex-direction: column; 
-                align-items: flex-start; 
-                gap: 0.5em; 
+            .left-panel h1 {
+                font-size: 42px;
             }
-            .meta { 
-                text-align: left; 
-                margin-left: 0; 
-            }
-            h2 {
-                font-size: 1.5em;
+            .testimonials-section {
+                padding: 40px 20px;
             }
         }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set star bar widths
+            document.querySelectorAll('.star-bar[data-width]').forEach(function(bar) {
+                bar.style.width = bar.getAttribute('data-width') + '%';
+            });
+            
+            // Handle "See all reviews" click
+            const seeAllLinks = document.querySelectorAll('.see-all-reviews a');
+            console.log('Found see all links:', seeAllLinks.length);
+            
+            seeAllLinks.forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('See all reviews clicked');
+                    
+                    // Hide sections
+                    const heroBanner = document.querySelector('.hero-banner');
+                    const mainContent = document.querySelector('.main-content');
+                    const testimonialsSection = document.querySelector('.testimonials-section');
+                    
+                    console.log('Elements found:', {
+                        heroBanner: !!heroBanner,
+                        mainContent: !!mainContent,
+                        testimonialsSection: !!testimonialsSection
+                    });
+                    
+                    if (heroBanner) heroBanner.style.display = 'none';
+                    if (mainContent) mainContent.style.display = 'none';
+                    if (testimonialsSection) testimonialsSection.style.display = 'none';
+                    
+                    // Show all reviews section
+                    const allReviewsSection = document.getElementById('all-reviews-section');
+                    console.log('All reviews section found:', !!allReviewsSection);
+                    if (allReviewsSection) {
+                        allReviewsSection.style.display = 'block';
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                        console.error('All reviews section not found');
+                    }
+                });
+            });
+        });
+    </script>
 </head>
 <body>
-<div class="header">
-    <div class="logo">
-        <img src="https://www.level-4u.com/images/logo.png" alt="Level-4u Logo" />
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">
+            <img src="https://www.level-4u.com/images/logo.png" alt="LEVEJ Logo" />
+        </div>
     </div>
-</div>
-<div class="container">
-    <h2>Reviews for {{ user.business_name|default:user.get_full_name|default:user.username }}</h2>
-    {% if reviews %}
-        {% for review in reviews %}
-            <div class="review{% if review.is_flagged_red %} flagged{% endif %}">
-                <div class="review-header">
-                    <span class="verified-badge">
-                        <svg viewBox="0 0 20 20" fill="#1877f2" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="10" cy="10" r="10" fill="#1877f2"/>
-                            <path d="M7.5 10.5l2 2 3-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        Verified Customer
-                    </span>
-                    <div class="meta">
-                        {{ review.created_at|date:"M d, Y" }}
-                        {% if review.recommend == 'yes' %}
-                            <span class="recommended">Recommended</span>
-                        {% else %}
-                            <span class="not-recommended">Not Recommended</span>
-                        {% endif %}
+
+    <!-- Hero Banner -->
+    <img src="https://www.level-4u.com/images/image-1.jpg" alt="Hero Banner" class="hero-banner" />
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-wrapper">
+            <!-- Left Panel -->
+            <div class="left-panel">
+                <h1>{{ user.business_name|default:user.get_full_name|default:user.username|upper }}</h1>
+                <div class="subtitle">{{ user.business_name|default:user.get_full_name|default:user.username }}</div>
+                
+                {% if reviews %}
+                    <div class="rating-display">
+                        <div class="stars">
+                            {% for star_type in star_display %}
+                                {% if star_type == 'full' %}
+                                    <span class="star">★</span>
+                                {% elif star_type == 'half' %}
+                                    <span class="star" style="position: relative; display: inline-block;">
+                                        <span style="opacity: 0.3;">★</span>
+                                        <span style="position: absolute; left: 0; top: 0; width: 50%; overflow: hidden; color: #FF8C00;">★</span>
+                                    </span>
+                                {% else %}
+                                    <span class="star" style="opacity: 0.3;">★</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <span class="review-count">Reviews: {{ total_reviews }}</span>
                     </div>
+                {% endif %}
+
+                <div class="description">
+                    <p>Experience exceptional service with {{ user.business_name|default:user.get_full_name|default:user.username }}. Our commitment to excellence ensures that every customer receives personalized attention and outstanding results.</p>
+                    <p>We pride ourselves on delivering high-quality solutions tailored to your needs, backed by a dedicated team that values your satisfaction above all else.</p>
                 </div>
-                <div class="ratings-row">
-                    <div>
-                        <span class="rating-label">Overall:</span>
-                        <span class="rating-value">{{ review.main_rating|default:"-" }}/5</span>
-                    </div>
-                    <div>
-                        <span class="rating-label">Logistics:</span>
-                        <span class="rating-value">{{ review.logistics_rating|default:"-" }}/5</span>
-                    </div>
-                    <div>
-                        <span class="rating-label">Communication:</span>
-                        <span class="rating-value">{{ review.communication_rating|default:"-" }}/5</span>
-                    </div>
-                    <div>
-                        <span class="rating-label">Website Usability:</span>
-                        <span class="rating-value">{{ review.website_usability_rating|default:"-" }}/5</span>
-                    </div>
+            </div>
+
+            <!-- Right Panel - Rating Widget -->
+            <div class="right-panel">
+                <div class="corner corner-top-left"></div>
+                <div class="corner corner-top-right"></div>
+                <div class="corner corner-bottom-left"></div>
+                <div class="corner corner-bottom-right"></div>
+                
+                <div class="verified-badge">
+                    <img src="{{ badge_url }}" alt="Level {{ badge_level|capfirst }} Badge" />
                 </div>
-                <div class="comment">{{ review.comment|linebreaksbr }}</div>
-                {% if review.reply %}
-                    <div class="reply"><b>Store reply:</b> {{ review.reply|linebreaksbr }}</div>
+                
+                {% if reviews %}
+                    <div class="overall-rating">
+                        <div class="rating-hexagon"><span>{{ avg_rating }}</span></div>
+                    </div>
+                    
+                    <div class="star-distribution">
+                        {% for star_data in star_distribution_list %}
+                            <div class="star-row">
+                                <span class="star-label">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= star_data.level %}
+                                            <span class="star-icon">★</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </span>
+                                <div class="star-bar-container">
+                                    <div class="star-bar" data-width="{{ star_data.percentage|default:0|floatformat:0 }}"></div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
                 {% endif %}
             </div>
-        {% endfor %}
-    {% else %}
-        <p class="no-reviews">No reviews yet.</p>
+        </div>
+    </div>
+
+    <!-- Testimonials Section -->
+    {% if reviews %}
+        <div class="testimonials-section">
+            <div class="testimonials-container">
+                <div class="testimonials-grid">
+                    {% for review in reviews|slice:":3" %}
+                        <div class="testimonial-card">
+                            <div class="corner corner-top-left"></div>
+                            <div class="corner corner-top-right"></div>
+                            <div class="corner corner-bottom-left"></div>
+                            <div class="corner corner-bottom-right"></div>
+                            
+                            <div class="testimonial-header">
+                                <div class="profile-icon">
+                                    {{ review.customer_name|default:review.manual_customer_name|default:"A"|first|upper }}
+                                </div>
+                                <div class="testimonial-name">
+                                    {{ review.customer_name|default:review.manual_customer_name|default:"Anonymous Customer" }}
+                                </div>
+                            </div>
+                            
+                            <div class="testimonial-text">
+                                {{ review.comment|truncatewords:30 }}
+                            </div>
+                            
+                            <a href="#" class="see-more-link">See more</a>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="see-all-reviews">
+                    <a href="#all-reviews">See all {{ reviews|length }} reviews</a>
+                </div>
+            </div>
+        </div>
     {% endif %}
-</div>
+
+    <!-- All Reviews Section -->
+    {% if reviews %}
+        <div id="all-reviews-section" class="all-reviews-section">
+            <div class="all-reviews-container">
+                <h2 class="all-reviews-title">All Reviews ({{ reviews|length }})</h2>
+                {% for review in reviews %}
+                    <div class="review-card">
+                        <div class="corner corner-top-left"></div>
+                        <div class="corner corner-top-right"></div>
+                        <div class="corner corner-bottom-left"></div>
+                        <div class="corner corner-bottom-right"></div>
+                        
+                        <div class="review-card-header">
+                            <div class="review-card-profile">
+                                <div class="review-card-icon">
+                                    {{ review.customer_name|default:review.manual_customer_name|default:"A"|first|upper }}
+                                </div>
+                                <div>
+                                    <div class="review-card-name">
+                                        {{ review.customer_name|default:review.manual_customer_name|default:"Anonymous Customer" }}
+                                    </div>
+                                    <div class="review-card-date">
+                                        {{ review.created_at|date:"F d, Y" }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="review-card-recommend {{ review.recommend }}">
+                            {% if review.recommend == 'yes' %}
+                                ✓ Recommend
+                            {% else %}
+                                ✗ Not Recommend
+                            {% endif %}
+                        </div>
+                        
+                        <div class="review-card-rating">
+                            <div class="review-card-rating-stars">
+                                {% for i in "12345" %}
+                                    {% with star_num=forloop.counter %}
+                                        {% if star_num <= review.main_rating|add:0|floatformat:0|add:0 %}
+                                            <span class="star" style="color: #FF8C00; font-size: 18px;">★</span>
+                                        {% elif star_num|add:0 > review.main_rating|add:0|floatformat:0|add:0 and star_num|add:0|add:-1 < review.main_rating|add:0|floatformat:0|add:0 %}
+                                            <span class="star" style="position: relative; display: inline-block; color: #FF8C00; font-size: 18px;">
+                                                <span style="opacity: 0.3;">★</span>
+                                                <span style="position: absolute; left: 0; top: 0; width: 50%; overflow: hidden; color: #FF8C00;">★</span>
+                                            </span>
+                                        {% else %}
+                                            <span class="star" style="opacity: 0.3; color: #FF8C00; font-size: 18px;">★</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endfor %}
+                            </div>
+                            <span class="review-card-rating-value">{{ review.main_rating|default:"-" }}/5</span>
+                        </div>
+                        
+                        {% if category_questions and review.category_ratings %}
+                            <div class="review-card-category-ratings">
+                                {% for question in category_questions %}
+                                    {% with rating_value=review.category_ratings|get_item:question.field %}
+                                        {% if rating_value and rating_value > 0 %}
+                                            <div class="category-rating-item">
+                                                <span class="category-rating-label">{{ question.label }}:</span>
+                                                <div class="category-rating-stars">
+                                                    {% for i in "12345" %}
+                                                        {% with star_num=forloop.counter %}
+                                                            {% if star_num <= rating_value|add:0 %}
+                                                                <span class="star">★</span>
+                                                            {% else %}
+                                                                <span class="star" style="opacity: 0.3;">★</span>
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    {% endfor %}
+                                                </div>
+                                                <span class="category-rating-value">{{ rating_value }}/5</span>
+                                            </div>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="review-card-comment">
+                            {{ review.comment|linebreaksbr }}
+                        </div>
+                        
+                        {% if review.reply %}
+                            <div class="review-card-reply">
+                                <span class="review-card-reply-label">Store Reply:</span>
+                                {{ review.reply|linebreaksbr }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-logo">
+            <img src="https://www.level-4u.com/images/logo.png" alt="LEVEJ Logo" />
+        </div>
+        <div class="footer-copyright">© 2025 Level 4 You. All rights reserved.</div>
+    </div>
 </body>
 </html>

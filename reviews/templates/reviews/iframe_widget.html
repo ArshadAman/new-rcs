@@ -18,11 +18,9 @@
         }
         
         #rcs-widget-collapsed {
-            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
             border-radius: 15px;
             padding: 20px 12px;
             cursor: pointer;
-            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
             font-size: 12px;
             width: 50px;
             height: 220px;
@@ -218,68 +216,140 @@
         
         #rcs-widget-expanded {
             display: none;
-            background: #fff;
+            background: transparent;
             color: #222;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            padding: 20px;
+            padding: 0;
             min-width: 350px;
             position: absolute;
             right: 50px;
             top: 50%;
             transform: translateY(-50%) translateX(100%);
             transition: all 0.3s ease-in-out;
-            overflow: hidden;
+            overflow: visible;
         }
         
         .expanded-content {
             display: flex;
-            gap: 20px;
+            gap: 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .left-vertical-bar {
+            width: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 15px 5px;
+            position: relative;
+            border-radius: 12px 0 0 12px;
+        }
+        
+        .left-vertical-bar.bronze {
+            background: #FFDB01;
+        }
+        
+        .left-vertical-bar.silver {
+            background: #FFDB01;
+        }
+        
+        .left-vertical-bar.gold {
+            background: #FFDB01;
+        }
+        
+        .left-vertical-bar-stars {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        
+        .left-vertical-bar-star {
+            font-size: 14px;
+            color: #FF8C00;
+        }
+        
+        .left-vertical-bar-star.outline {
+            color: transparent;
+            -webkit-text-stroke: 1.5px #FF8C00;
+            text-stroke: 1.5px #FF8C00;
         }
         
         .left-section {
             flex: 1;
             text-align: left;
             padding: 20px;
+            background: #ffffff;
+            position: relative;
+            overflow: visible;
         }
         
         .rating-category {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
             margin-bottom: 8px;
             font-size: 12px;
             font-weight: 500;
+            gap: 15px;
+            opacity: 1;
         }
         
         .category-name {
-            color: #333;
+            color: #000000;
+            font-weight: 600;
+            text-transform: uppercase;
+            opacity: 1;
+            flex-shrink: 0;
         }
         
         .category-stars {
-            color: #000;
             font-size: 14px;
+            color: #000000;
+            opacity: 1;
+            flex-shrink: 0;
+            display: inline-flex;
+            gap: 2px;
+            white-space: nowrap;
+        }
+        
+        .category-stars span.empty {
+            color: transparent;
+            -webkit-text-stroke: 1px #000000;
+            text-stroke: 1px #000000;
+            opacity: 1;
+            display: inline-block;
         }
         
         .positive-reviews-box {
             background: #000;
             color: #fff;
-            padding: 15px;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 0;
             margin: 15px 0;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .positive-reviews-left {
+            flex: 1;
         }
         
         .positive-percentage {
-            font-size: 24px;
+            font-size: 40px;
             font-weight: bold;
             margin-bottom: 5px;
+            line-height: 1;
         }
         
         .positive-text {
             font-size: 11px;
             font-weight: bold;
             text-transform: uppercase;
+            line-height: 1.2;
         }
         
         .brackets {
@@ -297,8 +367,10 @@
             top: 0;
             width: 15px;
             height: 15px;
-            border-left: 2px solid #000;
-            border-top: 2px solid #000;
+            border-left: 2px solid #000000;
+            border-top: 2px solid #000000;
+            opacity: 1;
+            box-sizing: border-box;
         }
         
         .bracket-right {
@@ -307,34 +379,57 @@
             top: 0;
             width: 15px;
             height: 15px;
-            border-right: 2px solid #000;
-            border-top: 2px solid #000;
+            border-right: 2px solid #000000;
+            border-top: 2px solid #000000;
+            opacity: 1;
+            box-sizing: border-box;
+        }
+        
+        .bracket-bottom-left {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 15px;
+            height: 15px;
+            border-left: 2px solid #000000;
+            border-bottom: 2px solid #000000;
+        }
+        
+        .bracket-bottom-right {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 15px;
+            height: 15px;
+            border-right: 2px solid #000000;
+            border-bottom: 2px solid #000000;
         }
         
         .right-section {
-            width: 60px;
-            border-radius: 8px;
+            width: 50px;
+            border-radius: 0 12px 12px 0;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             padding: 15px 10px;
+            position: relative;
         }
         
-        .right-section.basic {
-            background: linear-gradient(180deg, #28a745 0%, #1e7e34 100%);
+        .right-section.bronze {
+            background: #ffffff;
         }
         
-        .right-section.extended {
-            background: linear-gradient(180deg, #fd7e14 0%, #e55a00 100%);
+        .right-section.silver {
+            background: #ffffff;
         }
         
-        .right-section.pro {
-            background: linear-gradient(180deg, #6f42c1 0%, #5a2d91 100%);
+        .right-section.gold {
+            background: #ffffff;
         }
         
-        .right-section:not(.basic):not(.extended):not(.pro) {
-            background: linear-gradient(180deg, #2a7ae2 0%, #1a5ab8 100%);
+        .right-section:not(.bronze):not(.silver):not(.gold) {
+            background: #ffffff;
         }
         
         .rating-description {
@@ -346,42 +441,45 @@
         }
         
         .cta-button {
-            background: #000;
-            color: #fff;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 4px;
-            font-size: 11px;
+            background: #000000;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+            padding: 12px 24px;
+            border-radius: 0;
+            font-size: 12px;
             font-weight: bold;
             text-transform: uppercase;
             cursor: pointer;
-            transition: background 0.2s;
-            width: 100%;
-            max-width: 180px;
-            margin-bottom: 10px;
+            transition: all 0.2s;
+            margin-left: 20px;
         }
         
         .cta-button:hover {
-            background: #333;
+            background: #1a1a1a;
         }
         
         .verified-text {
-            font-size: 10px;
-            color: #666;
+            font-size: 9px;
+            font-weight: 300;
+            color: #000000 !important;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-align: center;
         }
         
         .level-logo {
             font-size: 10px;
             font-weight: bold;
             color: #000;
-            margin-top: 5px;
+            margin-top: 8px;
+            text-align: center;
         }
         
         .level-logo img {
-            height: 25px;
+            height: 50px;
             width: auto;
-            max-width: 80px;
-            filter: drop-shadow(1px 1px 0px #000) drop-shadow(-1px -1px 0px #000) drop-shadow(1px -1px 0px #000) drop-shadow(-1px 1px 0px #000);
+            max-width: 200px;
         }
         
         .stars-container {
@@ -396,7 +494,34 @@
         }
         
         .star.filled {
-            color: #000000;
+            color: #fff;
+        }
+        
+        .star.outline {
+            color: transparent;
+            -webkit-text-stroke: 1.5px #fff;
+            text-stroke: 1.5px #fff;
+        }
+        
+        .star.outline-yellow {
+            color: transparent;
+            -webkit-text-stroke: 1.5px #FFDB01;
+            text-stroke: 1.5px #FFDB01;
+        }
+        
+        .right-section-star {
+            font-size: 14px;
+            color: #ffffff;
+        }
+        
+        .right-section-star.outline {
+            color: transparent;
+            -webkit-text-stroke: 1.5px #ffffff;
+            text-stroke: 1.5px #ffffff;
+        }
+        
+        .right-section .rating-number {
+            display: none;
         }
         
         @media (max-width: 768px) {
@@ -410,6 +535,10 @@
             font-size: 14px;
             font-weight: bold;
             margin-top: 8px;
+        }
+        
+        .verified-text {
+            color: #ffffff;
         }
         
         .expired-message {
@@ -443,7 +572,7 @@
 </head>
 <body>
 <div id="rcs-widget-container">
-    <div id="rcs-widget-collapsed" onclick="expandRcsWidget()">
+    <div id="rcs-widget-collapsed" onclick="expandRcsWidget()" style="background: {{ level_color|default:'#FF8C00' }}; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
         <div class="collapsed-stars">
             {% for i in "12345" %}
                 {% if forloop.counter <= avg_main|default:4 %}
@@ -456,6 +585,17 @@
     </div>
     <div id="rcs-widget-expanded">
         <div class="expanded-content">
+            <div class="left-vertical-bar {{ badge_level|default:'bronze' }}">
+                <div class="left-vertical-bar-stars">
+                    {% for i in "12345" %}
+                        {% if forloop.counter == 1 %}
+                            <div class="left-vertical-bar-star outline">★</div>
+                        {% else %}
+                            <div class="left-vertical-bar-star">★</div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
             <div class="left-section">
                 <div class="brackets">
                     <div class="bracket-left"></div>
@@ -469,71 +609,88 @@
                     <div class="expired-subtext">Please renew to continue collecting reviews</div>
                 </div>
                 {% else %}
-                <div class="rating-category">
-                    <span class="category-name">LOGISTICS</span>
-                    <span class="category-stars">
-                        {% for i in "12345" %}
-                            {% if forloop.counter <= avg_logistics|default:5 %}
-                                ★
-                            {% else %}
-                                <span style="color:#ddd">★</span>
-                            {% endif %}
-                        {% endfor %}
-                    </span>
-                </div>
-                
-                <div class="rating-category">
-                    <span class="category-name">DELIVERY</span>
-                    <span class="category-stars">
-                        {% for i in "12345" %}
-                            {% if forloop.counter <= avg_communication|default:5 %}
-                                ★
-                            {% else %}
-                                <span style="color:#ddd">★</span>
-                            {% endif %}
-                        {% endfor %}
-                    </span>
-                </div>
-                
-                <div class="rating-category">
-                    <span class="category-name">COMMUNICATION</span>
-                    <span class="category-stars">
-                        {% for i in "12345" %}
-                            {% if forloop.counter <= avg_communication|default:5 %}
-                                ★
-                            {% else %}
-                                <span style="color:#ddd">★</span>
-                            {% endif %}
-                        {% endfor %}
-                    </span>
-                </div>
+                {% if category_ratings_data %}
+                    {% for rating_data in category_ratings_data|slice:":3" %}
+                        <div class="rating-category">
+                            <span class="category-name">{{ rating_data.label|upper }}</span>
+                            <span class="category-stars">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= rating_data.avg_rating|floatformat:0|add:0 %}
+                                        ★
+                                    {% else %}
+                                        <span class="empty">★</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="rating-category">
+                        <span class="category-name">LOGISTICS</span>
+                        <span class="category-stars {{ badge_level|default:'bronze' }}">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= avg_logistics|default:5 %}
+                                    ★
+                                {% else %}
+                                    <span class="empty">★</span>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                    
+                    <div class="rating-category">
+                        <span class="category-name">DELIVERY</span>
+                        <span class="category-stars {{ badge_level|default:'bronze' }}">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= avg_communication|default:5 %}
+                                    ★
+                                {% else %}
+                                    <span class="empty">★</span>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                    
+                    <div class="rating-category">
+                        <span class="category-name">COMMUNICATION</span>
+                        <span class="category-stars {{ badge_level|default:'bronze' }}">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= avg_communication|default:5 %}
+                                    ★
+                                {% else %}
+                                    <span class="empty">★</span>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                {% endif %}
                 
                 <div class="positive-reviews-box">
-                    <div class="positive-percentage">{{ positive_percentage }}%</div>
-                    <div class="positive-text">POSITIVE REVIEWS</div>
+                    <div class="positive-reviews-left">
+                        <div class="positive-percentage">{{ positive_percentage }}%</div>
+                        <div class="positive-text">POSITIVE REVIEWS</div>
+                    </div>
+                    <button class="cta-button" onclick="parent.location.href='/api/reviews/public-reviews/{{ user.id }}/'">
+                        CLICK HERE
+                    </button>
                 </div>
-                
-                <button class="cta-button" onclick="parent.location.href='/api/reviews/public-reviews/{{ user.id }}/'">
-                    Click Here<br>To See Reviews
-                </button>
                 
                 <div class="verified-text">VERIFIED BY</div>
                 <div class="level-logo">
-                    <img src="https://www.level-4u.com/images/logo.png" alt="Level-4u" />
+                    <img src="https://www.level-4u.com/images/levelblack.png" alt="LEVEL" />
                 </div>
                 {% endif %}
             </div>
-            <div class="right-section {{ user.plan|default:'basic' }}">
-                <div class="stars-container">
+            <div class="right-section {{ badge_level|default:'bronze' }}">
+                <div class="stars-container" style="display: none;">
                     {% for i in "12345" %}
-                        {% if forloop.counter <= avg_main|default:4 %}
-                            <div class="star filled">★</div>
+                        {% if forloop.counter == 1 %}
+                            <div class="right-section-star outline">★</div>
                         {% else %}
-                            <div class="star">★</div>
+                            <div class="right-section-star">★</div>
                         {% endif %}
                     {% endfor %}
                 </div>
-                <div class="rating-number">{{ avg_main|default:'4' }}/5</div>
             </div>
         </div>
     </div>

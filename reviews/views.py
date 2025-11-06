@@ -277,6 +277,43 @@ def iframe_(request, user_id):
     positive_reviews = reviews.filter(recommend='yes').count()
     positive_percentage = round((positive_reviews / total_reviews * 100), 0) if total_reviews > 0 else 0
 
+    # Get category-specific questions for the user's business category
+    category_questions = []
+    category_ratings_data = []
+    if user.business_category:
+        from users.models import BusinessCategory
+        category_questions = BusinessCategory.get_default_questions().get(user.business_category.name, [])
+        
+        # Calculate average ratings for each category question
+        for question in category_questions:
+            field_name = question['field']
+            ratings = []
+            for review in reviews:
+                if review.category_ratings and field_name in review.category_ratings:
+                    rating_value = review.category_ratings[field_name]
+                    if rating_value and rating_value > 0:
+                        ratings.append(rating_value)
+            
+            avg_rating = round(sum(ratings) / len(ratings), 1) if ratings else 0
+            category_ratings_data.append({
+                'label': question['label'],
+                'field': field_name,
+                'avg_rating': avg_rating,
+                'count': len(ratings)
+            })
+    
+    # Determine badge level based on average rating
+    avg_main_rating = avg('main_rating') or 0
+    if avg_main_rating >= 4.5:
+        badge_level = 'gold'
+        level_color = '#FFDB01'  # Yellow
+    elif avg_main_rating >= 3.5:
+        badge_level = 'silver'
+        level_color = '#808080'  # Grey
+    else:
+        badge_level = 'bronze'
+        level_color = '#FF8C00'  # Orange
+    
     # Plan-based widget logic
     context = {
         'user': user,
@@ -286,6 +323,10 @@ def iframe_(request, user_id):
         'avg_website': avg('website_usability_rating'),
         'reviews': reviews,
         'positive_percentage': int(positive_percentage),
+        'category_questions': category_questions,
+        'category_ratings_data': category_ratings_data,
+        'badge_level': badge_level,
+        'level_color': level_color,
     }
 
     if user.plan == 'expired':
@@ -340,9 +381,89 @@ def iframe_(request, user_id):
     return render(request, 'reviews/iframe_widget.html', context)
 
 def public_reviews(request, user_id):
+    from django.db.models import Avg, Count, Q
+    from statistics import mean
+    
     user = get_object_or_404(CustomUser, id=user_id)
     reviews = Review.objects.filter(user=user, is_published=True).order_by('-created_at')
-    return render(request, 'reviews/public_reviews.html', {'user': user, 'reviews': reviews})
+    
+    # Calculate average rating
+    avg_rating = 0
+    total_reviews = reviews.count()
+    star_distribution = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0}
+    star_distribution_list = []
+    
+    if total_reviews > 0:
+        ratings = [r.main_rating for r in reviews if r.main_rating is not None]
+        if ratings:
+            avg_rating = sum(ratings) / len(ratings)
+            
+            # Calculate star distribution
+            for review in reviews:
+                if review.main_rating is not None:
+                    rating = int(round(review.main_rating))
+                    if 1 <= rating <= 5:
+                        star_distribution[rating] = star_distribution.get(rating, 0) + 1
+            
+            # Create list for template (5 to 1 stars)
+            for level in [5, 4, 3, 2, 1]:
+                count = star_distribution.get(level, 0)
+                percentage = (count / total_reviews * 100) if total_reviews > 0 else 0
+                star_distribution_list.append({
+                    'level': level,
+                    'count': count,
+                    'percentage': round(percentage, 0)
+                })
+    
+    # Calculate star display (for showing stars like 4.5)
+    star_display = []
+    if avg_rating > 0:
+        full_stars = int(avg_rating)
+        has_half = (avg_rating - full_stars) >= 0.5
+        for i in range(1, 6):
+            if i <= full_stars:
+                star_display.append('full')
+            elif i == full_stars + 1 and has_half:
+                star_display.append('half')
+            else:
+                star_display.append('empty')
+    else:
+        star_display = ['empty', 'empty', 'empty', 'empty', 'empty']
+    
+    # Determine badge level based on average rating (default to bronze if no reviews)
+    if total_reviews == 0 or avg_rating == 0:
+        badge_level = 'bronze'
+        badge_url = 'https://www.level-4u.com/images/badgebronze.png'
+    elif avg_rating >= 4.5:
+        badge_level = 'gold'
+        badge_url = 'https://www.level-4u.com/images/badgegold.png'
+    elif avg_rating >= 3.5:
+        badge_level = 'silver'
+        badge_url = 'https://www.level-4u.com/images/badgesilver.png'
+    else:
+        badge_level = 'bronze'
+        badge_url = 'https://www.level-4u.com/images/badgebronze.png'
+    
+    # Get category-specific questions for the user's business category
+    category_questions = []
+    if user.business_category:
+        from users.models import BusinessCategory
+        category_questions = BusinessCategory.get_default_questions().get(user.business_category.name, [])
+    
+    context = {
+        'user': user,
+        'reviews': reviews,
+        'avg_rating': round(avg_rating, 1),
+        'total_reviews': total_reviews,
+        'star_distribution': star_distribution,
+        'star_distribution_list': star_distribution_list,
+        'star_display': star_display,
+        'badge_level': badge_level,
+        'badge_url': badge_url,
+        'category_questions': category_questions,
+    }
+    
+    return render(request, 'reviews/public_reviews.html', context)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
