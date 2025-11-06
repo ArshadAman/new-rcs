@@ -572,7 +572,7 @@
 </head>
 <body>
 <div id="rcs-widget-container">
-    <div id="rcs-widget-collapsed" onclick="expandRcsWidget()" style="background: {{ level_color|default:'#FF8C00' }}; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
+    <div id="rcs-widget-collapsed" style="background: {{ level_color|default:'#FF8C00' }}; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
         <div class="collapsed-stars">
             {% for i in "12345" %}
                 {% if forloop.counter <= avg_main|default:4 %}
@@ -730,11 +730,62 @@ function collapseRcsWidget() {
     }, 150);
 }
 
-document.addEventListener('click', function(e) {
-    var widget = document.getElementById('rcs-widget-container');
-    if (!widget.contains(e.target)) {
-        collapseRcsWidget();
-    }
+// Hover to expand, leave to collapse
+document.addEventListener('DOMContentLoaded', function() {
+    const collapsed = document.getElementById('rcs-widget-collapsed');
+    const expanded = document.getElementById('rcs-widget-expanded');
+    const container = document.getElementById('rcs-widget-container');
+    let isExpanded = false;
+    let hoverTimeout = null;
+    let isTransitioning = false;
+    
+    // Expand on hover of the entire container
+    container.addEventListener('mouseenter', function() {
+        // Clear any pending collapse
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            hoverTimeout = null;
+        }
+        
+        // Only expand if not already expanded and not transitioning
+        if (!isExpanded && !isTransitioning) {
+            isTransitioning = true;
+            expandRcsWidget();
+            setTimeout(function() {
+                isExpanded = true;
+                isTransitioning = false;
+            }, 300);
+        }
+    });
+    
+    // Collapse when mouse leaves the container with a small delay to prevent flickering
+    container.addEventListener('mouseleave', function() {
+        // Add a small delay to prevent rapid expand/collapse
+        hoverTimeout = setTimeout(function() {
+            if (isExpanded && !isTransitioning) {
+                isTransitioning = true;
+                collapseRcsWidget();
+                setTimeout(function() {
+                    isExpanded = false;
+                    isTransitioning = false;
+                }, 300);
+            }
+        }, 150);
+    });
+    
+    // Keep click outside to collapse functionality
+    document.addEventListener('click', function(e) {
+        if (!container.contains(e.target)) {
+            if (isExpanded) {
+                isTransitioning = true;
+                collapseRcsWidget();
+                setTimeout(function() {
+                    isExpanded = false;
+                    isTransitioning = false;
+                }, 300);
+            }
+        }
+    });
 });
 </script>
 </body>
