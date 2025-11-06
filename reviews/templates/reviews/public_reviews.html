@@ -320,6 +320,35 @@
             margin-bottom: 40px;
             text-align: center;
         }
+        .filter-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 12px 30px;
+            background: #1a1a1a;
+            border: 2px solid #FFDB01;
+            color: #FFDB01;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .filter-btn:hover {
+            background: #FFDB01;
+            color: #000000;
+        }
+        .filter-btn.active {
+            background: #FFDB01;
+            color: #000000;
+        }
+        .review-card.hidden {
+            display: none;
+        }
         .review-card {
             background: #1a1a1a;
             border: none;
@@ -517,6 +546,44 @@
                     }
                 });
             });
+            
+            // Filter reviews functionality
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const reviewCards = document.querySelectorAll('.review-card');
+            
+            filterButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    filterButtons.forEach(function(btn) {
+                        btn.classList.remove('active');
+                    });
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    const filter = this.getAttribute('data-filter');
+                    
+                    // Filter reviews
+                    reviewCards.forEach(function(card) {
+                        const rating = parseFloat(card.getAttribute('data-rating')) || 0;
+                        
+                        if (filter === 'all') {
+                            card.classList.remove('hidden');
+                        } else if (filter === 'positive') {
+                            if (rating > 2) {
+                                card.classList.remove('hidden');
+                            } else {
+                                card.classList.add('hidden');
+                            }
+                        } else if (filter === 'negative') {
+                            if (rating <= 2) {
+                                card.classList.remove('hidden');
+                            } else {
+                                card.classList.add('hidden');
+                            }
+                        }
+                    });
+                });
+            });
         });
     </script>
 </head>
@@ -644,8 +711,16 @@
         <div id="all-reviews-section" class="all-reviews-section">
             <div class="all-reviews-container">
                 <h2 class="all-reviews-title">All Reviews ({{ reviews|length }})</h2>
+                
+                <!-- Filter Buttons -->
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">All Reviews</button>
+                    <button class="filter-btn" data-filter="positive">Positive (3+ stars)</button>
+                    <button class="filter-btn" data-filter="negative">Negative (≤2 stars)</button>
+                </div>
+                
                 {% for review in reviews %}
-                    <div class="review-card">
+                    <div class="review-card" data-rating="{{ review.main_rating|default:0|floatformat:0 }}">
                         <div class="corner corner-top-left"></div>
                         <div class="corner corner-top-right"></div>
                         <div class="corner corner-bottom-left"></div>
