@@ -521,9 +521,9 @@ def reply_to_negative_review(request, review_id):
     
     elif (is_trial_active(user) and monthly_count<limit) or monthly_count < limit:
         try:
-            review = Review.objects.get(id=review_id, user=user, is_published=False)
-            if review.main_rating >= 3 or not review.is_flagged_red:
-                return Response({'error': 'Only negative reviews (main rating below 3) can be replied to.'}, status=status.HTTP_400_BAD_REQUEST)
+            review = Review.objects.get(id=review_id, user=user)
+            if review.reply:
+                return Response({'error': 'This review already has a reply.'}, status=status.HTTP_400_BAD_REQUEST)
         except Review.DoesNotExist:
             return Response({'error': 'Review not found or not eligible for reply.'}, status=status.HTTP_404_NOT_FOUND)
         reply = request.data.get('reply', '').strip()
@@ -532,7 +532,9 @@ def reply_to_negative_review(request, review_id):
         review.reply = reply
         # review.is_complete = True
         review.save()
-        return Response({'message': 'Reply added and review published.'}, status=status.HTTP_200_OK)
+        user.monthly_reply_count += 1
+        user.save()
+        return Response({'message': 'Reply added successfully.'}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
