@@ -105,17 +105,17 @@
             <div>{{ body_without_link|safe }}</div>
             
             <div class="button-container">
-                <a href="{{ review_link }}" class="button">Click Here to Review</a>
+                <a href="{{ review_link }}" class="button">{{ strings.button_text }}</a>
             </div>
             
-            <p style="margin-top: 30px; font-size: 14px; color: #888888;">Thank you for your valuable feedback. We appreciate your time and trust in our service.</p>
+            <p style="margin-top: 30px; font-size: 14px; color: #888888;">{{ strings.closing_text }}</p>
         </div>
         
         <div class="footer">
             <div class="footer-logo">
                 <img src="https://www.level-4u.com/images/logo.png" alt="Level 4 You" class="footer-logo-img">
             </div>
-            <p class="footer-copyright">© 2025 Level 4 You. All rights reserved.</p>
+            <p class="footer-copyright">{{ strings.footer_text }}</p>
         </div>
     </div>
 </body>

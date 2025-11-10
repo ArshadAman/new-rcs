@@ -7,6 +7,11 @@ import sendgrid
 from sendgrid.helpers.mail import Mail, Content
 from django.utils import timezone
 from .models import Order, MailingCampaign, MailingRecipient
+from utils.translation_service import (
+    get_language_for_country,
+    translate_strings,
+    translate_sequence,
+)
 
 @shared_task
 def send_scheduled_review_emails():
@@ -60,6 +65,16 @@ def send_mailing_emails(campaign_id: int) -> str:
         sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
         sent_count = 0
 
+        language_code = get_language_for_country(getattr(campaign.user, "country", None))
+        template_strings = translate_strings(
+            {
+                'button_text': 'Click Here to Review',
+                'closing_text': 'Thank you for your valuable feedback. We appreciate your time and trust in our service.',
+                'footer_text': '© 2025 Level 4 You. All rights reserved.',
+            },
+            language_code,
+        )
+
         for recipient in recipients:
             try:
                 # Replace variables in email content
@@ -81,11 +96,21 @@ def send_mailing_emails(campaign_id: int) -> str:
                 review_link = replacements['[Review Link]']
                 body_without_link = body.replace(review_link, '').strip()
 
+                if language_code:
+                    translated_values = translate_sequence(
+                        [subject, body, body_without_link],
+                        language_code,
+                    )
+                    subject, body, body_without_link = translated_values
+
+                html_strings = template_strings
+
                 # Generate HTML email with template
                 html_message = render_to_string('orders/emails/manual_mailing.html', {
                     'subject': subject,
                     'body_without_link': body_without_link,
-                    'review_link': review_link
+                    'review_link': review_link,
+                    'strings': html_strings,
                 })
                 
                 # Create and send email

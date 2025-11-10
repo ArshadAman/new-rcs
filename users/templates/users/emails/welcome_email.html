@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Welcome to Level4u</title>
+    <title>{{ strings.title }}</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -96,16 +96,16 @@
             <img src="https://www.level-4u.com/images/image-1.jpg" alt="Banner" class="banner-image">
         </div>
         <div class="content">
-            <h2>Thank you for choosing our rating collection service.</h2>
+            <h2>{{ strings.heading }}</h2>
             
-            <p>We value your trust and are committed to providing a reliable and efficient platform for gathering feedback and insights.</p>
+            <p>{{ strings.paragraph_one }}</p>
             
-            <p>Our team continually works to enhance the quality and functionality of our service to better support your goals.</p>
+            <p>{{ strings.paragraph_two }}</p>
             
-            <p>Your continued engagement helps us improve — we appreciate your partnership.</p>
+            <p>{{ strings.paragraph_three }}</p>
             
             <div class="button-container">
-                <a href="{{ dashboard_url }}" class="button">Go to Dashboard</a>
+                <a href="{{ dashboard_url }}" class="button">{{ strings.button_text }}</a>
             </div>
         </div>
         
@@ -113,7 +113,7 @@
             <div class="footer-logo">
                 <img src="https://www.level-4u.com/images/logo.png" alt="Level 4 You" class="footer-logo-img">
             </div>
-            <p class="footer-copyright">© 2025 Level 4 You. All rights reserved.</p>
+            <p class="footer-copyright">{{ strings.footer_text }}</p>
         </div>
     </div>
 </body>

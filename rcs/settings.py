@@ -192,3 +192,4 @@ EMAIL_HOST_USER = 'apikey'  # This is always 'apikey' for SendGrid
 EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_API_KEY')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@level-4u.com')
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://www.level-4u.com')
+GOOGLE_TRANSLATE_API_KEY = os.environ.get('GOOGLE_TRANSLATE_API_KEY')

@@ -12,10 +12,28 @@ from rest_framework.response import Response
 from rest_framework import status
 from utils.utitily import is_trial_active, is_plan_active
 from django.views.decorators.clickjacking import xframe_options_exempt
+from django.http import HttpResponse
+from utils.translation_service import (
+    get_language_for_country,
+    translate_strings,
+    translate_sequence,
+)
+
+
+def _localize_html_response(response: HttpResponse, language_code):
+    if language_code:
+        try:
+            html = response.content.decode(response.charset)
+        except (AttributeError, UnicodeDecodeError):
+            return response
+        translated_html = translate_sequence([html], language_code)[0]
+        response.content = translated_html.encode(response.charset)
+    return response
 
 
 def review_form(request, token):
     # Try to find order first (for order-based reviews)
+    language_code = None
     try:
         order = Order.objects.get(review_token=token)
         company = order.user
@@ -34,13 +52,15 @@ def review_form(request, token):
                     company = CustomUser.objects.get(id=company_id)
                 except CustomUser.DoesNotExist:
                     messages.error(request, 'Company not found.')
-                    return render(request, 'reviews/review_form.html')
+                    response = render(request, 'reviews/review_form.html')
+                    return _localize_html_response(response, language_code)
             else:
                 # Use first available company for manual reviews (fallback)
                 company = CustomUser.objects.filter(plan__in=['basic', 'advanced', 'pro', 'unique']).first()
                 if not company:
                     messages.error(request, 'No company found for manual review submission.')
-                    return render(request, 'reviews/review_form.html')
+                    response = render(request, 'reviews/review_form.html')
+                    return _localize_html_response(response, language_code)
             order = None
     
     # Get category-specific questions
@@ -49,12 +69,15 @@ def review_form(request, token):
         from users.models import BusinessCategory
         category_questions = BusinessCategory.get_default_questions().get(company.business_category.name, [])
     
+    language_code = get_language_for_country(getattr(company, "country", None))
+
     if request.method == 'POST':
         monthly_count = company.monthly_review_count
         limit = 50 if company.plan == 'basic' else 150 if company.plan == 'extended' else 1000
         if monthly_count >= limit or not is_plan_active(company):
             messages.error(request, 'Thank you for your feedback! Reviews are currently closed for this business.')
-            return render(request, 'reviews/review_form.html')
+            response = render(request, 'reviews/review_form.html')
+            return _localize_html_response(response, language_code)
         
         elif (is_trial_active(company) and monthly_count<limit) or monthly_count < limit:
             recommend = request.POST.get('recommend')
@@ -113,12 +136,14 @@ def review_form(request, token):
                 company.monthly_review_count += 1
                 company.save()
                 messages.success(request, 'Thank you for your positive review!')
-                return render(request, 'reviews/review_form.html', {'order': order, 'success': True})
+                response = render(request, 'reviews/review_form.html', {'order': order, 'success': True})
+                return _localize_html_response(response, language_code)
             elif recommend == 'no':
                 # Only min 50 char comment required
                 if not comment or len(comment.strip()) < 50:
                     errors['comment'] = 'A detailed comment (min 50 characters) is required for a NO review.'
-                    return render(request, 'reviews/review_form.html', {'order': order, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
+                    response = render(request, 'reviews/review_form.html', {'order': order, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
+                    return _localize_html_response(response, language_code)
                 
                 # Create review with sub-ratings (now they're visible and optional for negative reviews)
                 review_data = {
@@ -141,29 +166,35 @@ def review_form(request, token):
                 company.monthly_review_count += 1
                 company.save()
                 messages.success(request, 'Thank you for your feedback. Your review will be processed.')
-                return render(request, 'reviews/review_form.html', {'order': order, 'success': True})
+                response = render(request, 'reviews/review_form.html', {'order': order, 'success': True})
+                return _localize_html_response(response, language_code)
             else:
                 errors['recommend'] = 'Please select Yes or No.'
-                return render(request, 'reviews/review_form.html', {'order': order, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
+                response = render(request, 'reviews/review_form.html', {'order': order, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
+                return _localize_html_response(response, language_code)
     # GET request
-    return render(request, 'reviews/review_form.html', {'order': order, 'user': company, 'category_questions': category_questions})
+    response = render(request, 'reviews/review_form.html', {'order': order, 'user': company, 'category_questions': category_questions})
+    return _localize_html_response(response, language_code)
 
 def manual_review_form(request):
     """Manual review form that doesn't require an order token"""
     # Get company from URL parameter or use default
+    language_code = None
     company_id = request.GET.get('company_id')
     if company_id:
         try:
             company = CustomUser.objects.get(id=company_id)
         except CustomUser.DoesNotExist:
             messages.error(request, 'Company not found.')
-            return render(request, 'reviews/review_form.html')
+            response = render(request, 'reviews/review_form.html')
+            return _localize_html_response(response, language_code)
     else:
         # Use first available company for manual reviews
         company = CustomUser.objects.filter(plan__in=['basic', 'advanced', 'pro', 'unique']).first()
         if not company:
             messages.error(request, 'No company found for manual review submission.')
-            return render(request, 'reviews/review_form.html')
+            response = render(request, 'reviews/review_form.html')
+            return _localize_html_response(response, language_code)
     
     # Get category-specific questions
     category_questions = []
@@ -171,12 +202,15 @@ def manual_review_form(request):
         from users.models import BusinessCategory
         category_questions = BusinessCategory.get_default_questions().get(company.business_category.name, [])
     
+    language_code = get_language_for_country(getattr(company, "country", None))
+
     if request.method == 'POST':
         monthly_count = company.monthly_review_count
         limit = 50 if company.plan == 'basic' else 150 if company.plan == 'extended' else 1000
         if monthly_count >= limit or not is_plan_active(company):
             messages.error(request, 'Thank you for your feedback! Reviews are currently closed for this business.')
-            return render(request, 'reviews/review_form.html')
+            response = render(request, 'reviews/review_form.html')
+            return _localize_html_response(response, language_code)
         
         elif (is_trial_active(company) and monthly_count<limit) or monthly_count < limit:
             recommend = request.POST.get('recommend')
@@ -230,12 +264,14 @@ def manual_review_form(request):
                 company.monthly_review_count += 1
                 company.save()
                 messages.success(request, 'Thank you for your positive review!')
-                return render(request, 'reviews/review_form.html', {'order': None, 'success': True})
+                response = render(request, 'reviews/review_form.html', {'order': None, 'success': True})
+                return _localize_html_response(response, language_code)
             elif recommend == 'no':
                 # Only min 50 char comment required
                 if not comment or len(comment.strip()) < 50:
                     errors['comment'] = 'A detailed comment (min 50 characters) is required for a NO review.'
-                    return render(request, 'reviews/review_form.html', {'order': None, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
+                    response = render(request, 'reviews/review_form.html', {'order': None, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
+                    return _localize_html_response(response, language_code)
                 
                 # Create review with sub-ratings (now they're visible and optional for negative reviews)
                 review_data = {
@@ -253,12 +289,15 @@ def manual_review_form(request):
                 company.monthly_review_count += 1
                 company.save()
                 messages.success(request, 'Thank you for your feedback. Your review will be processed.')
-                return render(request, 'reviews/review_form.html', {'order': None, 'success': True})
+                response = render(request, 'reviews/review_form.html', {'order': None, 'success': True})
+                return _localize_html_response(response, language_code)
             else:
                 errors['recommend'] = 'Please select Yes or No.'
-                return render(request, 'reviews/review_form.html', {'order': None, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
+                response = render(request, 'reviews/review_form.html', {'order': None, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
+                return _localize_html_response(response, language_code)
     # GET request
-    return render(request, 'reviews/review_form.html', {'order': None, 'user': company, 'category_questions': category_questions})
+    response = render(request, 'reviews/review_form.html', {'order': None, 'user': company, 'category_questions': category_questions})
+    return _localize_html_response(response, language_code)
 
 @xframe_options_exempt
 def iframe_(request, user_id):
@@ -313,6 +352,21 @@ def iframe_(request, user_id):
     else:
         badge_level = 'bronze'
         level_color = '#FF8C00'  # Orange
+
+    language_code = get_language_for_country(getattr(user, "country", None))
+    widget_strings = translate_strings(
+        {
+            'positive_reviews': 'POSITIVE REVIEWS',
+            'click_here': 'CLICK HERE',
+            'verified_by': 'VERIFIED BY',
+            'expired_title': 'YOUR PLAN IS EXPIRED',
+            'expired_subtitle': 'Please renew to continue collecting reviews',
+            'logistics': 'LOGISTICS',
+            'delivery': 'DELIVERY',
+            'communication': 'COMMUNICATION',
+        },
+        language_code,
+    )
     
     # Plan-based widget logic
     context = {
@@ -327,6 +381,8 @@ def iframe_(request, user_id):
         'category_ratings_data': category_ratings_data,
         'badge_level': badge_level,
         'level_color': level_color,
+        'widget_strings': widget_strings,
+        'document_lang': language_code or 'en',
     }
 
     if user.plan == 'expired':
@@ -450,6 +506,35 @@ def public_reviews(request, user_id):
         from users.models import BusinessCategory
         category_questions = BusinessCategory.get_default_questions().get(user.business_category.name, [])
     
+    language_code = get_language_for_country(getattr(user, "country", None))
+    company_display = user.business_name or user.get_full_name() or user.username
+    description_paragraphs = [
+        f"Experience exceptional service with {company_display}. Our commitment to excellence ensures that every customer receives personalized attention and outstanding results.",
+        "We pride ourselves on delivering high-quality solutions tailored to your needs, backed by a dedicated team that values your satisfaction above all else.",
+    ]
+    description_paragraphs = translate_sequence(description_paragraphs, language_code)
+
+    translation_targets = {
+        'page_title_suffix': 'Reviews',
+        'see_more': 'See more',
+        'see_all_reviews_prefix': 'See all',
+        'see_all_reviews_suffix': 'reviews',
+        'all_reviews_title_prefix': 'All Reviews',
+        'filter_all': 'All Reviews',
+        'filter_positive': 'Positive (3+ stars)',
+        'filter_negative': 'Negative (≤2 stars)',
+        'recommend_yes': '✓ Recommend',
+        'recommend_no': '✗ Not Recommend',
+        'store_reply': 'Store Reply:',
+        'review_count_label': 'Reviews:',
+        'footer_text': '© 2025 Level 4 You. All rights reserved.',
+        'logo_alt': 'Level 4 You Logo',
+        'banner_alt': 'Hero Banner',
+        'anonymous_customer': 'Anonymous Customer',
+    }
+    public_strings = translate_strings(translation_targets, language_code)
+    public_strings['html_lang'] = language_code or 'en'
+
     context = {
         'user': user,
         'reviews': reviews,
@@ -461,6 +546,8 @@ def public_reviews(request, user_id):
         'badge_level': badge_level,
         'badge_url': badge_url,
         'category_questions': category_questions,
+        'public_strings': public_strings,
+        'description_paragraphs': description_paragraphs,
     }
     
     return render(request, 'reviews/public_reviews.html', context)

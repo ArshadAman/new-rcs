@@ -1,8 +1,8 @@
 {% load review_extras %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ public_strings.html_lang|default:'en' }}">
 <head>
-    <title>{{ user.business_name|default:user.get_full_name|default:user.username }} - Reviews</title>
+    <title>{{ user.business_name|default:user.get_full_name|default:user.username }} - {{ public_strings.page_title_suffix|default:'Reviews' }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Goldman:wght@400;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -591,12 +591,12 @@
     <!-- Header -->
     <div class="header">
         <div class="logo">
-            <img src="https://www.level-4u.com/images/logo.png" alt="LEVEJ Logo" />
+            <img src="https://www.level-4u.com/images/logo.png" alt="{{ public_strings.logo_alt|default:'Level 4 You Logo' }}" />
         </div>
     </div>
 
     <!-- Hero Banner -->
-    <img src="https://www.level-4u.com/images/image-1.jpg" alt="Hero Banner" class="hero-banner" />
+    
 
     <!-- Main Content -->
     <div class="main-content">
@@ -622,13 +622,14 @@
                                 {% endif %}
                             {% endfor %}
                         </div>
-                        <span class="review-count">Reviews: {{ total_reviews }}</span>
+                        <span class="review-count">{{ public_strings.review_count_label|default:'Reviews:' }} {{ total_reviews }}</span>
                     </div>
                 {% endif %}
 
                 <div class="description">
-                    <p>Experience exceptional service with {{ user.business_name|default:user.get_full_name|default:user.username }}. Our commitment to excellence ensures that every customer receives personalized attention and outstanding results.</p>
-                    <p>We pride ourselves on delivering high-quality solutions tailored to your needs, backed by a dedicated team that values your satisfaction above all else.</p>
+                    {% for paragraph in description_paragraphs %}
+                    <p>{{ paragraph }}</p>
+                    {% endfor %}
                 </div>
             </div>
 
@@ -686,7 +687,7 @@
                                     {{ review.customer_name|default:review.manual_customer_name|default:"A"|first|upper }}
                                 </div>
                                 <div class="testimonial-name">
-                                    {{ review.customer_name|default:review.manual_customer_name|default:"Anonymous Customer" }}
+                                    {{ review.customer_name|default:review.manual_customer_name|default:public_strings.anonymous_customer|default:"Anonymous Customer" }}
                                 </div>
                             </div>
                             
@@ -694,13 +695,13 @@
                                 {{ review.comment|truncatewords:30 }}
                             </div>
                             
-                            <a href="#" class="see-more-link">See more</a>
+                            <a href="#" class="see-more-link">{{ public_strings.see_more|default:'See more' }}</a>
                         </div>
                     {% endfor %}
                 </div>
                 
                 <div class="see-all-reviews">
-                    <a href="#all-reviews">See all {{ reviews|length }} reviews</a>
+                    <a href="#all-reviews">{{ public_strings.see_all_reviews_prefix|default:'See all' }} {{ reviews|length }} {{ public_strings.see_all_reviews_suffix|default:'reviews' }}</a>
                 </div>
             </div>
         </div>
@@ -710,13 +711,13 @@
     {% if reviews %}
         <div id="all-reviews-section" class="all-reviews-section">
             <div class="all-reviews-container">
-                <h2 class="all-reviews-title">All Reviews ({{ reviews|length }})</h2>
+                <h2 class="all-reviews-title">{{ public_strings.all_reviews_title_prefix|default:'All Reviews' }} ({{ reviews|length }})</h2>
                 
                 <!-- Filter Buttons -->
                 <div class="filter-buttons">
-                    <button class="filter-btn active" data-filter="all">All Reviews</button>
-                    <button class="filter-btn" data-filter="positive">Positive (3+ stars)</button>
-                    <button class="filter-btn" data-filter="negative">Negative (≤2 stars)</button>
+                    <button class="filter-btn active" data-filter="all">{{ public_strings.filter_all|default:'All Reviews' }}</button>
+                    <button class="filter-btn" data-filter="positive">{{ public_strings.filter_positive|default:'Positive (3+ stars)' }}</button>
+                    <button class="filter-btn" data-filter="negative">{{ public_strings.filter_negative|default:'Negative (≤2 stars)' }}</button>
                 </div>
                 
                 {% for review in reviews %}
@@ -733,7 +734,7 @@
                                 </div>
                                 <div>
                                     <div class="review-card-name">
-                                        {{ review.customer_name|default:review.manual_customer_name|default:"Anonymous Customer" }}
+                                        {{ review.customer_name|default:review.manual_customer_name|default:public_strings.anonymous_customer|default:"Anonymous Customer" }}
                                     </div>
                                     <div class="review-card-date">
                                         {{ review.created_at|date:"F d, Y" }}
@@ -744,9 +745,9 @@
                         
                         <div class="review-card-recommend {{ review.recommend }}">
                             {% if review.recommend == 'yes' %}
-                                ✓ Recommend
+                                {{ public_strings.recommend_yes|default:'✓ Recommend' }}
                             {% else %}
-                                ✗ Not Recommend
+                                {{ public_strings.recommend_no|default:'✗ Not Recommend' }}
                             {% endif %}
                         </div>
                         
@@ -802,7 +803,7 @@
                         
                         {% if review.reply %}
                             <div class="review-card-reply">
-                                <span class="review-card-reply-label">Store Reply:</span>
+                                <span class="review-card-reply-label">{{ public_strings.store_reply|default:'Store Reply:' }}</span>
                                 {{ review.reply|linebreaksbr }}
                             </div>
                         {% endif %}
@@ -815,9 +816,9 @@
     <!-- Footer -->
     <div class="footer">
         <div class="footer-logo">
-            <img src="https://www.level-4u.com/images/logo.png" alt="LEVEJ Logo" />
+            <img src="https://www.level-4u.com/images/logo.png" alt="{{ public_strings.logo_alt|default:'Level 4 You Logo' }}" />
         </div>
-        <div class="footer-copyright">© 2025 Level 4 You. All rights reserved.</div>
+        <div class="footer-copyright">{{ public_strings.footer_text|default:'© 2025 Level 4 You. All rights reserved.' }}</div>
     </div>
 </body>
 </html>
