@@ -47,27 +47,27 @@ def send_welcome_email(user):
 
         email_subject = translated_strings.pop('email_subject')
         text_message = translated_strings.pop('text_message')
-
+        
         context = {
             'user': user,
             'dashboard_url': dashboard_url,
             'strings': translated_strings,
         }
-
+        
         html_message = render_to_string('users/emails/welcome_email.html', context)
-
+        
         # Use SendGrid SDK if available
         if SENDGRID_AVAILABLE and os.environ.get('SENDGRID_API_KEY'):
             sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
-
+            
             from_email = Email(settings.DEFAULT_FROM_EMAIL)
             to_email = To(user.email)
             subject = email_subject
             content = Content("text/html", html_message)
-
+            
             mail = Mail(from_email, to_email, subject, content)
             mail.add_content(Content("text/plain", text_message))
-
+            
             response = sg.send(mail)
             logger.info(f"Welcome email sent to {user.email} via SendGrid. Status: {response.status_code}")
         else:
@@ -81,9 +81,9 @@ def send_welcome_email(user):
                 fail_silently=False,
             )
             logger.info(f"Welcome email sent to {user.email} via SMTP")
-
+        
         return True
-
+        
     except Exception as e:
         logger.error(f"Failed to send welcome email to {user.email}: {str(e)}")
         return False
@@ -95,7 +95,7 @@ def send_password_reset_email(user, request):
         # Generate password reset token
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
-
+        
         # Create reset URL
         reset_url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}" if hasattr(settings, 'FRONTEND_URL') else f"http://localhost:3000/reset-password/{uid}/{token}"
 
@@ -124,27 +124,27 @@ def send_password_reset_email(user, request):
 
         email_subject = translated_strings.pop('email_subject')
         text_message = translated_strings.pop('text_message')
-
+        
         context = {
             'user': user,
             'reset_url': reset_url,
             'strings': translated_strings,
         }
-
+        
         html_message = render_to_string('users/emails/password_reset.html', context)
-
+        
         # Use SendGrid SDK if available
         if SENDGRID_AVAILABLE and os.environ.get('SENDGRID_API_KEY'):
             sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
-
+            
             from_email = Email(settings.DEFAULT_FROM_EMAIL)
             to_email = To(user.email)
             subject = email_subject
             content = Content("text/html", html_message)
-
+            
             mail = Mail(from_email, to_email, subject, content)
             mail.add_content(Content("text/plain", text_message))
-
+            
             response = sg.send(mail)
             logger.info(f"Password reset email sent to {user.email} via SendGrid. Status: {response.status_code}")
         else:
@@ -158,9 +158,9 @@ def send_password_reset_email(user, request):
                 fail_silently=False,
             )
             logger.info(f"Password reset email sent to {user.email} via SMTP")
-
+        
         return True
-
+        
     except Exception as e:
         logger.error(f"Failed to send password reset email to {user.email}: {str(e)}")
         return False

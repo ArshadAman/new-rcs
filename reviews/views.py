@@ -12,292 +12,481 @@ from rest_framework.response import Response
 from rest_framework import status
 from utils.utitily import is_trial_active, is_plan_active
 from django.views.decorators.clickjacking import xframe_options_exempt
-from django.http import HttpResponse
 from utils.translation_service import (
     get_language_for_country,
     translate_strings,
     translate_sequence,
 )
+from uuid import uuid4
 
 
-def _localize_html_response(response: HttpResponse, language_code):
-    if language_code:
-        try:
-            html = response.content.decode(response.charset)
-        except (AttributeError, UnicodeDecodeError):
-            return response
-        translated_html = translate_sequence([html], language_code)[0]
-        response.content = translated_html.encode(response.charset)
-    return response
+def _build_form_strings(language_code):
+    base_strings = {
+        'page_title': 'Order Review',
+        'header_title': 'ORDER REVIEW',
+        'header_subtitle': 'Help us improve by sharing your experience',
+        'customer_name_label': 'Customer Name',
+        'customer_name_placeholder': 'Enter customer name',
+        'email_label': 'Email Address',
+        'email_placeholder': 'Enter email address',
+        'order_id_label': 'Order ID',
+        'order_id_placeholder': 'Enter order ID (optional)',
+        'recommend_question': 'Would you recommend the company to your friends or family?',
+        'recommend_yes': 'YES',
+        'recommend_no': 'NO',
+        'subrating_prompt_positive': 'Please rate the following aspects:',
+        'subrating_prompt_negative': "Please specify what didn’t meet your expectations:",
+        'logistics_label': 'Logistics',
+        'web_label': 'Web',
+        'communication_label': 'Communication',
+        'comment_label': 'Additional Comments',
+        'comment_placeholder': 'Tell us about your experience... (Required for negative reviews)',
+        'submit_button': 'Submit Review',
+        'submit_in_progress': 'Submitting...',
+        'success_title': '🎉 Thank You!',
+        'success_message': 'Your feedback has been successfully submitted. We appreciate your time and valuable input!',
+        'footer_text': '©2025 Level 4 You. All rights reserved.',
+        'flash_positive': 'Thank you for your positive review!',
+        'flash_negative': 'Thank you for your feedback. Your review will be processed.',
+        'flash_closed': 'Thank you for your feedback! Reviews are currently closed for this business.',
+        'flash_error_recommend': 'Please select Yes or No.',
+        'comment_error': 'A detailed comment (min 50 characters) is required for a NO review.',
+        'banner_alt': 'Banner',
+        'footer_logo_alt': 'Level 4 You Logo',
+        'manual_heading': 'Manual review submission',
+        'html_lang': 'en',
+    }
+    manual_overrides = {
+        'cs': {
+            'page_title': 'Recenze objednávky',
+            'header_title': 'RECENZE OBJEDNÁVKY',
+            'header_subtitle': 'Pomozte nám zlepšovat služby sdílením své zkušenosti',
+            'customer_name_label': 'Jméno zákazníka',
+            'customer_name_placeholder': 'Zadejte jméno zákazníka',
+            'email_label': 'E-mailová adresa',
+            'email_placeholder': 'Zadejte e-mailovou adresu',
+            'order_id_label': 'ID objednávky',
+            'order_id_placeholder': 'Zadejte ID objednávky (volitelné)',
+            'recommend_question': 'Doporučili byste společnost svým přátelům nebo rodině?',
+            'recommend_yes': 'ANO',
+            'recommend_no': 'NE',
+            'subrating_prompt_positive': 'Ohodnoťte prosím následující aspekty:',
+            'subrating_prompt_negative': 'Upřesněte prosím, co nesplnilo vaše očekávání:',
+            'logistics_label': 'Logistika',
+            'web_label': 'Web',
+            'communication_label': 'Komunikace',
+            'comment_label': 'Doplňující komentáře',
+            'comment_placeholder': 'Sdělte nám své zkušenosti... (Povinné pro negativní recenze)',
+            'submit_button': 'Odeslat recenzi',
+            'submit_in_progress': 'Odesílání...',
+            'success_title': '🎉 Děkujeme!',
+            'success_message': 'Vaše zpětná vazba byla úspěšně odeslána. Vážíme si vašeho času i cenných podnětů!',
+            'footer_text': '©2025 Level 4 You. Všechna práva vyhrazena.',
+            'flash_positive': 'Děkujeme za vaši pozitivní recenzi!',
+            'flash_negative': 'Děkujeme za vaši zpětnou vazbu. Vaše recenze bude zpracována.',
+            'flash_closed': 'Děkujeme za váš zájem! V tuto chvíli jsou recenze pro tuto společnost uzavřeny.',
+            'flash_error_recommend': 'Vyberte prosím možnost Ano nebo Ne.',
+            'comment_error': 'Pro zápornou recenzi je vyžadován podrobný komentář (minimálně 50 znaků).',
+            'banner_alt': 'Banner',
+            'footer_logo_alt': 'Logo Level 4 You',
+            'manual_heading': 'Ruční odeslání recenze',
+            'html_lang': 'cs',
+        },
+        'sk': {
+            'page_title': 'Hodnotenie objednávky',
+            'header_title': 'HODNOTENIE OBJEDNÁVKY',
+            'header_subtitle': 'Pomôžte nám zlepšovať služby tým, že sa podelíte o svoju skúsenosť',
+            'customer_name_label': 'Meno zákazníka',
+            'customer_name_placeholder': 'Zadajte meno zákazníka',
+            'email_label': 'E-mailová adresa',
+            'email_placeholder': 'Zadajte e-mailovú adresu',
+            'order_id_label': 'ID objednávky',
+            'order_id_placeholder': 'Zadajte ID objednávky (voliteľné)',
+            'recommend_question': 'Odporučili by ste spoločnosť svojim priateľom alebo rodine?',
+            'recommend_yes': 'ÁNO',
+            'recommend_no': 'NIE',
+            'subrating_prompt_positive': 'Prosím ohodnoťte nasledujúce oblasti:',
+            'subrating_prompt_negative': 'Prosím upresnite, čo nesplnilo vaše očakávania:',
+            'logistics_label': 'Logistika',
+            'web_label': 'Web',
+            'communication_label': 'Komunikácia',
+            'comment_label': 'Doplňujúce komentáre',
+            'comment_placeholder': 'Povedzte nám o svojej skúsenosti... (Povinné pri negatívnych recenziách)',
+            'submit_button': 'Odoslať recenziu',
+            'submit_in_progress': 'Odosielanie...',
+            'success_title': '🎉 Ďakujeme!',
+            'success_message': 'Vaša spätná väzba bola úspešne odoslaná. Veľmi si vážime váš čas aj podnety!',
+            'footer_text': '©2025 Level 4 You. Všetky práva vyhradené.',
+            'flash_positive': 'Ďakujeme za vašu pozitívnu recenziu!',
+            'flash_negative': 'Ďakujeme za vašu spätnú väzbu. Vaša recenzia bude spracovaná.',
+            'flash_closed': 'Ďakujeme za váš záujem! Recenzie sú momentálne pre túto spoločnosť uzavreté.',
+            'flash_error_recommend': 'Vyberte prosím možnosť Áno alebo Nie.',
+            'comment_error': 'Na zápornú recenziu je potrebný podrobný komentár (minimálne 50 znakov).',
+            'banner_alt': 'Banner',
+            'footer_logo_alt': 'Logo Level 4 You',
+            'manual_heading': 'Ručné odoslanie recenzie',
+            'html_lang': 'sk',
+        },
+    }
+    if language_code in manual_overrides:
+        combined = base_strings.copy()
+        combined.update(manual_overrides[language_code])
+        return combined
+
+    return base_strings
+
+
+def _create_manual_order(company, data):
+    manual_order_id = data.get('order_id', '').strip()
+    if not manual_order_id:
+        manual_order_id = f"MAN-{uuid4().hex[:8].upper()}"
+
+    customer_name = data.get('customer_name', '').strip() or 'Manual Customer'
+    email = data.get('email', '').strip() or f"manual-{uuid4().hex[:6]}@example.com"
+    phone = data.get('phone_number', '').strip() or 'N/A'
+
+    order = Order.objects.create(
+        user=company,
+        order_id=manual_order_id,
+        customer_name=customer_name,
+        email=email,
+        phone_number=phone,
+        review_email_sent=True,
+    )
+    return order, manual_order_id, customer_name, email
 
 
 def review_form(request, token):
-    # Try to find order first (for order-based reviews)
-    language_code = None
     try:
         order = Order.objects.get(review_token=token)
         company = order.user
     except Order.DoesNotExist:
-        # Try to find mailing recipient (for manual mailing reviews)
         try:
             from orders.models import MailingRecipient
+
             recipient = MailingRecipient.objects.get(review_token=token)
             company = recipient.campaign.user
             order = None
         except MailingRecipient.DoesNotExist:
-            # Fallback to manual review form with company_id parameter
             company_id = request.GET.get('company_id')
             if company_id:
                 try:
                     company = CustomUser.objects.get(id=company_id)
                 except CustomUser.DoesNotExist:
                     messages.error(request, 'Company not found.')
-                    response = render(request, 'reviews/review_form.html')
-                    return _localize_html_response(response, language_code)
+                    return render(
+                        request,
+                        'reviews/review_form.html',
+                        {
+                            'order': None,
+                            'category_questions': [],
+                            'strings': _build_form_strings(None),
+                            'document_lang': 'en',
+                        },
+                    )
             else:
-                # Use first available company for manual reviews (fallback)
                 company = CustomUser.objects.filter(plan__in=['basic', 'advanced', 'pro', 'unique']).first()
                 if not company:
                     messages.error(request, 'No company found for manual review submission.')
-                    response = render(request, 'reviews/review_form.html')
-                    return _localize_html_response(response, language_code)
+                    return render(
+                        request,
+                        'reviews/review_form.html',
+                        {
+                            'order': None,
+                            'category_questions': [],
+                            'strings': _build_form_strings(None),
+                            'document_lang': 'en',
+                        },
+                    )
             order = None
-    
-    # Get category-specific questions
+
     category_questions = []
-    if company.business_category:
+    if company and company.business_category:
         from users.models import BusinessCategory
+
         category_questions = BusinessCategory.get_default_questions().get(company.business_category.name, [])
-    
-    language_code = get_language_for_country(getattr(company, "country", None))
+
+    language_code = get_language_for_country(getattr(company, "country", None)) if company else None
+    strings = _build_form_strings(language_code)
+
+    def render_form(extra_context=None):
+        context = {
+            'order': order,
+            'user': company,
+            'category_questions': category_questions,
+            'strings': strings,
+            'document_lang': strings['html_lang'],
+        }
+        if extra_context:
+            context.update(extra_context)
+        return render(request, 'reviews/review_form.html', context)
 
     if request.method == 'POST':
         monthly_count = company.monthly_review_count
         limit = 50 if company.plan == 'basic' else 150 if company.plan == 'extended' else 1000
         if monthly_count >= limit or not is_plan_active(company):
-            messages.error(request, 'Thank you for your feedback! Reviews are currently closed for this business.')
-            response = render(request, 'reviews/review_form.html')
-            return _localize_html_response(response, language_code)
-        
-        elif (is_trial_active(company) and monthly_count<limit) or monthly_count < limit:
-            recommend = request.POST.get('recommend')
-            comment = request.POST.get('comment', '').strip()
-            logistics_rating = request.POST.get('logistics_rating')
-            communication_rating = request.POST.get('communication_rating')
-            website_usability_rating = request.POST.get('website_usability_rating')
-            
-            # Process category-specific ratings
-            category_ratings = {}
-            if company.business_category and category_questions:
-                for question in category_questions:
-                    field_name = question['field']
-                    rating_value = request.POST.get(f'category_rating_{field_name}')
-                    if rating_value:
-                        category_ratings[field_name] = int(rating_value)
+            messages.error(request, strings['flash_closed'])
+            return render_form()
 
-            # Validation
-            errors = {}
-            
-            # Check if any rating is below 3 (indicating dissatisfaction)
-            has_low_rating = False
-            if logistics_rating and int(logistics_rating) < 3:
-                has_low_rating = True
-            if communication_rating and int(communication_rating) < 3:
-                has_low_rating = True
-            if website_usability_rating and int(website_usability_rating) < 3:
-                has_low_rating = True
-            if category_ratings:
-                for rating in category_ratings.values():
-                    if rating and int(rating) < 3:
-                        has_low_rating = True
-            
-            # If user says 'yes' but has any rating below 3, treat as negative
-            if recommend == 'yes' and has_low_rating:
-                recommend = 'no'
-            
-            if recommend == 'yes':
-                # Create review with submitted ratings (defaults to 5 if not provided handled in model)
-                review_data = {
-                    'order': order,  # Can be None for manual reviews
-                    'user': company,
-                    'recommend': 'yes',
-                    'comment': comment,
-                    'logistics_rating': int(logistics_rating) if logistics_rating else None,
-                    'communication_rating': int(communication_rating) if communication_rating else None,
-                    'website_usability_rating': int(website_usability_rating) if website_usability_rating else None,
-                    'category_ratings': category_ratings,
-                }
-                # Add manual fields if no order (manual review)
-                if not order:
-                    review_data['manual_order_id'] = manual_order_id if 'manual_order_id' in locals() else request.POST.get('order_id', '').strip()
-                    review_data['manual_customer_name'] = manual_customer_name if 'manual_customer_name' in locals() else request.POST.get('customer_name', '').strip()
-                    review_data['manual_customer_email'] = manual_customer_email if 'manual_customer_email' in locals() else request.POST.get('email', '').strip()
-                review = Review.objects.create(**review_data)
-                company.monthly_review_count += 1
-                company.save()
-                messages.success(request, 'Thank you for your positive review!')
-                response = render(request, 'reviews/review_form.html', {'order': order, 'success': True})
-                return _localize_html_response(response, language_code)
-            elif recommend == 'no':
-                # Only min 50 char comment required
-                if not comment or len(comment.strip()) < 50:
-                    errors['comment'] = 'A detailed comment (min 50 characters) is required for a NO review.'
-                    response = render(request, 'reviews/review_form.html', {'order': order, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
-                    return _localize_html_response(response, language_code)
-                
-                # Create review with sub-ratings (now they're visible and optional for negative reviews)
-                review_data = {
-                    'order': order,  # Can be None for manual reviews
-                    'user': company,
-                    'recommend': 'no',
-                    'comment': comment,
-                    # Sub-ratings are optional for negative reviews, but now captured
-                    'logistics_rating': int(logistics_rating) if logistics_rating else None,
-                    'communication_rating': int(communication_rating) if communication_rating else None,
-                    'website_usability_rating': int(website_usability_rating) if website_usability_rating else None,
-                    'category_ratings': category_ratings if category_ratings else {},
-                }
-                # Add manual fields if no order (manual review)
-                if not order:
-                    review_data['manual_order_id'] = manual_order_id if 'manual_order_id' in locals() else request.POST.get('order_id', '').strip()
-                    review_data['manual_customer_name'] = manual_customer_name if 'manual_customer_name' in locals() else request.POST.get('customer_name', '').strip()
-                    review_data['manual_customer_email'] = manual_customer_email if 'manual_customer_email' in locals() else request.POST.get('email', '').strip()
-                review = Review.objects.create(**review_data)
-                company.monthly_review_count += 1
-                company.save()
-                messages.success(request, 'Thank you for your feedback. Your review will be processed.')
-                response = render(request, 'reviews/review_form.html', {'order': order, 'success': True})
-                return _localize_html_response(response, language_code)
-            else:
-                errors['recommend'] = 'Please select Yes or No.'
-                response = render(request, 'reviews/review_form.html', {'order': order, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
-                return _localize_html_response(response, language_code)
-    # GET request
-    response = render(request, 'reviews/review_form.html', {'order': order, 'user': company, 'category_questions': category_questions})
-    return _localize_html_response(response, language_code)
+        recommend = request.POST.get('recommend')
+        comment = request.POST.get('comment', '').strip()
+        logistics_rating = request.POST.get('logistics_rating')
+        communication_rating = request.POST.get('communication_rating')
+        website_usability_rating = request.POST.get('website_usability_rating')
+
+        category_ratings = {}
+        if company.business_category and category_questions:
+            for question in category_questions:
+                field_name = question['field']
+                rating_value = request.POST.get(f'category_rating_{field_name}')
+                if rating_value:
+                    category_ratings[field_name] = int(rating_value)
+
+        errors = {}
+
+        has_low_rating = False
+        if logistics_rating and int(logistics_rating) < 3:
+            has_low_rating = True
+        if communication_rating and int(communication_rating) < 3:
+            has_low_rating = True
+        if website_usability_rating and int(website_usability_rating) < 3:
+            has_low_rating = True
+        if category_ratings:
+            for rating in category_ratings.values():
+                if rating and int(rating) < 3:
+                    has_low_rating = True
+
+        if recommend == 'yes' and has_low_rating:
+            recommend = 'no'
+
+        if recommend == 'yes':
+            review_data = {
+                'order': order,
+                'user': company,
+                'recommend': 'yes',
+                'comment': comment,
+                'logistics_rating': int(logistics_rating) if logistics_rating else None,
+                'communication_rating': int(communication_rating) if communication_rating else None,
+                'website_usability_rating': int(website_usability_rating) if website_usability_rating else None,
+                'category_ratings': category_ratings,
+            }
+            if not order:
+                order, manual_order_id, manual_customer_name, manual_customer_email = _create_manual_order(
+                    company,
+                    {
+                        'order_id': request.POST.get('order_id', ''),
+                        'customer_name': request.POST.get('customer_name', ''),
+                        'email': request.POST.get('email', ''),
+                    },
+                )
+                review_data['order'] = order
+                review_data['manual_order_id'] = manual_order_id
+                review_data['manual_customer_name'] = manual_customer_name
+                review_data['manual_customer_email'] = manual_customer_email
+            Review.objects.create(**review_data)
+            company.monthly_review_count += 1
+            company.save()
+            messages.success(request, strings['flash_positive'])
+            return render_form({'success': True})
+
+        if recommend == 'no':
+            if not comment or len(comment.strip()) < 50:
+                errors['comment'] = strings['comment_error']
+                return render_form({'errors': errors, 'form': request.POST})
+
+            review_data = {
+                'order': order,
+                'user': company,
+                'recommend': 'no',
+                'comment': comment,
+                'logistics_rating': int(logistics_rating) if logistics_rating else None,
+                'communication_rating': int(communication_rating) if communication_rating else None,
+                'website_usability_rating': int(website_usability_rating) if website_usability_rating else None,
+                'category_ratings': category_ratings if category_ratings else {},
+            }
+            if not order:
+                order, manual_order_id, manual_customer_name, manual_customer_email = _create_manual_order(
+                    company,
+                    {
+                        'order_id': request.POST.get('order_id', ''),
+                        'customer_name': request.POST.get('customer_name', ''),
+                        'email': request.POST.get('email', ''),
+                    },
+                )
+                review_data['order'] = order
+                review_data['manual_order_id'] = manual_order_id
+                review_data['manual_customer_name'] = manual_customer_name
+                review_data['manual_customer_email'] = manual_customer_email
+            Review.objects.create(**review_data)
+            company.monthly_review_count += 1
+            company.save()
+            messages.success(request, strings['flash_negative'])
+            return render_form({'success': True})
+
+        errors['recommend'] = strings['flash_error_recommend']
+        return render_form({'errors': errors, 'form': request.POST})
+
+    return render_form()
 
 def manual_review_form(request):
     """Manual review form that doesn't require an order token"""
-    # Get company from URL parameter or use default
-    language_code = None
+    order = None
     company_id = request.GET.get('company_id')
     if company_id:
         try:
             company = CustomUser.objects.get(id=company_id)
         except CustomUser.DoesNotExist:
             messages.error(request, 'Company not found.')
-            response = render(request, 'reviews/review_form.html')
-            return _localize_html_response(response, language_code)
+            return render(
+                request,
+                'reviews/review_form.html',
+                {
+                    'order': None,
+                    'category_questions': [],
+                    'strings': _build_form_strings(None),
+                    'document_lang': 'en',
+                },
+            )
     else:
-        # Use first available company for manual reviews
         company = CustomUser.objects.filter(plan__in=['basic', 'advanced', 'pro', 'unique']).first()
         if not company:
             messages.error(request, 'No company found for manual review submission.')
-            response = render(request, 'reviews/review_form.html')
-            return _localize_html_response(response, language_code)
-    
-    # Get category-specific questions
+            return render(
+                request,
+                'reviews/review_form.html',
+                {
+                    'order': None,
+                    'category_questions': [],
+                    'strings': _build_form_strings(None),
+                    'document_lang': 'en',
+                },
+            )
+
     category_questions = []
     if company.business_category:
         from users.models import BusinessCategory
+
         category_questions = BusinessCategory.get_default_questions().get(company.business_category.name, [])
-    
+
     language_code = get_language_for_country(getattr(company, "country", None))
+    strings = _build_form_strings(language_code)
+
+    def render_form(extra_context=None):
+        context = {
+            'order': order,
+            'user': company,
+            'category_questions': category_questions,
+            'strings': strings,
+            'document_lang': strings['html_lang'],
+        }
+        if extra_context:
+            context.update(extra_context)
+        return render(request, 'reviews/review_form.html', context)
 
     if request.method == 'POST':
         monthly_count = company.monthly_review_count
         limit = 50 if company.plan == 'basic' else 150 if company.plan == 'extended' else 1000
         if monthly_count >= limit or not is_plan_active(company):
-            messages.error(request, 'Thank you for your feedback! Reviews are currently closed for this business.')
-            response = render(request, 'reviews/review_form.html')
-            return _localize_html_response(response, language_code)
-        
-        elif (is_trial_active(company) and monthly_count<limit) or monthly_count < limit:
-            recommend = request.POST.get('recommend')
-            comment = request.POST.get('comment', '').strip()
-            logistics_rating = request.POST.get('logistics_rating')
-            communication_rating = request.POST.get('communication_rating')
-            website_usability_rating = request.POST.get('website_usability_rating')
-            
-            # Process category-specific ratings
-            category_ratings = {}
-            if company.business_category and category_questions:
-                for question in category_questions:
-                    field_name = question['field']
-                    rating_value = request.POST.get(f'category_rating_{field_name}')
-                    if rating_value:
-                        category_ratings[field_name] = int(rating_value)
+            messages.error(request, strings['flash_closed'])
+            return render_form()
 
-            # Validation
-            errors = {}
-            
-            # Check if any rating is below 3 (indicating dissatisfaction)
-            has_low_rating = False
-            if logistics_rating and int(logistics_rating) < 3:
-                has_low_rating = True
-            if communication_rating and int(communication_rating) < 3:
-                has_low_rating = True
-            if website_usability_rating and int(website_usability_rating) < 3:
-                has_low_rating = True
-            if category_ratings:
-                for rating in category_ratings.values():
-                    if rating and int(rating) < 3:
-                        has_low_rating = True
-            
-            # If user says 'yes' but has any rating below 3, treat as negative
-            if recommend == 'yes' and has_low_rating:
-                recommend = 'no'
-            
-            if recommend == 'yes':
-                # All sub-ratings default to 5 if not provided
-                review_data = {
-                    'order': None,  # No order for manual reviews
-                    'user': company,
-                    'recommend': 'yes',
-                    'comment': comment,
-                    'logistics_rating': int(logistics_rating) if logistics_rating else None,
-                    'communication_rating': int(communication_rating) if communication_rating else None,
-                    'website_usability_rating': int(website_usability_rating) if website_usability_rating else None,
-                    'category_ratings': category_ratings,
-                }
-                review = Review.objects.create(**review_data)
-                company.monthly_review_count += 1
-                company.save()
-                messages.success(request, 'Thank you for your positive review!')
-                response = render(request, 'reviews/review_form.html', {'order': None, 'success': True})
-                return _localize_html_response(response, language_code)
-            elif recommend == 'no':
-                # Only min 50 char comment required
-                if not comment or len(comment.strip()) < 50:
-                    errors['comment'] = 'A detailed comment (min 50 characters) is required for a NO review.'
-                    response = render(request, 'reviews/review_form.html', {'order': None, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
-                    return _localize_html_response(response, language_code)
-                
-                # Create review with sub-ratings (now they're visible and optional for negative reviews)
-                review_data = {
-                    'order': None,  # No order for manual reviews
-                    'user': company,
-                    'recommend': 'no',
-                    'comment': comment,
-                    # Sub-ratings are optional for negative reviews, but now captured
-                    'logistics_rating': int(logistics_rating) if logistics_rating else None,
-                    'communication_rating': int(communication_rating) if communication_rating else None,
-                    'website_usability_rating': int(website_usability_rating) if website_usability_rating else None,
-                    'category_ratings': category_ratings if category_ratings else {},
-                }
-                review = Review.objects.create(**review_data)
-                company.monthly_review_count += 1
-                company.save()
-                messages.success(request, 'Thank you for your feedback. Your review will be processed.')
-                response = render(request, 'reviews/review_form.html', {'order': None, 'success': True})
-                return _localize_html_response(response, language_code)
-            else:
-                errors['recommend'] = 'Please select Yes or No.'
-                response = render(request, 'reviews/review_form.html', {'order': None, 'errors': errors, 'form': request.POST, 'user': company, 'category_questions': category_questions})
-                return _localize_html_response(response, language_code)
-    # GET request
-    response = render(request, 'reviews/review_form.html', {'order': None, 'user': company, 'category_questions': category_questions})
-    return _localize_html_response(response, language_code)
+        recommend = request.POST.get('recommend')
+        comment = request.POST.get('comment', '').strip()
+        logistics_rating = request.POST.get('logistics_rating')
+        communication_rating = request.POST.get('communication_rating')
+        website_usability_rating = request.POST.get('website_usability_rating')
+
+        category_ratings = {}
+        if company.business_category and category_questions:
+            for question in category_questions:
+                field_name = question['field']
+                rating_value = request.POST.get(f'category_rating_{field_name}')
+                if rating_value:
+                    category_ratings[field_name] = int(rating_value)
+
+        errors = {}
+
+        has_low_rating = False
+        if logistics_rating and int(logistics_rating) < 3:
+            has_low_rating = True
+        if communication_rating and int(communication_rating) < 3:
+            has_low_rating = True
+        if website_usability_rating and int(website_usability_rating) < 3:
+            has_low_rating = True
+        if category_ratings:
+            for rating in category_ratings.values():
+                if rating and int(rating) < 3:
+                    has_low_rating = True
+
+        if recommend == 'yes' and has_low_rating:
+            recommend = 'no'
+
+        if recommend == 'yes':
+            order, manual_order_id, manual_customer_name, manual_customer_email = _create_manual_order(
+                company,
+                {
+                    'order_id': request.POST.get('order_id', ''),
+                    'customer_name': request.POST.get('customer_name', ''),
+                    'email': request.POST.get('email', ''),
+                },
+            )
+
+            review_data = {
+                'order': order,
+                'user': company,
+                'recommend': 'yes',
+                'comment': comment,
+                'logistics_rating': int(logistics_rating) if logistics_rating else None,
+                'communication_rating': int(communication_rating) if communication_rating else None,
+                'website_usability_rating': int(website_usability_rating) if website_usability_rating else None,
+                'category_ratings': category_ratings,
+                'manual_order_id': manual_order_id,
+                'manual_customer_name': manual_customer_name,
+                'manual_customer_email': manual_customer_email,
+            }
+            Review.objects.create(**review_data)
+            company.monthly_review_count += 1
+            company.save()
+            messages.success(request, strings['flash_positive'])
+            return render_form({'success': True})
+
+        if recommend == 'no':
+            if not comment or len(comment.strip()) < 50:
+                errors['comment'] = strings['comment_error']
+                return render_form({'errors': errors, 'form': request.POST})
+
+            order, manual_order_id, manual_customer_name, manual_customer_email = _create_manual_order(
+                company,
+                {
+                    'order_id': request.POST.get('order_id', ''),
+                    'customer_name': request.POST.get('customer_name', ''),
+                    'email': request.POST.get('email', ''),
+                },
+            )
+
+            review_data = {
+                'order': order,
+                'user': company,
+                'recommend': 'no',
+                'comment': comment,
+                'logistics_rating': int(logistics_rating) if logistics_rating else None,
+                'communication_rating': int(communication_rating) if communication_rating else None,
+                'website_usability_rating': int(website_usability_rating) if website_usability_rating else None,
+                'category_ratings': category_ratings if category_ratings else {},
+                'manual_order_id': manual_order_id,
+                'manual_customer_name': manual_customer_name,
+                'manual_customer_email': manual_customer_email,
+            }
+            Review.objects.create(**review_data)
+            company.monthly_review_count += 1
+            company.save()
+            messages.success(request, strings['flash_negative'])
+            return render_form({'success': True})
+
+        errors['recommend'] = strings['flash_error_recommend']
+        return render_form({'errors': errors, 'form': request.POST})
+
+    return render_form()
 
 @xframe_options_exempt
 def iframe_(request, user_id):

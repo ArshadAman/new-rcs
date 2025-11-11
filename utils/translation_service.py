@@ -8,10 +8,8 @@ from typing import Dict, Iterable, List, Mapping, Sequence, Tuple, Union
 import requests
 from django.conf import settings
 
-
 LanguageCode = str
 Translations = Dict[str, str]
-
 
 COUNTRY_LANGUAGE_MAP: Dict[str, LanguageCode] = {
     "czech": "cs",
@@ -31,14 +29,9 @@ def _normalize_country(value: Union[str, None]) -> str:
 
 
 def get_language_for_country(country: Union[str, None]) -> Union[LanguageCode, None]:
-    """
-    Determine the target language code based on the provided country.
-    Returns None when no dedicated localization is required.
-    """
     normalized = _normalize_country(country)
     if not normalized:
         return None
-
     for key, code in COUNTRY_LANGUAGE_MAP.items():
         if key in normalized:
             return code
@@ -54,10 +47,6 @@ def _get_api_key() -> Union[str, None]:
 
 
 def _translate_list(values: Sequence[str], target_language: LanguageCode) -> List[str]:
-    """
-    Translate a sequence of strings using Google Cloud Translation API.
-    Falls back to the original values if the API key is missing or a network error occurs.
-    """
     if not values:
         return list(values)
 
@@ -93,13 +82,8 @@ def _translate_tuple(values_tuple: Tuple[str, ...], target_language: LanguageCod
 
 
 def translate_strings(strings: Mapping[str, str], target_language: Union[LanguageCode, None]) -> Translations:
-    """
-    Translate a mapping of string values while preserving keys.
-    Returns the original mapping when translation is not required.
-    """
     if not target_language:
         return dict(strings)
-
     keys = tuple(strings.keys())
     values_tuple = tuple(strings[key] for key in keys)
     translated_tuple = _translate_tuple(values_tuple, target_language)
@@ -107,19 +91,14 @@ def translate_strings(strings: Mapping[str, str], target_language: Union[Languag
 
 
 def translate_sequence(sequence: Iterable[str], target_language: Union[LanguageCode, None]) -> List[str]:
-    """
-    Translate an iterable of strings and return a list with the translated values.
-    """
     values = list(sequence)
     if not target_language:
         return values
-
     translated_tuple = _translate_tuple(tuple(values), target_language)
     return list(translated_tuple)
 
 
 def should_localize(country: Union[str, None]) -> bool:
-    """Helper to check if localization is required."""
     return get_language_for_country(country) is not None
 
 

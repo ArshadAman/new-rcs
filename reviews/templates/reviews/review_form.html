@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ document_lang|default:'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Review - {{ order.user.business_name|default:"Our Store" }}</title>
+    <title>{{ strings.page_title|default:'Order Review' }} - {{ order.user.business_name|default:"Our Store" }}</title>
     <style>
         * {
             margin: 0;
@@ -293,7 +293,7 @@
             letter-spacing: 5px;
         }
         
-        .footer-copyright {
+        .footercopyright {
             color: #888;
             font-size: 0.9em;
         }
@@ -310,7 +310,7 @@
     </style>
 </head>
 <body>
-    <img src="https://www.level-4u.com/images/image-1.jpg" alt="Banner" class="banner-image">
+    <img src="https://www.level-4u.com/images/image-1.jpg" alt="{{ strings.banner_alt|default:'Banner' }}" class="banner-image">
     <div class="container">
         <div class="corner corner-tl"></div>
         <div class="corner corner-tr"></div>
@@ -318,14 +318,14 @@
         <div class="corner corner-br"></div>
         
         <div class="header">
-            <h1>ORDER REVIEW</h1>
-            <p>Help us improve by sharing your experience</p>
+            <h1>{{ strings.header_title|default:'ORDER REVIEW' }}</h1>
+            <p>{{ strings.header_subtitle|default:'Help us improve by sharing your experience' }}</p>
         </div>
         
         {% if success %}
             <div class="success-message">
-                <h3>🎉 Thank You!</h3>
-                <p>Your feedback has been successfully submitted. We appreciate your time and valuable input!</p>
+                <h3>{{ strings.success_title|default:'🎉 Thank You!' }}</h3>
+                <p>{{ strings.success_message|default:'Your feedback has been successfully submitted. We appreciate your time and valuable input!' }}</p>
             </div>
         {% else %}
             {% if messages %}
@@ -351,31 +351,31 @@
                 {% csrf_token %}
                 
                 <div class="form-group">
-                    <label>Customer Name</label>
-                    <input type="text" name="customer_name" value="{{ order.customer_name }}" {% if not order %}placeholder="Enter customer name"{% else %}readonly{% endif %}>
+                    <label>{{ strings.customer_name_label|default:'Customer Name' }}</label>
+                    <input type="text" name="customer_name" value="{{ order.customer_name }}" {% if not order %}placeholder="{{ strings.customer_name_placeholder|default:'Enter customer name' }}"{% else %}readonly{% endif %}>
                 </div>
                 
                 <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" name="email" value="{{ order.email }}" {% if not order %}placeholder="Enter email address"{% else %}readonly{% endif %}>
+                    <label>{{ strings.email_label|default:'Email Address' }}</label>
+                    <input type="email" name="email" value="{{ order.email }}" {% if not order %}placeholder="{{ strings.email_placeholder|default:'Enter email address' }}"{% else %}readonly{% endif %}>
                 </div>
                 
                 <div class="form-group">
-                    <label>Order ID</label>
-                    <input type="text" name="order_id" value="{{ order.order_id }}" {% if not order %}placeholder="Enter order ID (optional)"{% else %}readonly{% endif %}>
+                    <label>{{ strings.order_id_label|default:'Order ID' }}</label>
+                    <input type="text" name="order_id" value="{{ order.order_id }}" {% if not order %}placeholder="{{ strings.order_id_placeholder|default:'Enter order ID (optional)' }}"{% else %}readonly{% endif %}>
                 </div>
                 
                 <div class="recommend-section">
-                    <label>Would you recommend the company to your friends or family?</label>
+                    <label>{{ strings.recommend_question|default:'Would you recommend the company to your friends or family?' }}</label>
                     <div class="recommend-buttons">
-                        <button type="button" class="recommend-btn" data-value="yes">YES</button>
-                        <button type="button" class="recommend-btn" data-value="no">NO</button>
+                        <button type="button" class="recommend-btn" data-value="yes">{{ strings.recommend_yes|default:'YES' }}</button>
+                        <button type="button" class="recommend-btn" data-value="no">{{ strings.recommend_no|default:'NO' }}</button>
                     </div>
                     <input type="hidden" name="recommend" id="recommendInput" required>
                 </div>
                 
-                <div id="subratings" class="subratings hidden">
-                    <h3>Please rate the following aspects:</h3>
+                <div id="subratings" class="subratings hidden" data-prompt-positive="{{ strings.subrating_prompt_positive|default:'Please rate the following aspects:' }}" data-prompt-negative="{{ strings.subrating_prompt_negative|default:'Please specify what didn’t meet your expectations:' }}">
+                    <h3>{{ strings.subrating_prompt_positive|default:'Please rate the following aspects:' }}</h3>
                     
                     {% if user.business_category %}
                         <!-- Category-specific questions -->
@@ -395,7 +395,7 @@
                     {% else %}
                         <!-- Default questions for users without category -->
                         <div class="rating-group">
-                            <label>Logistics</label>
+                            <label>{{ strings.logistics_label|default:'Logistics' }}</label>
                             <div class="star-rating" data-field="logistics_rating">
                                 <span class="star" data-rating="1">⭐</span>
                                 <span class="star" data-rating="2">⭐</span>
@@ -407,7 +407,7 @@
                         </div>
                         
                         <div class="rating-group">
-                            <label>Web</label>
+                            <label>{{ strings.web_label|default:'Web' }}</label>
                             <div class="star-rating" data-field="website_usability_rating">
                                 <span class="star" data-rating="1">⭐</span>
                                 <span class="star" data-rating="2">⭐</span>
@@ -419,7 +419,7 @@
                         </div>
                         
                         <div class="rating-group">
-                            <label>Communication</label>
+                            <label>{{ strings.communication_label|default:'Communication' }}</label>
                             <div class="star-rating" data-field="communication_rating">
                                 <span class="star" data-rating="1">⭐</span>
                                 <span class="star" data-rating="2">⭐</span>
@@ -433,19 +433,19 @@
                 </div>
                 
                 <div class="form-group">
-                    <label>Additionals Comments</label>
-                    <textarea name="comment" placeholder="Tell us about your experience... (Required for negative reviews)">{{ form.comment.value|default:'' }}</textarea>
+                    <label>{{ strings.comment_label|default:'Additional Comments' }}</label>
+                    <textarea name="comment" placeholder="{{ strings.comment_placeholder|default:'Tell us about your experience... (Required for negative reviews)' }}">{{ form.comment.value|default:'' }}</textarea>
                 </div>
                 
                 <button type="submit" class="submit-btn">
-                    Submit Review
+                    {{ strings.submit_button|default:'Submit Review' }}
                 </button>
             </form>
         {% endif %}
         
         <div class="footer">
-            <img src="https://www.level-4u.com/images/logo.png" alt="Level 4 You Logo" class="footer-logo-img">
-            <div class="footer-copyright">©2025 Level 4 You. All rights reserved.</div>
+            <img src="https://www.level-4u.com/images/logo.png" alt="{{ strings.footer_logo_alt|default:'Level 4 You Logo' }}" class="footer-logo-img">
+            <div class="footercopyright">{{ strings.footer_text|default:'©2025 Level 4 You. All rights reserved.' }}</div>
         </div>
     </div>
     
@@ -454,8 +454,12 @@
             const recommendButtons = document.querySelectorAll('.recommend-btn');
             const recommendInput = document.getElementById('recommendInput');
             const subratings = document.getElementById('subratings');
+            const subratingsTitle = subratings ? subratings.querySelector('h3') : null;
+            const promptPositive = subratings ? subratings.dataset.promptPositive : '';
+            const promptNegative = subratings ? subratings.dataset.promptNegative : '';
             const form = document.getElementById('reviewForm');
             const submitBtn = document.querySelector('.submit-btn');
+            const submittingText = "{{ strings.submit_in_progress|default:'Submitting...'|escapejs }}";
             
             // Handle recommend button clicks
             recommendButtons.forEach(btn => {
@@ -468,9 +472,13 @@
                     subratings.classList.remove('hidden');
                     
                     if (this.dataset.value === 'yes') {
-                        subratings.querySelector('h3').textContent = 'Please rate the following aspects:';
+                        if (subratingsTitle) {
+                            subratingsTitle.textContent = promptPositive;
+                        }
                     } else {
-                        subratings.querySelector('h3').textContent = 'Please specify what didn\'t meet your expectations:';
+                        if (subratingsTitle) {
+                            subratingsTitle.textContent = promptNegative;
+                        }
                     }
                 });
             });
@@ -524,7 +532,7 @@
             if (form) {
                 form.addEventListener('submit', function(e) {
                     submitBtn.disabled = true;
-                    submitBtn.textContent = 'Submitting...';
+                    submitBtn.textContent = submittingText;
                     submitBtn.style.opacity = '0.7';
                 });
             }
