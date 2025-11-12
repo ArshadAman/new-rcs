@@ -12,25 +12,26 @@
             color: #e0e0e0;
             max-width: 600px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 0;
             background-color: #0a0a0a;
         }
         .container {
             background: #1a1a1a;
-            border-radius: 10px;
+            border-radius: 0 0 10px 10px;
             overflow: hidden;
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
         .banner-container {
             width: 100%;
             text-align: center;
-            margin-bottom: 0;
+            margin: 0;
         }
         .banner-image {
             width: 100%;
             max-width: 600px;
             height: auto;
             display: block;
+            border-radius: 0;
         }
         .content {
             padding: 40px 30px;
@@ -93,10 +94,14 @@
     </style>
 </head>
 <body style="background-color: #0a0a0a; margin: 0; padding: 0;" bgcolor="#0a0a0a">
-    <div class="container">
-        <div class="banner-container">
-            <img src="https://www.level-4u.com/images/image-1.jpg" alt="Banner" class="banner-image">
-        </div>
+    <div class="container" style="margin: 0 auto; width: 100%; max-width: 600px; background: #1a1a1a; border-radius: 0 0 10px 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.5);">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" class="banner-container" style="margin: 0 auto; padding: 0; border-collapse: collapse; width: 600px !important;">
+            <tr>
+                <td width="600" align="center" valign="top" style="margin: 0; padding: 0; line-height: 0;">
+                    <img src="https://www.level-4u.com/images/image-1.jpg" alt="Banner" class="banner-image" width="600" style="display: block; width: 600px !important; min-width: 600px !important; max-width: 600px !important; height: auto !important; margin: 0; padding: 0; border: 0;">
+                </td>
+            </tr>
+        </table>
         <div class="content">
             <h2>{{ strings.heading }}</h2>
             
@@ -112,9 +117,6 @@
         </div>
         
         <div class="footer">
-            <div class="footer-logo">
-                <img src="https://www.level-4u.com/images/logo.png" alt="Level 4 You" class="footer-logo-img">
-            </div>
             <p class="footer-copyright">{{ strings.footer_text }}</p>
         </div>
     </div>
