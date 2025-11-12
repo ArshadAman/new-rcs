@@ -5,7 +5,7 @@ from .models import Review
 from orders.models import Order
 from django.utils import timezone
 from django.contrib import messages
-from users.models import CustomUser, BusinessCategory
+from users.models import CustomUser
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -136,150 +136,6 @@ def _build_form_strings(language_code):
     return base_strings
 
 
-CATEGORY_LABEL_TRANSLATIONS = {
-    'cs': {
-        'treatment_quality': 'Kvalita ošetření',
-        'staff_attentiveness': 'Péče personálu',
-        'service_comfort': 'Komfort služby',
-        'service_result': 'Výsledek služby',
-        'customer_care': 'Péče o zákazníka',
-        'atmosphere_comfort': 'Atmosféra a pohodlí',
-        'product_range': 'Šíře sortimentu',
-        'staff_service': 'Obsluha personálu',
-        'shopping_comfort': 'Pohodlí nákupu',
-        'website_usability': 'Použitelnost webu',
-        'delivery_speed': 'Rychlost doručení',
-        'product_quality': 'Kvalita produktu',
-        'customer_support': 'Zákaznická podpora',
-        'cleanliness_comfort': 'Čistota a komfort',
-        'value_money': 'Poměr ceny a hodnoty',
-        'work_quality': 'Kvalita práce',
-        'service_speed': 'Rychlost služby',
-        'price_transparency': 'Transparentnost ceny',
-        'vehicle_quality': 'Kvalita vozidla',
-        'sales_consultant': 'Služby prodejce',
-        'deal_transparency': 'Transparentnost obchodu',
-        'delivery_process': 'Proces převzetí',
-        'teaching_quality': 'Kvalita výuky',
-        'material_usefulness': 'Užitečnost materiálů',
-        'learning_convenience': 'Pohodlí učení',
-        'trip_organization': 'Organizace zájezdu',
-        'manager_service': 'Služby průvodce',
-        'expectations_match': 'Naplnění očekávání',
-        'deadline_compliance': 'Dodržení termínů',
-        'cleanliness_accuracy': 'Čistota a přesnost',
-        'result_quality': 'Kvalita výsledku',
-        'response_speed': 'Rychlost reakce',
-        'communication_quality': 'Kvalita komunikace',
-        'shipment_condition': 'Stav zásilky',
-        'delivery_convenience': 'Pohodlí doručení',
-        'agent_professionalism': 'Profesionalita makléře',
-        'property_accuracy': 'Přesnost popisu nemovitosti',
-        'service_quality': 'Kvalita služby',
-        'responsiveness': 'Ochota reagovat',
-        'price_value': 'Hodnota za peníze',
-        'care_quality': 'Kvalita péče',
-        'pet_attitude': 'Přístup k mazlíčkům',
-        'booking_convenience': 'Pohodlnost rezervace',
-        'staff_competence': 'Odbornost personálu',
-        'terms_transparency': 'Transparentnost podmínek',
-        'resolution_speed': 'Rychlost řešení',
-        'staff_professionalism': 'Profesionalita personálu',
-        'creativity_approach': 'Kreativita a přístup',
-        'communication_punctuality': 'Komunikace a dochvilnost',
-        'design_functionality': 'Design a funkčnost',
-        'delivery_assembly': 'Doručení a montáž',
-        'connection_quality': 'Kvalita připojení',
-        'price_performance': 'Cena vs. výkon',
-    },
-    'sk': {
-        'treatment_quality': 'Kvalita ošetrenia',
-        'staff_attentiveness': 'Starostlivosť personálu',
-        'service_comfort': 'Komfort služby',
-        'service_result': 'Výsledok služby',
-        'customer_care': 'Starostlivosť o zákazníka',
-        'atmosphere_comfort': 'Atmosféra a pohodlie',
-        'product_range': 'Šírka sortimentu',
-        'staff_service': 'Obsluha personálu',
-        'shopping_comfort': 'Pohodlie nákupu',
-        'website_usability': 'Použiteľnosť webu',
-        'delivery_speed': 'Rýchlosť doručenia',
-        'product_quality': 'Kvalita produktu',
-        'customer_support': 'Zákaznícka podpora',
-        'cleanliness_comfort': 'Čistota a komfort',
-        'value_money': 'Pomer ceny a hodnoty',
-        'work_quality': 'Kvalita práce',
-        'service_speed': 'Rýchlosť služby',
-        'price_transparency': 'Transparentnosť ceny',
-        'vehicle_quality': 'Kvalita vozidla',
-        'sales_consultant': 'Služby predajcu',
-        'deal_transparency': 'Transparentnosť obchodu',
-        'delivery_process': 'Proces odovzdania',
-        'teaching_quality': 'Kvalita výučby',
-        'material_usefulness': 'Užitočnosť materiálov',
-        'learning_convenience': 'Pohodlie učenia',
-        'trip_organization': 'Organizácia zájazdu',
-        'manager_service': 'Služby sprievodcu',
-        'expectations_match': 'Naplnenie očakávaní',
-        'deadline_compliance': 'Dodržanie termínov',
-        'cleanliness_accuracy': 'Čistota a presnosť',
-        'result_quality': 'Kvalita výsledku',
-        'response_speed': 'Rýchlosť reakcie',
-        'communication_quality': 'Kvalita komunikácie',
-        'shipment_condition': 'Stav zásielky',
-        'delivery_convenience': 'Pohodlie doručenia',
-        'agent_professionalism': 'Profesionalita makléra',
-        'property_accuracy': 'Presnosť popisu nehnuteľnosti',
-        'service_quality': 'Kvalita služby',
-        'responsiveness': 'Ochota reagovať',
-        'price_value': 'Hodnota za peniaze',
-        'care_quality': 'Kvalita starostlivosti',
-        'pet_attitude': 'Prístup k domácim miláčikom',
-        'booking_convenience': 'Pohodlnosť rezervácie',
-        'staff_competence': 'Odbornosť personálu',
-        'terms_transparency': 'Transparentnosť podmienok',
-        'resolution_speed': 'Rýchlosť riešenia',
-        'staff_professionalism': 'Profesionalita personálu',
-        'creativity_approach': 'Kreativita a prístup',
-        'communication_punctuality': 'Komunikácia a dochvíľnosť',
-        'design_functionality': 'Dizajn a funkčnosť',
-        'delivery_assembly': 'Doručenie a montáž',
-        'connection_quality': 'Kvalita pripojenia',
-        'price_performance': 'Cena vs. výkon',
-    },
-}
-
-
-def _get_localized_category_questions(business_category, language_code):
-    if not business_category:
-        return []
-
-    category_key = getattr(business_category, "name", business_category)
-    default_questions = BusinessCategory.get_default_questions().get(category_key, [])
-    questions = [question.copy() for question in default_questions]
-
-    if questions:
-        manual_labels = CATEGORY_LABEL_TRANSLATIONS.get(language_code or '')
-        remaining_indices = []
-
-        for index, question in enumerate(questions):
-            field_name = question.get("field")
-            if manual_labels and field_name in manual_labels:
-                question["label"] = manual_labels[field_name]
-            else:
-                remaining_indices.append(index)
-
-        if remaining_indices:
-            translated_labels = translate_sequence(
-                [questions[index]["label"] for index in remaining_indices],
-                language_code,
-            )
-            for index, label in zip(remaining_indices, translated_labels):
-                questions[index]["label"] = label
-
-    return questions
-
-
 def _create_manual_order(company, data):
     manual_order_id = data.get('order_id', '').strip()
     if not manual_order_id:
@@ -344,11 +200,13 @@ def review_form(request, token):
                     )
             order = None
 
+    category_questions = []
+    if company and company.business_category:
+        from users.models import BusinessCategory
+
+        category_questions = BusinessCategory.get_default_questions().get(company.business_category.name, [])
+
     language_code = get_language_for_country(getattr(company, "country", None)) if company else None
-    category_questions = _get_localized_category_questions(
-        getattr(company, "business_category", None),
-        language_code,
-    )
     strings = _build_form_strings(language_code)
 
     def render_form(extra_context=None):
@@ -504,11 +362,13 @@ def manual_review_form(request):
                 },
             )
 
+    category_questions = []
+    if company.business_category:
+        from users.models import BusinessCategory
+
+        category_questions = BusinessCategory.get_default_questions().get(company.business_category.name, [])
+
     language_code = get_language_for_country(getattr(company, "country", None))
-    category_questions = _get_localized_category_questions(
-        getattr(company, "business_category", None),
-        language_code,
-    )
     strings = _build_form_strings(language_code)
 
     def render_form(extra_context=None):
@@ -645,15 +505,13 @@ def iframe_(request, user_id):
     positive_reviews = reviews.filter(recommend='yes').count()
     positive_percentage = round((positive_reviews / total_reviews * 100), 0) if total_reviews > 0 else 0
 
-    language_code = get_language_for_country(getattr(user, "country", None))
-
     # Get category-specific questions for the user's business category
-    category_questions = _get_localized_category_questions(
-        getattr(user, "business_category", None),
-        language_code,
-    )
+    category_questions = []
     category_ratings_data = []
     if user.business_category:
+        from users.models import BusinessCategory
+        category_questions = BusinessCategory.get_default_questions().get(user.business_category.name, [])
+        
         # Calculate average ratings for each category question
         for question in category_questions:
             field_name = question['field']
@@ -684,6 +542,7 @@ def iframe_(request, user_id):
         badge_level = 'bronze'
         level_color = '#FF8C00'  # Orange
 
+    language_code = get_language_for_country(getattr(user, "country", None))
     widget_strings = translate_strings(
         {
             'positive_reviews': 'POSITIVE REVIEWS',
@@ -830,11 +689,13 @@ def public_reviews(request, user_id):
         badge_level = 'bronze'
         badge_url = 'https://www.level-4u.com/images/badgebronze.png'
     
+    # Get category-specific questions for the user's business category
+    category_questions = []
+    if user.business_category:
+        from users.models import BusinessCategory
+        category_questions = BusinessCategory.get_default_questions().get(user.business_category.name, [])
+    
     language_code = get_language_for_country(getattr(user, "country", None))
-    category_questions = _get_localized_category_questions(
-        getattr(user, "business_category", None),
-        language_code,
-    )
     company_display = user.business_name or user.get_full_name() or user.username
     description_paragraphs = [
         f"Experience exceptional service with {company_display}. Our commitment to excellence ensures that every customer receives personalized attention and outstanding results.",
@@ -895,6 +756,7 @@ def user_reviews_api(request):
         business_category = None
         category_questions = []
         if review.user.business_category:
+            from users.models import BusinessCategory
             business_category = {
                 'name': review.user.business_category.name,
                 'display_name': review.user.business_category.display_name,
