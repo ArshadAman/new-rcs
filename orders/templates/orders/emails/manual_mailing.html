@@ -37,6 +37,10 @@
             padding: 40px 30px;
             background: #1a1a1a;
         }
+        .manual-body,
+        .manual-body * {
+            color: #ffffff !important;
+        }
         .logo-container {
             text-align: center;
             margin-bottom: 30px;
@@ -105,7 +109,7 @@
             <img src="https://www.level-4u.com/images/image-1.jpg" alt="Banner" class="banner-image">
         </div>
         <div class="content">
-            <div>{{ body_without_link|safe }}</div>
+            <div class="manual-body">{{ body_without_link|safe }}</div>
             
             <div class="button-container">
                 <a href="{{ review_link }}" class="button">{{ strings.button_text }}</a>
