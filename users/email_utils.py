@@ -39,7 +39,7 @@ def send_welcome_email(user):
             'paragraph_two': 'Our team continually works to enhance the quality and functionality of our service to better support your goals.',
             'paragraph_three': 'Your continued engagement helps us improve — we appreciate your partnership.',
             'button_text': 'Go to Dashboard',
-            'footer_text': '© 2025 Level 4 You. All rights reserved.',
+            'footer_text': '© 2025 Level 4 You. Telecommunications 4U s.r.o. All rights reserved.',
             'text_message': f'Welcome to Level4u, {user.business_name or user.username}! Visit {dashboard_url} to get started.',
         }
 
@@ -115,7 +115,7 @@ def send_password_reset_email(user, request):
             'fallback_instructions': "If the button doesn\'t work, copy and paste this link into your browser:",
             'support_text': 'If you have any questions, contact our support team.',
             'signature': 'Best regards,\nThe Level4u Team',
-            'footer_text': '© 2024 Level4u. All rights reserved.',
+            'footer_text': '© 2025 Level 4 You. Telecommunications 4U s.r.o. All rights reserved.',
             'footer_sent_to': f'This email was sent to {user.email}',
             'text_message': f'Reset your password for {user.business_name or user.username}. Click here: {reset_url}',
         }

@@ -45,7 +45,7 @@ def _build_form_strings(language_code):
         'submit_in_progress': 'Submitting...',
         'success_title': '🎉 Thank You!',
         'success_message': 'Your feedback has been successfully submitted. We appreciate your time and valuable input!',
-        'footer_text': '©2025 Level 4 You. All rights reserved.',
+        'footer_text': '©2025 Level 4 You. Telecommunications 4U s.r.o. All rights reserved.',
         'flash_positive': 'Thank you for your positive review!',
         'flash_negative': 'Thank you for your feedback. Your review will be processed.',
         'flash_closed': 'Thank you for your feedback! Reviews are currently closed for this business.',
@@ -81,7 +81,7 @@ def _build_form_strings(language_code):
             'submit_in_progress': 'Odesílání...',
             'success_title': '🎉 Děkujeme!',
             'success_message': 'Vaše zpětná vazba byla úspěšně odeslána. Vážíme si vašeho času i cenných podnětů!',
-            'footer_text': '©2025 Level 4 You. Všechna práva vyhrazena.',
+            'footer_text': '©2025 Level 4 You. Telecommunications 4U s.r.o. Všechna práva vyhrazena.',
             'flash_positive': 'Děkujeme za vaši pozitivní recenzi!',
             'flash_negative': 'Děkujeme za vaši zpětnou vazbu. Vaše recenze bude zpracována.',
             'flash_closed': 'Děkujeme za váš zájem! V tuto chvíli jsou recenze pro tuto společnost uzavřeny.',
@@ -116,7 +116,7 @@ def _build_form_strings(language_code):
             'submit_in_progress': 'Odosielanie...',
             'success_title': '🎉 Ďakujeme!',
             'success_message': 'Vaša spätná väzba bola úspešne odoslaná. Veľmi si vážime váš čas aj podnety!',
-            'footer_text': '©2025 Level 4 You. Všetky práva vyhradené.',
+            'footer_text': '©2025 Level 4 You. Telecommunications 4U s.r.o. Všetky práva vyhradené.',
             'flash_positive': 'Ďakujeme za vašu pozitívnu recenziu!',
             'flash_negative': 'Ďakujeme za vašu spätnú väzbu. Vaša recenzia bude spracovaná.',
             'flash_closed': 'Ďakujeme za váš záujem! Recenzie sú momentálne pre túto spoločnosť uzavreté.',
@@ -157,9 +157,14 @@ def _create_manual_order(company, data):
 
 
 def review_form(request, token):
+    recipient = None
+    existing_review = None
+    
     try:
         order = Order.objects.get(review_token=token)
         company = order.user
+        # Check if review already exists for this order
+        existing_review = Review.objects.filter(order=order).first()
     except Order.DoesNotExist:
         try:
             from orders.models import MailingRecipient
@@ -167,6 +172,13 @@ def review_form(request, token):
             recipient = MailingRecipient.objects.get(review_token=token)
             company = recipient.campaign.user
             order = None
+            # Check if review already exists for this recipient (by email)
+            if recipient.email:
+                existing_review = Review.objects.filter(
+                    user=company,
+                    manual_customer_email=recipient.email,
+                    manual_order_id=recipient.order_number
+                ).first()
         except MailingRecipient.DoesNotExist:
             company_id = request.GET.get('company_id')
             if company_id:
@@ -216,10 +228,20 @@ def review_form(request, token):
             'category_questions': category_questions,
             'strings': strings,
             'document_lang': strings['html_lang'],
+            'existing_review': existing_review,
         }
         if extra_context:
             context.update(extra_context)
         return render(request, 'reviews/review_form.html', context)
+
+    # If review already exists, show success message and prevent new submission
+    if existing_review:
+        if request.method == 'POST':
+            messages.info(request, 'You have already submitted a review for this order. Thank you!')
+            return render_form({'success': True, 'already_submitted': True})
+        else:
+            # On GET, show the form but indicate review already submitted
+            return render_form({'success': True, 'already_submitted': True})
 
     if request.method == 'POST':
         monthly_count = company.monthly_review_count
@@ -716,7 +738,7 @@ def public_reviews(request, user_id):
         'recommend_no': '✗ Not Recommend',
         'store_reply': 'Store Reply:',
         'review_count_label': 'Reviews:',
-        'footer_text': '© 2025 Level 4 You. All rights reserved.',
+        'footer_text': '© 2025 Level 4 You. Telecommunications 4U s.r.o. All rights reserved.',
         'logo_alt': 'Level 4 You Logo',
         'banner_alt': 'Hero Banner',
         'anonymous_customer': 'Anonymous Customer',

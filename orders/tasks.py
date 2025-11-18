@@ -70,7 +70,7 @@ def send_mailing_emails(campaign_id: int) -> str:
             {
                 'button_text': 'Click Here to Review',
                 'closing_text': 'Thank you for your valuable feedback. We appreciate your time and trust in our service.',
-                'footer_text': '© 2025 Level 4 You. All rights reserved.',
+                'footer_text': '© 2025 Level 4 You. Telecommunications 4U s.r.o. All rights reserved.',
             },
             language_code,
         )

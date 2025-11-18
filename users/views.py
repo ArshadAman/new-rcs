@@ -124,23 +124,33 @@ def business_categories_view(request):
 
 @api_view(['POST'])
 def forgot_password_view(request):
-    """Send password reset email"""
+    """Send password reset email - Security: Always return same message to prevent email enumeration"""
     email = request.data.get('email')
     if not email:
         return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
     
+    # Always return the same success message regardless of whether email exists
+    # This prevents attackers from discovering which emails are registered
     try:
         user = CustomUser.objects.get(email=email)
-        if send_password_reset_email(user, request):
-            return Response({'message': 'Password reset email sent successfully'}, status=status.HTTP_200_OK)
-        else:
-            return Response({'error': 'Failed to send password reset email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # Try to send email, but don't reveal if it fails
+        try:
+            send_password_reset_email(user, request)
+            logger.info(f"Password reset email sent to {email}")
+        except Exception as e:
+            # Log error but don't reveal it to user
+            logger.error(f"Failed to send password reset email to {email}: {str(e)}")
     except CustomUser.DoesNotExist:
-        # Don't reveal if email exists or not for security
-        return Response({'message': 'If an account with this email exists, a password reset link has been sent'}, status=status.HTTP_200_OK)
+        # User doesn't exist - don't reveal this
+        logger.info(f"Password reset requested for non-existent email: {email}")
     except Exception as e:
-        logger.error(f"Forgot password error: {str(e)}")
-        return Response({'error': 'An error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # Log unexpected errors but don't reveal them
+        logger.error(f"Forgot password error for {email}: {str(e)}")
+    
+    # Always return the same success message to prevent email enumeration
+    return Response({
+        'message': 'If an account with this email exists, a password reset link has been sent to your email address.'
+    }, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def reset_password_view(request):

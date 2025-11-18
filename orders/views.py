@@ -102,7 +102,11 @@ def list_user_orders(request):
 # Manual Mailing API Endpoints
 
 def get_plan_limits(user):
-    """Get mailing limits based on user plan"""
+    """Get mailing limits based on user plan or trial status"""
+    # Check if user is in trial period - give them trial limits
+    if is_trial_active(user):
+        return {'monthly_limit': 1, 'email_limit': 200}  # Trial limits: 1 mailing, 200 emails
+    
     plan_limits = {
         'basic': {'monthly_limit': 1, 'email_limit': 300},
         'standard': {'monthly_limit': 1, 'email_limit': 800},
@@ -163,6 +167,13 @@ def send_mailing(request):
     """Send a manual mailing campaign"""
     user = request.user
     
+    # Check if user has active plan or is in trial period
+    if not is_plan_active(user) and not is_trial_active(user):
+        return Response({
+            'success': False,
+            'message': 'Your plan has expired. Please upgrade to continue using manual mailing.'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
     # Check plan limits - only check email limit, not monthly limit
     limits = get_plan_limits(user)
     
@@ -177,9 +188,10 @@ def send_mailing(request):
         }, status=status.HTTP_400_BAD_REQUEST)
     
     if len(recipients) > limits['email_limit']:
+        limit_type = 'Trial' if is_trial_active(user) else 'Plan'
         return Response({
             'success': False,
-            'message': f'Too many recipients. Plan allows maximum {limits["email_limit"]} emails per mailing'
+            'message': f'Too many recipients. {limit_type} allows maximum {limits["email_limit"]} emails per mailing'
         }, status=status.HTTP_400_BAD_REQUEST)
     
     try:
@@ -321,6 +333,7 @@ def get_mailing_limits(request):
     """Get user's mailing limits"""
     user = request.user
     limits = get_plan_limits(user)
+    is_trial = is_trial_active(user)
     
     now = timezone.now()
     usage, created = MailingUsage.objects.get_or_create(
@@ -332,6 +345,7 @@ def get_mailing_limits(request):
     
     return Response({
         'plan': user.plan,
+        'is_trial': is_trial,
         'monthlyLimit': limits['monthly_limit'],
         'emailLimit': limits['email_limit'],
         'monthlyUsage': usage.mailings_sent,
