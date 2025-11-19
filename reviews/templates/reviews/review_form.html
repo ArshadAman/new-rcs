@@ -332,11 +332,14 @@
                 <h3>{{ strings.success_title|default:'🎉 Thank You!' }}</h3>
                 {% if already_submitted %}
                     <p>You have already submitted a review for this order. Thank you for your feedback!</p>
+                    <p style="margin-top: 15px; font-size: 14px; color: #b0b0b0;">This review link has already been used and cannot be used again.</p>
                 {% else %}
                     <p>{{ strings.success_message|default:'Your feedback has been successfully submitted. We appreciate your time and valuable input!' }}</p>
                 {% endif %}
             </div>
-        {% else %}
+        {% endif %}
+        
+        {% if not already_submitted %}
             {% if messages %}
                 {% for message in messages %}
                     <div class="error-message">
