@@ -29,6 +29,7 @@ class Review(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     auto_publish_at = models.DateTimeField(null=True, blank=True)
     reply = models.TextField(blank=True)  # Store/admin reply to review
+    review_token = models.UUIDField(null=True, blank=True, editable=False)  # Store original token to check for already-submitted reviews
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
 
     def save(self, *args, **kwargs):

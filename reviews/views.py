@@ -159,33 +159,73 @@ def _create_manual_order(company, data):
 def review_form(request, token):
     recipient = None
     existing_review = None
+    order = None
+    company = None
     
-    try:
-        order = Order.objects.get(review_token=token)
-        company = order.user
-        # Check if review already exists for this order
-        existing_review = Review.objects.filter(order=order).first()
-    except Order.DoesNotExist:
+    # First, check if a review was already created with this token
+    existing_review = Review.objects.filter(review_token=token).first()
+    if existing_review:
+        company = existing_review.user
+        order = existing_review.order
+    else:
+        # Try to find order by token
         try:
-            from orders.models import MailingRecipient
+            order = Order.objects.get(review_token=token)
+            company = order.user
+            # Check if review already exists for this order
+            existing_review = Review.objects.filter(order=order).first()
+        except Order.DoesNotExist:
+            try:
+                from orders.models import MailingRecipient
 
-            recipient = MailingRecipient.objects.get(review_token=token)
-            company = recipient.campaign.user
-            order = None
-            # Check if review already exists for this recipient (by email)
-            if recipient.email:
-                existing_review = Review.objects.filter(
-                    user=company,
-                    manual_customer_email=recipient.email,
-                    manual_order_id=recipient.order_number
-                ).first()
-        except MailingRecipient.DoesNotExist:
-            company_id = request.GET.get('company_id')
-            if company_id:
-                try:
-                    company = CustomUser.objects.get(id=company_id)
-                except CustomUser.DoesNotExist:
-                    messages.error(request, 'Company not found.')
+                recipient = MailingRecipient.objects.get(review_token=token)
+                company = recipient.campaign.user
+                order = None
+                
+                # Check if recipient has already been reviewed
+                if recipient.reviewed_at:
+                    # Recipient was already reviewed - find the review
+                    existing_review = Review.objects.filter(
+                        user=company,
+                        manual_customer_email=recipient.email
+                    ).order_by('-created_at').first()
+                    
+                    # If not found by manual_customer_email, check by Order email
+                    if not existing_review:
+                        matching_orders = Order.objects.filter(
+                            user=company,
+                            email=recipient.email
+                        )
+                        for order in matching_orders:
+                            review = Review.objects.filter(order=order).first()
+                            if review:
+                                existing_review = review
+                                break
+                else:
+                    # Check if review already exists for this recipient's email
+                    if recipient.email:
+                        # Check by manual_customer_email (reviews created from manual mailing)
+                        existing_review = Review.objects.filter(
+                            user=company,
+                            manual_customer_email=recipient.email
+                        ).order_by('-created_at').first()
+                        
+                        # Also check if any Order with this email has a review
+                        if not existing_review:
+                            matching_orders = Order.objects.filter(
+                                user=company,
+                                email=recipient.email
+                            )
+                            for order in matching_orders:
+                                review = Review.objects.filter(order=order).first()
+                                if review:
+                                    existing_review = review
+                                    break
+            except MailingRecipient.DoesNotExist:
+                # Token not found - check if any review exists with this token (should have been caught above)
+                # If still not found, show expired message
+                if not existing_review:
+                    messages.error(request, 'This review link has expired or is invalid. Each review link can only be used once.')
                     return render(
                         request,
                         'reviews/review_form.html',
@@ -194,23 +234,10 @@ def review_form(request, token):
                             'category_questions': [],
                             'strings': _build_form_strings(None),
                             'document_lang': 'en',
+                            'success': True,
+                            'already_submitted': True,
                         },
                     )
-            else:
-                company = CustomUser.objects.filter(plan__in=['basic', 'advanced', 'pro', 'unique']).first()
-                if not company:
-                    messages.error(request, 'No company found for manual review submission.')
-                    return render(
-                        request,
-                        'reviews/review_form.html',
-                        {
-                            'order': None,
-                            'category_questions': [],
-                            'strings': _build_form_strings(None),
-                            'document_lang': 'en',
-                        },
-                    )
-            order = None
 
     category_questions = []
     if company and company.business_category:
@@ -234,13 +261,21 @@ def review_form(request, token):
             context.update(extra_context)
         return render(request, 'reviews/review_form.html', context)
 
-    # If review already exists, show success message and prevent new submission
+    # If review already exists, show message and prevent new submission
     if existing_review:
+        # Invalidate token if it still exists
+        if order and order.review_token:
+            order.review_token = None
+            order.save()
+        elif recipient and recipient.review_token:
+            recipient.review_token = None
+            recipient.save()
+            
         if request.method == 'POST':
-            messages.info(request, 'You have already submitted a review for this order. Thank you!')
+            messages.info(request, 'This review link has already been used. Each link can only be used once.')
             return render_form({'success': True, 'already_submitted': True})
         else:
-            # On GET, show the form but indicate review already submitted
+            # On GET, show message that link has expired
             return render_form({'success': True, 'already_submitted': True})
 
     if request.method == 'POST':
@@ -293,21 +328,43 @@ def review_form(request, token):
                 'category_ratings': category_ratings,
             }
             if not order:
+                # Use recipient's email if available, otherwise use form input
+                email = recipient.email if recipient else request.POST.get('email', '')
+                customer_name = recipient.name if recipient else request.POST.get('customer_name', '')
+                order_id = recipient.order_number if recipient else request.POST.get('order_id', '')
+                
                 order, manual_order_id, manual_customer_name, manual_customer_email = _create_manual_order(
                     company,
                     {
-                        'order_id': request.POST.get('order_id', ''),
-                        'customer_name': request.POST.get('customer_name', ''),
-                        'email': request.POST.get('email', ''),
+                        'order_id': order_id,
+                        'customer_name': customer_name,
+                        'email': email,
                     },
                 )
                 review_data['order'] = order
                 review_data['manual_order_id'] = manual_order_id
                 review_data['manual_customer_name'] = manual_customer_name
                 review_data['manual_customer_email'] = manual_customer_email
+                
+                # Mark recipient as reviewed if this came from a mailing recipient
+                if recipient:
+                    from django.utils import timezone
+                    recipient.reviewed_at = timezone.now()
+                    recipient.status = 'reviewed'
+                    # Invalidate the token so link can't be used again
+                    recipient.review_token = None
+                    recipient.save()
+            
+            review_data['review_token'] = token  # Store the token in the review
             Review.objects.create(**review_data)
             company.monthly_review_count += 1
             company.save()
+            
+            # Invalidate token for Order-based reviews
+            if order and hasattr(order, 'review_token') and order.review_token:
+                order.review_token = None
+                order.save()
+            
             messages.success(request, strings['flash_positive'])
             return render_form({'success': True})
 
@@ -327,21 +384,43 @@ def review_form(request, token):
                 'category_ratings': category_ratings if category_ratings else {},
             }
             if not order:
+                # Use recipient's email if available, otherwise use form input
+                email = recipient.email if recipient else request.POST.get('email', '')
+                customer_name = recipient.name if recipient else request.POST.get('customer_name', '')
+                order_id = recipient.order_number if recipient else request.POST.get('order_id', '')
+                
                 order, manual_order_id, manual_customer_name, manual_customer_email = _create_manual_order(
                     company,
                     {
-                        'order_id': request.POST.get('order_id', ''),
-                        'customer_name': request.POST.get('customer_name', ''),
-                        'email': request.POST.get('email', ''),
+                        'order_id': order_id,
+                        'customer_name': customer_name,
+                        'email': email,
                     },
                 )
                 review_data['order'] = order
                 review_data['manual_order_id'] = manual_order_id
                 review_data['manual_customer_name'] = manual_customer_name
                 review_data['manual_customer_email'] = manual_customer_email
-            Review.objects.create(**review_data)
+                
+                # Mark recipient as reviewed if this came from a mailing recipient
+                if recipient:
+                    from django.utils import timezone
+                    recipient.reviewed_at = timezone.now()
+                    recipient.status = 'reviewed'
+                    # Invalidate the token so link can't be used again
+                    recipient.review_token = None
+                    recipient.save()
+            
+            review_data['review_token'] = token  # Store the token in the review
+            review = Review.objects.create(**review_data)
             company.monthly_review_count += 1
             company.save()
+            
+            # Invalidate token for Order-based reviews
+            if order and hasattr(order, 'review_token') and order.review_token:
+                order.review_token = None
+                order.save()
+            
             messages.success(request, strings['flash_negative'])
             return render_form({'success': True})
 
