@@ -57,7 +57,7 @@ def _build_form_strings(language_code):
         'html_lang': 'en',
     }
     manual_overrides = {
-        'cs': {
+        'cz': {
             'page_title': 'Recenze objednávky',
             'header_title': 'RECENZE OBJEDNÁVKY',
             'header_subtitle': 'Pomozte nám zlepšovat služby sdílením své zkušenosti',
@@ -136,36 +136,87 @@ def _build_form_strings(language_code):
     return base_strings
 
 
+
+def _build_widget_strings(language_code):
+    base_strings = {
+        'verified_reviews_text': 'The rating is based on verified consumer reviews',
+        'click_here_text_basic': 'Click here to see reviews',
+        'positive_reviews_text': 'Positive reviews',
+        'click_here_text_advanced': 'Click here',
+        'verified_by': 'VERIFIED BY',
+        'click_part1': 'CLICK',
+        'click_part2': 'HERE',
+        'verified_part1': 'VERIFIED',
+        'verified_part2': 'BY',
+        'expired_title': 'YOUR PLAN IS EXPIRED',
+        'expired_subtitle': 'Please renew to continue collecting reviews',
+        'logistics': 'LOGISTICS',
+        'delivery': 'DELIVERY',
+        'communication': 'COMMUNICATION',
+    }
+    
+    manual_overrides = {
+        'cz': {
+            'verified_reviews_text': 'Hodnocení je založeno na základě recenzí ověřených zákazníků',
+            'click_here_text_basic': 'Klikněte zde pro zobrazení recenzí',
+            'positive_reviews_text': 'Pozitivní recenze',
+            'click_here_text_advanced': 'ZOBRAZIT RECENZE',
+            'click_part1': 'ZOBRAZIT',
+            'click_part2': 'RECENZE',
+            'logistics': 'DOPRAVA',
+            'delivery': 'DODÁNÍ',
+            'communication': 'KOMUNIKACE',
+        },
+        'sk': {
+            'verified_reviews_text': 'Hodnotenie je založené na recenziách overených zákazníkov',
+            'click_here_text_basic': 'Kliknite sem pre zobrazenie recenzií',
+            'positive_reviews_text': 'Pozitívne recenzie',
+            'click_here_text_advanced': 'Zobraziť recenzie',
+            'click_part1': 'ZOBRAZIŤ',
+            'click_part2': 'RECENZIE',
+            'logistics': 'DOPRAVA',
+            'delivery': 'DODANIE',
+            'communication': 'KOMUNIKÁCIA',
+        }
+    }
+
+    strings = base_strings.copy()
+    if language_code in manual_overrides:
+        strings.update(manual_overrides[language_code])
+        
+    return strings
+
+
 CATEGORY_LABEL_TRANSLATIONS = {
-    'cs': {
+    'cz': {
         'treatment_quality': 'Kvalita ošetření',
-        'staff_attentiveness': 'Péče personálu',
-        'service_comfort': 'Komfort služby',
+        'staff_attentiveness': 'Pozornost personálu',
+        'service_comfort': 'Komfort služeb',
         'service_result': 'Výsledek služby',
         'customer_care': 'Péče o zákazníka',
-        'atmosphere_comfort': 'Atmosféra a pohodlí',
-        'product_range': 'Šíře sortimentu',
+        'atmosphere_comfort': 'Atmosféra / Komfort',
+        'product_range': 'Sortiment zboží',
         'staff_service': 'Obsluha personálu',
-        'shopping_comfort': 'Pohodlí nákupu',
-        'website_usability': 'Použitelnost webu',
+        'shopping_comfort': 'Pohodlí při nakupování',
+        'website_usability': 'Použitelnost webu',  
         'delivery_speed': 'Rychlost doručení',
         'product_quality': 'Kvalita produktu',
         'customer_support': 'Zákaznická podpora',
         'cleanliness_comfort': 'Čistota a komfort',
-        'value_money': 'Poměr ceny a hodnoty',
-        'work_quality': 'Kvalita práce',
+        'value_money': 'Poměr cena / kvalita',
+        'work_quality': 'Kvalita provedené práce',
         'service_speed': 'Rychlost služby',
-        'price_transparency': 'Transparentnost ceny',
+        'price_transparency': 'Transparentnost cen',
         'vehicle_quality': 'Kvalita vozidla',
-        'sales_consultant': 'Služby prodejce',
+        'sales_consultant': 'Přístup prodejce',
         'deal_transparency': 'Transparentnost obchodu',
-        'delivery_process': 'Proces převzetí',
+        'delivery_process': 'Proces předání vozidla',
         'teaching_quality': 'Kvalita výuky',
-        'material_usefulness': 'Užitečnost materiálů',
-        'learning_convenience': 'Pohodlí učení',
+        'material_usefulness': 'Užitečnost studijních materiálů',
+        'learning_convenience': 'Pohodlí při studiu',
         'trip_organization': 'Organizace zájezdu',
-        'manager_service': 'Služby průvodce',
-        'expectations_match': 'Naplnění očekávání',
+        'manager_service': 'Služby manažera',
+        'expectations_match': 'Shoda s očekáváním',
         'deadline_compliance': 'Dodržení termínů',
         'cleanliness_accuracy': 'Čistota a přesnost',
         'result_quality': 'Kvalita výsledku',
@@ -174,78 +225,78 @@ CATEGORY_LABEL_TRANSLATIONS = {
         'shipment_condition': 'Stav zásilky',
         'delivery_convenience': 'Pohodlí doručení',
         'agent_professionalism': 'Profesionalita makléře',
-        'property_accuracy': 'Přesnost popisu nemovitosti',
+        'property_accuracy': 'Shoda nemovitosti s popisem',
         'service_quality': 'Kvalita služby',
-        'responsiveness': 'Ochota reagovat',
-        'price_value': 'Hodnota za peníze',
+        'responsiveness': 'Rychlost reakce',
+        'price_value': 'Cena / hodnota',
         'care_quality': 'Kvalita péče',
-        'pet_attitude': 'Přístup k mazlíčkům',
-        'booking_convenience': 'Pohodlnost rezervace',
+        'pet_attitude': 'Přístup ke zvířeti',
+        'booking_convenience': 'Pohodlí objednání',
         'staff_competence': 'Odbornost personálu',
         'terms_transparency': 'Transparentnost podmínek',
-        'resolution_speed': 'Rychlost řešení',
+        'resolution_speed': 'Rychlost vyřešení',
         'staff_professionalism': 'Profesionalita personálu',
         'creativity_approach': 'Kreativita a přístup',
         'communication_punctuality': 'Komunikace a dochvilnost',
         'design_functionality': 'Design a funkčnost',
         'delivery_assembly': 'Doručení a montáž',
         'connection_quality': 'Kvalita připojení',
-        'price_performance': 'Cena vs. výkon',
+        'price_performance': 'Poměr cena / výkon',
     },
     'sk': {
         'treatment_quality': 'Kvalita ošetrenia',
-        'staff_attentiveness': 'Starostlivosť personálu',
-        'service_comfort': 'Komfort služby',
+        'staff_attentiveness': 'Pozornosť personálu',
+        'service_comfort': 'Komfort služieb',
         'service_result': 'Výsledok služby',
         'customer_care': 'Starostlivosť o zákazníka',
-        'atmosphere_comfort': 'Atmosféra a pohodlie',
-        'product_range': 'Šírka sortimentu',
+        'atmosphere_comfort': 'Atmosféra / Komfort',
+        'product_range': 'Sortiment produktov',
         'staff_service': 'Obsluha personálu',
-        'shopping_comfort': 'Pohodlie nákupu',
-        'website_usability': 'Použiteľnosť webu',
+        'shopping_comfort': 'Pohodlie pri nakupovaní',
+        'website_usability': 'Použiteľnosť webovej stránky',
         'delivery_speed': 'Rýchlosť doručenia',
         'product_quality': 'Kvalita produktu',
         'customer_support': 'Zákaznícka podpora',
         'cleanliness_comfort': 'Čistota a komfort',
-        'value_money': 'Pomer ceny a hodnoty',
-        'work_quality': 'Kvalita práce',
+        'value_money': 'Pomer cena / kvalita',
+        'work_quality': 'Kvalita vykonanej práce',
         'service_speed': 'Rýchlosť služby',
-        'price_transparency': 'Transparentnosť ceny',
+        'price_transparency': 'Transparentnosť cien',
         'vehicle_quality': 'Kvalita vozidla',
-        'sales_consultant': 'Služby predajcu',
+        'sales_consultant': 'Prístup predajcu',
         'deal_transparency': 'Transparentnosť obchodu',
-        'delivery_process': 'Proces odovzdania',
+        'delivery_process': 'Proces odovzdania vozidla',
         'teaching_quality': 'Kvalita výučby',
-        'material_usefulness': 'Užitočnosť materiálov',
-        'learning_convenience': 'Pohodlie učenia',
+        'material_usefulness': 'Užitočnosť študijných materiálov',
+        'learning_convenience': 'Pohodlie pri štúdiu',
         'trip_organization': 'Organizácia zájazdu',
-        'manager_service': 'Služby sprievodcu',
-        'expectations_match': 'Naplnenie očakávaní',
-        'deadline_compliance': 'Dodržanie termínov',
+        'manager_service': 'Služby manažéra',
+        'expectations_match': 'Zhoda s očakávaniami',
+        'deadline_compliance': 'Dodržiavanie termínov',
         'cleanliness_accuracy': 'Čistota a presnosť',
         'result_quality': 'Kvalita výsledku',
-        'response_speed': 'Rýchlosť reakcie',
+        'response_speed': 'Rýchlosť odozvy',
         'communication_quality': 'Kvalita komunikácie',
         'shipment_condition': 'Stav zásielky',
         'delivery_convenience': 'Pohodlie doručenia',
         'agent_professionalism': 'Profesionalita makléra',
-        'property_accuracy': 'Presnosť popisu nehnuteľnosti',
+        'property_accuracy': 'Zhoda nehnuteľnosti s popisom',
         'service_quality': 'Kvalita služby',
-        'responsiveness': 'Ochota reagovať',
-        'price_value': 'Hodnota za peniaze',
+        'responsiveness': 'Rýchlosť reakcie',
+        'price_value': 'Cena',
         'care_quality': 'Kvalita starostlivosti',
-        'pet_attitude': 'Prístup k domácim miláčikom',
-        'booking_convenience': 'Pohodlnosť rezervácie',
+        'pet_attitude': 'Prístup k zvieraťu',
+        'booking_convenience': 'Pohodlie objednania',
         'staff_competence': 'Odbornosť personálu',
         'terms_transparency': 'Transparentnosť podmienok',
-        'resolution_speed': 'Rýchlosť riešenia',
+        'resolution_speed': 'Rýchlosť vyriešenia',
         'staff_professionalism': 'Profesionalita personálu',
         'creativity_approach': 'Kreativita a prístup',
         'communication_punctuality': 'Komunikácia a dochvíľnosť',
         'design_functionality': 'Dizajn a funkčnosť',
         'delivery_assembly': 'Doručenie a montáž',
         'connection_quality': 'Kvalita pripojenia',
-        'price_performance': 'Cena vs. výkon',
+        'price_performance': 'Pomer cena / výkon',
     },
 }
 
@@ -344,7 +395,10 @@ def review_form(request, token):
                     )
             order = None
 
-    language_code = get_language_for_country(getattr(company, "country", None)) if company else None
+    # Direct country check as requested
+    country = getattr(company, "country", "") or ""
+    language_code = country.lower().strip()
+    
     category_questions = _get_localized_category_questions(
         getattr(company, "business_category", None),
         language_code,
@@ -365,7 +419,7 @@ def review_form(request, token):
 
     if request.method == 'POST':
         monthly_count = company.monthly_review_count
-        limit = 50 if company.plan == 'basic' else 150 if company.plan == 'extended' else 1000
+        limit = 50 if company.plan == 'basic' else 150 if company.plan == 'advanced' else 1000
         if monthly_count >= limit or not is_plan_active(company):
             messages.error(request, strings['flash_closed'])
             return render_form()
@@ -504,7 +558,10 @@ def manual_review_form(request):
                 },
             )
 
-    language_code = get_language_for_country(getattr(company, "country", None))
+    # Direct country check as requested
+    country = getattr(company, "country", "") or ""
+    language_code = country.lower().strip()
+
     category_questions = _get_localized_category_questions(
         getattr(company, "business_category", None),
         language_code,
@@ -525,7 +582,7 @@ def manual_review_form(request):
 
     if request.method == 'POST':
         monthly_count = company.monthly_review_count
-        limit = 50 if company.plan == 'basic' else 150 if company.plan == 'extended' else 1000
+        limit = 50 if company.plan == 'basic' else 150 if company.plan == 'advanced' else 1000
         if monthly_count >= limit or not is_plan_active(company):
             messages.error(request, strings['flash_closed'])
             return render_form()
@@ -645,7 +702,9 @@ def iframe_(request, user_id):
     positive_reviews = reviews.filter(recommend='yes').count()
     positive_percentage = round((positive_reviews / total_reviews * 100), 0) if total_reviews > 0 else 0
 
-    language_code = get_language_for_country(getattr(user, "country", None))
+    # Direct country check as requested
+    country = getattr(user, "country", "") or ""
+    language_code = country.lower().strip()
 
     # Get category-specific questions for the user's business category
     category_questions = _get_localized_category_questions(
@@ -684,20 +743,14 @@ def iframe_(request, user_id):
         badge_level = 'bronze'
         level_color = '#FF8C00'  # Orange
 
-    widget_strings = translate_strings(
-        {
-            'positive_reviews': 'POSITIVE REVIEWS',
-            'click_here': 'CLICK HERE',
-            'verified_by': 'VERIFIED BY',
-            'expired_title': 'YOUR PLAN IS EXPIRED',
-            'expired_subtitle': 'Please renew to continue collecting reviews',
-            'logistics': 'LOGISTICS',
-            'delivery': 'DELIVERY',
-            'communication': 'COMMUNICATION',
-        },
-        language_code,
-    )
+    widget_strings = _build_widget_strings(language_code)
     
+    # Determine click_here_text based on plan
+    if user.plan == 'basic':
+        click_here_text = widget_strings['click_here_text_basic']
+    else:
+        click_here_text = widget_strings['click_here_text_advanced']
+
     # Plan-based widget logic
     context = {
         'user': user,
@@ -712,6 +765,9 @@ def iframe_(request, user_id):
         'badge_level': badge_level,
         'level_color': level_color,
         'widget_strings': widget_strings,
+        'click_here_text': click_here_text,
+        'positive_label_text': widget_strings['positive_reviews_text'],
+        'verified_text': widget_strings['verified_reviews_text'],
         'document_lang': language_code or 'en',
     }
 
@@ -736,7 +792,7 @@ def iframe_(request, user_id):
             'show_customization': False,
             'latest_comment': reviews.last().comment if reviews.exists() else '',
         })
-    elif user.plan == 'extended':
+    elif user.plan == 'advanced':
         # Show all rating fields and more info
         context.update({
             'avg_logistics': avg('logistics_rating'),
@@ -929,7 +985,7 @@ def user_reviews_api(request):
 def reply_to_negative_review(request, review_id):
     user = request.user
     monthly_count = user.monthly_reply_count
-    limit = 50 if user.plan == "basic" else 150 if user.plan == "extended" else 1000
+    limit = 50 if user.plan == "basic" else 150 if user.plan == "advanced" else 1000
     if monthly_count >= limit or not is_plan_active(user):
         return Response({'error': 'Basic plan users can only reply to 50 reviews per month.'}, status=status.HTTP_403_FORBIDDEN)
     
@@ -955,7 +1011,7 @@ def reply_to_negative_review(request, review_id):
 def review_plan_action_api(request):
     user = request.user
     monthly_count = user.monthly_review_count
-    limit = 50 if user.plan == 'basic' else 150 if user.plan == 'extended' else 1000
+    limit = 50 if user.plan == 'basic' else 150 if user.plan == 'advanced' else 1000
     limit_reached = monthly_count >= limit
 
     actions = []
@@ -965,7 +1021,7 @@ def review_plan_action_api(request):
                 {'type': 'repurchase', 'label': 'Repurchase Basic Plan', 'stripe_url': '/api/payment/repurchase/'},
                 {'type': 'upgrade', 'label': 'Upgrade to Enhanced', 'stripe_url': '/api/payment/upgrade/'}
             ]
-        elif user.plan == 'extended':
+        elif user.plan == 'advanced':
             actions = [
                 {'type': 'repurchase', 'label': 'Repurchase Enhanced Plan', 'stripe_url': '/api/payment/repurchase/'},
                 {'type': 'upgrade', 'label': 'Upgrade to Pro', 'stripe_url': '/api/payment/upgrade/'}

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="{{ document_lang|default:'en' }}">
 <head>
@@ -6,787 +7,427 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Service Ratings Widget</title>
-    <style>
-        body { margin:0; padding:0; background:transparent; }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <style> 
+        :root {
+            --sidebar-width: 54px;
+            --color-basic: #A0A0A0;
+            --color-advanced: #E85D04; /* Darker Orange to match image */
+            --color-pro: #FFD700; /* Gold */
+            --color-text-main: #333;
+            --font-stack: "Montserrat", sans-serif;
+        }
+
+        body, button, input, select, textarea { margin: 0; padding: 0; background: transparent; font-family: var(--font-stack); -webkit-font-smoothing: antialiased; }
+
         #rcs-widget-container {
             position: fixed;
             top: 50%;
             right: 0;
             z-index: 9999;
-            font-family: Arial, sans-serif;
             transform: translateY(-50%);
         }
-        
-        #rcs-widget-collapsed {
-            border-radius: 15px;
-            padding: 20px 12px;
-            cursor: pointer;
-            font-size: 12px;
-            width: 50px;
-            height: 220px;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
-            transition: all 0.3s ease-in-out;
-            transform: translateX(0);
-            border: none;
-        }
-        
-        @media (max-width: 768px) {
-            #rcs-widget-container {
-                bottom: 15px;
-                right: 15px;
-                max-width: 240px;
-            }
-            
-            #rcs-widget-collapsed {
-                min-width: 200px;
-                font-size: 11px;
-            }
-        }
-        
-        .star-icon {
-            font-size: 1.2em;
-            color: #fff;
-        }
-        
-        .rating-text {
-            font-size: 1em;
-            font-weight: 500;
-        }
-        
-        .collapsed-stars {
+
+        .flex-col {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
-            color: #fff;
-            font-size: 14px;
-            font-weight: bold;
-            justify-content: center;
-            height: 100%;
-        }
-        
-        .star {
-            font-size: 24px;
-            color: #fff;
-            display: block;
-            line-height: 1;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-            opacity: 0.3;
-        }
-        
-        .star.filled {
-            color: #fff;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-            opacity: 1;
-        }
-        
-        .rating-number {
-            color: #000;
-            font-size: 10px;
-            font-weight: bold;
-            margin-top: 4px;
-        }
-        
-        @media (max-width: 768px) {
-            .collapsed-left-section {
-                padding: 12px;
-            }
-            
-            .collapsed-right-section {
-                width: 45px;
-                gap: 1px;
-            }
-            
-            .collapsed-stars {
-                right: 10px;
-                font-size: 16px;
-            }
-        }
-        
-        .collapsed-brackets {
+        }   
+
+        /* --- Collapsed State --- */
+        #rcs-widget-collapsed {
+            width: var(--sidebar-width);
+            min-height: 220px;
+            border-radius: 6px 0 0 6px; /* Sharper corners */
+            cursor: pointer;
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
         }
         
-        .collapsed-bracket-left, .collapsed-bracket-right {
-            width: 15px;
-            height: 15px;
-            background: #000;
-            position: relative;
-        }
-        
-        .collapsed-bracket-left {
-            clip-path: polygon(0 0, 100% 0, 0 100%);
-        }
-        
-        .collapsed-bracket-right {
-            clip-path: polygon(0 0, 100% 0, 100% 100%);
-        }
-        
-        @media (max-width: 768px) {
-            .collapsed-brackets {
-                margin-bottom: 8px;
-            }
-            
-            .collapsed-bracket-left, .collapsed-bracket-right {
-                width: 12px;
-                height: 12px;
-            }
-        }
-        
-        .collapsed-description {
-            text-align: center;
-            font-size: 10px;
-            color: #333;
-            margin-bottom: 12px;
-            line-height: 1.3;
-        }
-        
-        .collapsed-cta-button {
-            background: #000;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 10px 12px;
-            font-size: 10px;
-            font-weight: bold;
-            text-align: center;
-            cursor: pointer;
-            margin-bottom: 12px;
-            line-height: 1.2;
-        }
-        
-        @media (max-width: 768px) {
-            .collapsed-description {
-                font-size: 9px;
-                margin-bottom: 10px;
-            }
-            
-            .collapsed-cta-button {
-                padding: 8px 10px;
-                font-size: 9px;
-                margin-bottom: 10px;
-            }
-        }
-        
-        .collapsed-verified-text {
-            font-size: 8px;
-            color: #666;
-            text-align: center;
-            letter-spacing: 0.5px;
-            margin-bottom: 3px;
-        }
-        
-        .collapsed-level-logo {
-            font-size: 10px;
-            font-weight: bold;
-            text-align: center;
-            color: #000;
-        }
-        
-        @media (max-width: 768px) {
-            .collapsed-verified-text {
-                font-size: 7px;
-                margin-bottom: 2px;
-            }
-            
-            .collapsed-level-logo {
-                font-size: 9px;
-            }
-        }
-        
-        .collapsed-expand-button {
-            background: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            padding: 8px 12px;
-            font-size: 11px;
-            font-weight: bold;
-            text-align: center;
-            cursor: pointer;
-            margin-bottom: 15px;
-        }
-        
+        #rcs-widget-collapsed:hover { transform: translateX(-4px); }
+
+        .collapsed-stars { display: flex; flex-direction: column; gap: 8px; }
+        .star { font-size: 20px; line-height: 1; color: rgba(255,255,255,0.4); }
+        .star.filled { color: #fff; }
+
+        /* Plan-specific Collapsed Backgrounds */
+        .plan-basic #rcs-widget-collapsed { background: var(--color-basic); }
+        .plan-advanced #rcs-widget-collapsed { background: var(--color-advanced); }
+        .plan-pro #rcs-widget-collapsed { background: var(--color-pro); }
+
+        /* --- Expanded State --- */
         #rcs-widget-expanded {
             display: none;
-            background: transparent;
-            color: #222;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            padding: 0;
-            min-width: 350px;
             position: absolute;
-            right: 50px;
-            top: 50%;
-            transform: translateY(-50%) translateX(100%);
-            transition: all 0.3s ease-in-out;
-            overflow: visible;
-        }
-        
-        .expanded-content {
-            display: flex;
-            gap: 0;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        .left-vertical-bar {
-            width: 30px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 15px 5px;
-            position: relative;
-            border-radius: 12px 0 0 12px;
-        }
-        
-        .left-vertical-bar.bronze {
-            background: #FFDB01;
-        }
-        
-        .left-vertical-bar.silver {
-            background: #FFDB01;
-        }
-        
-        .left-vertical-bar.gold {
-            background: #FFDB01;
-        }
-        
-        .left-vertical-bar-stars {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-        }
-        
-        .left-vertical-bar-star {
-            font-size: 14px;
-            color: #FF8C00;
-        }
-        
-        .left-vertical-bar-star.outline {
-            color: transparent;
-            -webkit-text-stroke: 1.5px #FF8C00;
-            text-stroke: 1.5px #FF8C00;
-        }
-        
-        .left-section {
-            flex: 1;
-            text-align: left;
-            padding: 20px;
-            background: #ffffff;
-            position: relative;
-            overflow: visible;
-        }
-        
-        .rating-category {
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            margin-bottom: 8px;
-            font-size: 12px;
-            font-weight: 500;
-            gap: 15px;
-            opacity: 1;
-        }
-        
-        .category-name {
-            color: #000000;
-            font-weight: 600;
-            text-transform: uppercase;
-            opacity: 1;
-            flex-shrink: 0;
-        }
-        
-        .category-stars {
-            font-size: 14px;
-            color: #000000;
-            opacity: 1;
-            flex-shrink: 0;
-            display: inline-flex;
-            gap: 2px;
-            white-space: nowrap;
-        }
-        
-        .category-stars span.empty {
-            color: transparent;
-            -webkit-text-stroke: 1px #000000;
-            text-stroke: 1px #000000;
-            opacity: 1;
-            display: inline-block;
-        }
-        
-        .positive-reviews-box {
-            background: #000;
-            color: #fff;
-            padding: 20px;
-            border-radius: 0;
-            margin: 15px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .positive-reviews-left {
-            flex: 1;
-        }
-        
-        .positive-percentage {
-            font-size: 40px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            line-height: 1;
-        }
-        
-        .positive-text {
-            font-size: 11px;
-            font-weight: bold;
-            text-transform: uppercase;
-            line-height: 1.2;
-        }
-        
-        .brackets {
-            position: absolute;
-            top: 20px;
-            left: 20px;
             right: 20px;
-            height: 20px;
-            pointer-events: none;
+            top: 50%;
+            transform: translateY(-50%) translateX(20px);
+            opacity: 0;
+            background: #fff;
+            border-radius: 8px; /* Slightly sharper */
+            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+            overflow: hidden;
+            min-width: 420px; /* Slightly wider */
+            min-height: 260px;
         }
+
+        .expanded-layout { display: flex; height: 100%; min-height: 260px; }
         
-        .bracket-left {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 15px;
-            height: 15px;
-            border-left: 2px solid #000000;
-            border-top: 2px solid #000000;
-            opacity: 1;
-            box-sizing: border-box;
+        /* Sidebar */
+        .sidebar {
+            width: 66px; /* Wider sidebar */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
         }
+        .sidebar-stars { display: flex; flex-direction: column; gap: 7px; }
         
-        .bracket-right {
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: 15px;
-            height: 15px;
-            border-right: 2px solid #000000;
-            border-top: 2px solid #000000;
-            opacity: 1;
-            box-sizing: border-box;
-        }
-        
-        .bracket-bottom-left {
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            width: 15px;
-            height: 15px;
-            border-left: 2px solid #000000;
-            border-bottom: 2px solid #000000;
-        }
-        
-        .bracket-bottom-right {
-            position: absolute;
-            right: 0;
-            bottom: 0;
-            width: 15px;
-            height: 15px;
-            border-right: 2px solid #000000;
-            border-bottom: 2px solid #000000;
-        }
-        
-        .right-section {
-            width: 50px;
-            border-radius: 0 12px 12px 0;
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 28px;
+            position: relative;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            align-items: center;
-            padding: 15px 10px;
-            position: relative;
         }
-        
-        .right-section.bronze {
-            background: #ffffff;
-        }
-        
-        .right-section.silver {
-            background: #ffffff;
-        }
-        
-        .right-section.gold {
-            background: #ffffff;
-        }
-        
-        .right-section:not(.bronze):not(.silver):not(.gold) {
-            background: #ffffff;
-        }
-        
-        .rating-description {
-            font-size: 12px;
-            color: #333;
-            margin-bottom: 15px;
-            font-weight: 500;
-            line-height: 1.3;
-        }
-        
-        .cta-button {
-            background: #000000;
-            color: #ffffff;
-            border: 1px solid #ffffff;
-            padding: 12px 24px;
-            border-radius: 0;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-left: 20px;
-        }
-        
-        .cta-button:hover {
-            background: #1a1a1a;
-        }
-        
-        .verified-text {
-            font-size: 9px;
-            font-weight: 300;
-            color: #000000 !important;
-            margin-top: 15px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            text-align: center;
-        }
-        
-        .level-logo {
-            font-size: 10px;
-            font-weight: bold;
-            color: #000;
-            margin-top: 8px;
-            text-align: center;
-        }
-        
-        .level-logo img {
-            height: 50px;
-            width: auto;
-            max-width: 200px;
-        }
-        
-        .stars-container {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-        }
-        
-        .star {
-            font-size: 14px;
-            color: #fff;
-        }
-        
-        .star.filled {
-            color: #fff;
-        }
-        
-        .star.outline {
-            color: transparent;
-            -webkit-text-stroke: 1.5px #fff;
-            text-stroke: 1.5px #fff;
-        }
-        
-        .star.outline-yellow {
-            color: transparent;
-            -webkit-text-stroke: 1.5px #FFDB01;
-            text-stroke: 1.5px #FFDB01;
-        }
-        
-        .right-section-star {
-            font-size: 14px;
-            color: #ffffff;
-        }
-        
-        .right-section-star.outline {
-            color: transparent;
-            -webkit-text-stroke: 1.5px #ffffff;
-            text-stroke: 1.5px #ffffff;
-        }
-        
-        .right-section .rating-number {
-            display: none;
-        }
-        
-        @media (max-width: 768px) {
-            .star {
-                font-size: 12px;
-            }
-        }
-        
-        .rating-number {
-            color: #fff;
-            font-size: 14px;
-            font-weight: bold;
-            margin-top: 8px;
-        }
-        
-        .verified-text {
-            color: #ffffff;
-        }
-        
-        .expired-message {
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
-            border-radius: 10px;
-            margin: 10px 0;
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-        }
-        
-        .expired-icon {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        
-        .expired-text {
-            color: #fff;
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-        }
-        
-        .expired-subtext {
-            color: #fff;
-            font-size: 12px;
+
+        /* Corner Brackets - Thicker & Better Aligned */
+        .corner-bracket {
+            position: absolute;
+            width: 26px; height: 26px;
+            border-color: #333; border-style: solid;
             opacity: 0.9;
         }
-    </style>
-</head>
-<body>
-<div id="rcs-widget-container">
-    <div id="rcs-widget-collapsed" style="background: {{ level_color|default:'#FF8C00' }}; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
-        <div class="collapsed-stars">
-            {% for i in "12345" %}
-                {% if forloop.counter <= avg_main|default:4 %}
-                    <div class="star filled">★</div>
-                {% else %}
-                    <div class="star">★</div>
-                {% endif %}
-            {% endfor %}
-        </div>
-    </div>
-    <div id="rcs-widget-expanded">
-        <div class="expanded-content">
-            <div class="left-vertical-bar {{ badge_level|default:'bronze' }}">
-                <div class="left-vertical-bar-stars">
-                    {% for i in "12345" %}
-                        {% if forloop.counter == 1 %}
-                            <div class="left-vertical-bar-star outline">★</div>
-                        {% else %}
-                            <div class="left-vertical-bar-star">★</div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-            <div class="left-section">
-                <div class="brackets">
-                    <div class="bracket-left"></div>
-                    <div class="bracket-right"></div>
-                </div>
-                
-                {% if show_expired_message %}
-                <div class="expired-message">
-                    <div class="expired-icon">⚠️</div>
-                    <div class="expired-text">{{ widget_strings.expired_title|default:'YOUR PLAN IS EXPIRED' }}</div>
-                    <div class="expired-subtext">{{ widget_strings.expired_subtitle|default:'Please renew to continue collecting reviews' }}</div>
-                </div>
-                {% else %}
-                {% if category_ratings_data %}
-                    {% for rating_data in category_ratings_data|slice:":3" %}
-                        <div class="rating-category">
-                            <span class="category-name">{{ rating_data.label|upper }}</span>
-                            <span class="category-stars">
-                                {% for i in "12345" %}
-                                    {% if forloop.counter <= rating_data.avg_rating|floatformat:0|add:0 %}
-                                        ★
-                                    {% else %}
-                                        <span class="empty">★</span>
-                                    {% endif %}
-                                {% endfor %}
-                            </span>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="rating-category">
-                        <span class="category-name">{{ widget_strings.logistics|default:'LOGISTICS' }}</span>
-                        <span class="category-stars {{ badge_level|default:'bronze' }}">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= avg_logistics|default:5 %}
-                                    ★
-                                {% else %}
-                                    <span class="empty">★</span>
-                                {% endif %}
-                            {% endfor %}
-                        </span>
-                    </div>
-                    
-                    <div class="rating-category">
-                        <span class="category-name">{{ widget_strings.delivery|default:'DELIVERY' }}</span>
-                        <span class="category-stars {{ badge_level|default:'bronze' }}">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= avg_communication|default:5 %}
-                                    ★
-                                {% else %}
-                                    <span class="empty">★</span>
-                                {% endif %}
-                            {% endfor %}
-                        </span>
-                    </div>
-                    
-                    <div class="rating-category">
-                        <span class="category-name">{{ widget_strings.communication|default:'COMMUNICATION' }}</span>
-                        <span class="category-stars {{ badge_level|default:'bronze' }}">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= avg_communication|default:5 %}
-                                    ★
-                                {% else %}
-                                    <span class="empty">★</span>
-                                {% endif %}
-                            {% endfor %}
-                        </span>
-                    </div>
-                {% endif %}
-                
-                <div class="positive-reviews-box">
-                    <div class="positive-reviews-left">
-                        <div class="positive-percentage">{{ positive_percentage }}%</div>
-                        <div class="positive-text">{{ widget_strings.positive_reviews|default:'POSITIVE REVIEWS' }}</div>
-                    </div>
-                    <button class="cta-button" onclick="parent.location.href='/api/reviews/public-reviews/{{ user.id }}/'">
-                        {{ widget_strings.click_here|default:'CLICK HERE' }}
-                    </button>
-                </div>
-                
-                <div class="verified-text">{{ widget_strings.verified_by|default:'VERIFIED BY' }}</div>
-                <div class="level-logo">
-                    <img src="https://www.level-4u.com/images/levelblack.png" alt="LEVEL" />
-                </div>
-                {% endif %}
-            </div>
-            <div class="right-section {{ badge_level|default:'bronze' }}">
-                <div class="stars-container" style="display: none;">
-                    {% for i in "12345" %}
-                        {% if forloop.counter == 1 %}
-                            <div class="right-section-star outline">★</div>
-                        {% else %}
-                            <div class="right-section-star">★</div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+        .tl { top: 23px; left: 21px; border-width: 5px 0 0 5px; height: 30px; width: 30px; }
+        .tr { top: 23px; right: 21px; border-width: 5px 5px 0 0; width: 30px; height: 30px; }
 
-<script>
-function expandRcsWidget() {
-    const collapsed = document.getElementById('rcs-widget-collapsed');
-    const expanded = document.getElementById('rcs-widget-expanded');
-    
-    // Hide collapsed widget
-    collapsed.style.transform = 'translateY(-50%) translateX(100%)';
-    collapsed.style.opacity = '0';
-    
-    setTimeout(() => {
-        collapsed.style.display = 'none';
-        expanded.style.display = 'block';
-        // Slide from left
-        expanded.style.transform = 'translateY(-50%) translateX(0)';
-        expanded.style.opacity = '1';
-    }, 150);
-}
+        /* --- Plan Specific Styles --- */
 
-function collapseRcsWidget() {
-    const collapsed = document.getElementById('rcs-widget-collapsed');
-    const expanded = document.getElementById('rcs-widget-expanded');
-    
-    // Slide back to left
-    expanded.style.transform = 'translateY(-50%) translateX(100%)';
-    expanded.style.opacity = '0';
-    
-    setTimeout(() => {
-        expanded.style.display = 'none';
-        collapsed.style.display = 'flex';
-        collapsed.style.transform = 'translateY(-50%) translateX(0)';
-        collapsed.style.opacity = '1';
-    }, 150);
-}
+        /* BASIC */
+        .plan-basic .sidebar { background: var(--color-basic); }
+        .plan-basic .content { text-align: center; }
+        .basic-text { font-size: 13px; color: #333; margin-bottom: 24px; font-weight: 500; }
+        .cta-btn-large {
+            background: #222; color: #fff; width: 100%; padding: 18px;
+            border: none; font-weight: 800; font-size: 15px; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .verified-logo { 
+            margin-top: 24px; 
+            text-transform: uppercase; 
+            font-size: 19.3px; 
+            color: #333; 
+            {% comment %} letter-spacing: 4px; {% endcomment %}
+            text-align: center;
+            font-weight: 600; /* Sharp but not too bold */
+        }
+        /* Increased Logo Size significantly */
+        .verified-logo img { height: 48px; margin-top: 10px; display: block; margin-left: auto; margin-right: auto;}
 
-// Hover to expand, leave to collapse
-document.addEventListener('DOMContentLoaded', function() {
-    const collapsed = document.getElementById('rcs-widget-collapsed');
-    const expanded = document.getElementById('rcs-widget-expanded');
-    const container = document.getElementById('rcs-widget-container');
-    let isExpanded = false;
-    let hoverTimeout = null;
-    let isTransitioning = false;
-    
-    // Expand on hover of the entire container
-    container.addEventListener('mouseenter', function() {
-        // Clear any pending collapse
-        if (hoverTimeout) {
-            clearTimeout(hoverTimeout);
-            hoverTimeout = null;
+        /* ADVANCED */
+        .plan-advanced .sidebar { background: var(--color-advanced); }
+        .mini-star { font-size: 26px; color: rgba(255,255,255,0.4); }
+        
+        /* Advanced & Basic Sidebar Stars: All White */
+        .plan-advanced .sidebar-stars .mini-star.filled, 
+        .plan-basic .sidebar-stars .mini-star.filled { 
+            color: #fff !important; 
+            opacity: 1; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2); 
+        }
+
+        
+        .plan-advanced .rating-row, .plan-pro .rating-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin: 8px; 
+            font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            font-family: var(--font-stack);
+            
+        }
+        .plan-advanced .rating-stars, .plan-pro .rating-stars { 
+            color: #333; font-size: 16px; letter-spacing: 2px; display: flex; gap: 1px;
+        }
+        .plan-advanced .rating-stars .filled, .plan-pro .rating-stars .filled { color: #333; }
+        .plan-advanced .rating-stars .empty, .plan-pro .rating-stars .empty { color: #ccc; }
+        
+        .plan-advanced .stats-bar, .plan-pro .stats-bar {
+            background: #222; color: #fff; padding: 14px 20px; margin-top: 24px;
+            display: flex; justify-content: space-between; align-items: center;
+            position: relative;
+        }
+        .plan-advanced .stats-left, .plan-pro .stats-left { display: flex; flex-direction: column; justify-content: center; }
+        .plan-advanced .stats-pct, .plan-pro .stats-pct { font-size: 50px; font-weight: 700; line-height: 0.85;}
+        .plan-advanced .stats-label, .plan-pro .stats-label { font-size: 12px; font-weight: 700; text-transform: uppercase; margin-top: 6px; letter-spacing: 0.5px; opacity: 0.9; }
+        
+        .plan-advanced .btn-outline, .plan-pro .btn-outline {
+            border: 2px solid #fff; 
+            background: transparent; color: #fff;
+            padding: 6px 10px; 
+            font-size: 14px; /* Reduced from 19px to fit translation */
+            font-weight: 700; text-transform: uppercase;
+            cursor: pointer;
+            text-align: center;
+            line-height: 1.2;
+            min-width: 80px; 
+            letter-spacing: 0.5px;
+            box-shadow: none;
+            border-radius: 0; 
+        }
+        .plan-advanced .btn-outline:hover, .plan-pro .btn-outline:hover { background: #fff; color: #000; }
+
+        /* PRO */
+        .plan-pro .sidebar { background: var(--color-pro); }
+        
+        /* Stars fill from bottom to top visually */
+        .plan-pro .sidebar-stars { flex-direction: column-reverse; }
+
+        /* Pro Stars: VISUAL Top Star (DOM last-child) White, others Red-Orange */
+        /* Only apply color to .filled stars so empty ones show as empty */
+        .plan-pro .sidebar-stars .mini-star.filled { color: #E74C3C !important; text-shadow: none; opacity: 1; }
+        .plan-pro .sidebar-stars .mini-star:last-child.filled { color: #fff !important; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+
+        /* Stats bar needs position:relative for badge positioning */
+        .plan-pro .stats-bar { 
+            position: relative;
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-start;
+            padding-right: 100px; /* Space for the badge */
+            overflow: visible; /* Allow badge to overflow */
         }
         
-        // Only expand if not already expanded and not transitioning
-        if (!isExpanded && !isTransitioning) {
-            isTransitioning = true;
-            expandRcsWidget();
-            setTimeout(function() {
-                isExpanded = true;
-                isTransitioning = false;
-            }, 300);
+        /* On Pro Plan, hide the standard button to let the Badge take spotlight */
+        .plan-pro .stats-bar .btn-outline { display: none !important; }
+        
+        .plan-pro .stats-bar .stats-left {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
         }
-    });
-    
-    // Collapse when mouse leaves the container with a small delay to prevent flickering
-    container.addEventListener('mouseleave', function() {
-        // Add a small delay to prevent rapid expand/collapse
-        hoverTimeout = setTimeout(function() {
-            if (isExpanded && !isTransitioning) {
-                isTransitioning = true;
-                collapseRcsWidget();
-                setTimeout(function() {
-                    isExpanded = false;
-                    isTransitioning = false;
+        
+        /* Pro Badge Image Styling */
+        .pro-badge-img {
+            position: absolute; 
+            right: 12px; /* Hang off the edge significantly */
+            top: 50%; 
+            transform: translateY(-50%); 
+            z-index: 100;
+        }
+        .pro-badge-img img {
+            width: 120px; /* Much larger badge */
+            height: auto;
+            display: block;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+        } 
+
+    </style>
+</head>
+<body class="plan-{{ user.plan|default:'basic' }}">
+
+    <div id="rcs-widget-container">
+        <!-- COLLAPSED WIDGET -->
+        <div id="rcs-widget-collapsed">
+            <!-- Collapsed stars logic: Show accurate average -->
+            <div class="collapsed-stars">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= avg_main %}
+                        <div class="star filled">★</div>
+                    {% else %}
+                        <div class="star">★</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- EXPANDED WIDGET -->
+        <div id="rcs-widget-expanded">
+            <div class="expanded-layout">
+                <!-- SIDEBAR -->
+                <div class="sidebar">
+                    <div class="sidebar-stars">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= avg_main %}
+                                <div class="mini-star filled">★</div>
+                            {% else %}
+                                <div class="mini-star">★</div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- CONTENT -->
+                <div class="content">
+                    <!-- Decor Corners -->
+                    <div class="corner-bracket tl"></div>
+                    <div class="corner-bracket tr"></div>
+
+                    <!-- EXPIRED OVERRIDE -->
+                    {% if show_expired_message %}
+                         <div style="text-align:center; color: #d00; font-weight: bold;">
+                             {{ widget_strings.expired_title|default:'PLAN EXPIRED' }}<br>
+                             <small>{{ widget_strings.expired_subtitle }}</small>
+                         </div>
+                    {% else %}
+
+                        <!-- BASIC LAYOUT -->
+                        {% if user.plan == 'basic' %}
+                            <div class="basic-text">{{ verified_text|default:'The rating is based on verified consumer reviews.' }}</div>
+                            <button class="cta-btn-large" onclick="parent.location.href='/api/reviews/public-reviews/{{ user.id }}/'">
+                                {{ click_here_text|default:'CLICK HERE TO SEE REVIEWS' }}
+                            </button>
+                            <div class="verified-logo" style="
+                                display: flex;
+                                flex-direction: column;
+                                align-items: stretch;
+                                justify-content: center;
+                            "><div><span style="
+                                letter-spacing: 19px;
+                            ">{{ widget_strings.verified_part1|default:'VERIFIED' }}</span> <span class="by" style="
+                                letter-spacing: 15px;
+                            ">{{ widget_strings.verified_part2|default:'BY' }}</span></div>
+                                <div><img src="https://www.level-4u.com/images/levelblack.png" alt="LEVEL"></div>
+                            </div>
+                        {% endif %}
+
+                        <!-- ADVANCED & PRO LAYOUT -->
+                        {% if user.plan == 'advanced' or user.plan == 'pro' %}
+                            <!-- Explicit Category Structure to match Design -->
+                            <div class="rating-row">
+                                <span>{{ widget_strings.logistics|default:'LOGISTICS' }}</span>
+                                <span class="rating-stars">
+                                    {% for i in "12345" %}
+                                        <div class="{% if forloop.counter <= avg_logistics|add:0 %}filled{% else %}empty{% endif %}">★</div>
+                                    {% endfor %}
+                                </span>
+                            </div>
+                            <div class="rating-row">
+                                <span>{{ widget_strings.delivery|default:'DELIVERY' }}</span>
+                                <span class="rating-stars">
+                                    {% for i in "12345" %}
+                                        <div class="{% if forloop.counter <= avg_communication|add:0 %}filled{% else %}empty{% endif %}">★</div>
+                                    {% endfor %}
+                                </span>
+                            </div>
+                            <div class="rating-row">
+                                <span>{{ widget_strings.communication|default:'COMMUNICATION' }}</span>
+                                <span class="rating-stars">
+                                    {% for i in "12345" %}
+                                        <div class="{% if forloop.counter <= avg_communication|add:0 %}filled{% else %}empty{% endif %}">★</div>
+                                    {% endfor %}
+                                </span>
+                            </div>
+
+                            <div class="stats-bar">
+                                <div class="stats-left">
+                                    <span class="stats-pct">{{ positive_percentage }}%</span>
+                                    <span class="stats-label">{{ positive_label_text|default:'POSITIVE REVIEWS' }}</span>
+                                </div>
+                                <button class="btn-outline flex-col" onclick="parent.location.href='/api/reviews/public-reviews/{{ user.id }}/'" style="
+                                        display: flex;
+                                        flex-direction: column;
+                                        align-items: center;
+                                    "><div>{{ widget_strings.click_part1|default:'CLICK' }}</div><div>{{ widget_strings.click_part2|default:'HERE' }}</div>
+                                </button>
+                                                                    
+                                {% if user.plan == 'pro' %}
+                                    <!-- Gold Badge Overlay - Positioned relative to stats-bar -->
+                                    <div class="pro-badge-img">
+                                        <img src="{% static 'reviews/images/lvl_badge_gold.png' %}" alt="Verified by Level">
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="verified-logo" style="
+                                display: flex;
+                                flex-direction: column;
+                                align-items: stretch;
+                                justify-content: center;
+                            "><div><span style="
+                                letter-spacing: 19px;
+                            ">{{ widget_strings.verified_part1|default:'VERIFIED' }}</span> <span class="by" style="
+                                letter-spacing: 6px;
+                            ">{{ widget_strings.verified_part2|default:'BY' }}</span></div>
+                                <div><img src="https://www.level-4u.com/images/levelblack.png" alt="LEVEL"></div>
+                            </div>
+                        {% endif %}
+
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS for Interaction -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const collapsed = document.getElementById('rcs-widget-collapsed');
+            const expanded = document.getElementById('rcs-widget-expanded');
+            const container = document.getElementById('rcs-widget-container');
+            let isExpanded = false;
+            let isAnimating = false;
+
+            function openWidget() {
+                if (isExpanded || isAnimating) return;
+                isAnimating = true;
+
+                // Prepare expanded
+                expanded.style.display = 'block';
+                expanded.style.opacity = '0';
+                expanded.style.transform = 'translateY(-50%) translateX(20px) scale(0.95)';
+                expanded.offsetHeight; // Force reflow
+
+                // Animate collapsed out
+                collapsed.style.transform = 'translateX(20px)';
+                collapsed.style.opacity = '0';
+
+                setTimeout(() => {
+                    collapsed.style.display = 'none';
+                    // Animate expanded in
+                    expanded.style.opacity = '1';
+                    expanded.style.transform = 'translateY(-50%) translateX(0) scale(1)';
+                    expanded.style.transition = 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)';
+                    
+                    setTimeout(() => { isExpanded = true; isAnimating = false; }, 400);
+                }, 150);
+            }
+
+            function closeWidget() {
+                if (!isExpanded || isAnimating) return;
+                isAnimating = true;
+                
+                // Animate expanded out
+                expanded.style.opacity = '0';
+                expanded.style.transform = 'translateY(-50%) translateX(20px) scale(0.95)';
+
+                setTimeout(() => {
+                    expanded.style.display = 'none';
+                    collapsed.style.display = 'flex';
+                    collapsed.style.opacity = '0';
+                    collapsed.style.transform = 'translateX(20px)';
+                    collapsed.offsetHeight;
+
+                    collapsed.style.opacity = '1';
+                    collapsed.style.transform = 'translateX(0)';
+
+                    setTimeout(() => { isExpanded = false; isAnimating = false; }, 400);
                 }, 300);
             }
-        }, 150);
-    });
-    
-    // Keep click outside to collapse functionality
-    document.addEventListener('click', function(e) {
-        if (!container.contains(e.target)) {
-            if (isExpanded) {
-                isTransitioning = true;
-                collapseRcsWidget();
-                setTimeout(function() {
-                    isExpanded = false;
-                    isTransitioning = false;
-                }, 300);
-            }
-        }
-    });
-});
-</script>
+
+            collapsed.addEventListener('click', function(e) { e.stopPropagation(); openWidget(); });
+            document.addEventListener('click', function(e) { 
+                if (isExpanded && !container.contains(e.target)) closeWidget(); 
+            });
+            expanded.addEventListener('click', function(e) { e.stopPropagation(); });
+        });
+    </script>
 </body>
 </html>
