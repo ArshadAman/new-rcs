@@ -12,7 +12,6 @@ RUN pip install python-dotenv
 
 COPY . /app/
 RUN python manage.py makemigrations
-RUN python manage.py migrate
 
 # Create logs directory
 RUN mkdir -p /app/logs
