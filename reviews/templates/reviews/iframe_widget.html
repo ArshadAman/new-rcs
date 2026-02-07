@@ -160,15 +160,20 @@
         .plan-advanced .rating-stars .filled, .plan-pro .rating-stars .filled { color: #333; }
         .plan-advanced .rating-stars .empty, .plan-pro .rating-stars .empty { color: #ccc; }
         
+        .plan-basic .stats-bar,
         .plan-advanced .stats-bar, .plan-pro .stats-bar {
             background: #222; color: #fff; padding: 14px 20px; margin-top: 24px;
             display: flex; justify-content: space-between; align-items: center;
             position: relative;
         }
+        .plan-basic .stats-left,
         .plan-advanced .stats-left, .plan-pro .stats-left { display: flex; flex-direction: column; justify-content: center; }
+        .plan-basic .stats-pct,
         .plan-advanced .stats-pct, .plan-pro .stats-pct { font-size: 50px; font-weight: 700; line-height: 0.85;}
+        .plan-basic .stats-label,
         .plan-advanced .stats-label, .plan-pro .stats-label { font-size: 12px; font-weight: 700; text-transform: uppercase; margin-top: 6px; letter-spacing: 0.5px; opacity: 0.9; }
         
+        .plan-basic .btn-outline,
         .plan-advanced .btn-outline, .plan-pro .btn-outline {
             border: 2px solid #fff; 
             background: transparent; color: #fff;
@@ -181,8 +186,10 @@
             min-width: 80px; 
             letter-spacing: 0.5px;
             box-shadow: none;
-            border-radius: 0; 
+            border-radius: 0;
+            flex-shrink: 0; /* Never shrink - keep button visible */
         }
+        .plan-basic .btn-outline:hover,
         .plan-advanced .btn-outline:hover, .plan-pro .btn-outline:hover { background: #fff; color: #000; }
 
         /* PRO */
@@ -196,38 +203,33 @@
         .plan-pro .sidebar-stars .mini-star.filled { color: #E74C3C !important; text-shadow: none; opacity: 1; }
         .plan-pro .sidebar-stars .mini-star:last-child.filled { color: #fff !important; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
 
-        /* Stats bar needs position:relative for badge positioning */
+        /* Stats bar - gap between 100% and ZOBRAZIT RECENZE button */
+        .plan-basic .stats-bar,
+        .plan-advanced .stats-bar,
         .plan-pro .stats-bar { 
             position: relative;
             display: flex; 
             align-items: center; 
-            justify-content: flex-start;
-            padding-right: 100px; /* Space for the badge */
-            overflow: visible; /* Allow badge to overflow */
+            justify-content: space-between;
+            gap: 32px;
         }
         
-        /* On Pro Plan, hide the standard button to let the Badge take spotlight */
-        .plan-pro .stats-bar .btn-outline { display: none !important; }
-        
+        .plan-basic .stats-bar .stats-left,
+        .plan-advanced .stats-bar .stats-left,
         .plan-pro .stats-bar .stats-left {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
+            flex-shrink: 0;
+            margin-right: 24px; /* Extra gap between 100% and VIEW REVIEWS button */
         }
         
-        /* Pro Badge Image Styling */
-        .pro-badge-img {
-            position: absolute; 
-            right: 12px; /* Hang off the edge significantly */
-            top: 50%; 
-            transform: translateY(-50%); 
-            z-index: 100;
-        }
-        .pro-badge-img img {
-            width: 120px; /* Much larger badge */
-            height: auto;
-            display: block;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+        /* Keep view reviews button always visible */
+        .plan-basic .stats-bar .btn-outline,
+        .plan-advanced .stats-bar .btn-outline,
+        .plan-pro .stats-bar .btn-outline {
+            flex-shrink: 0;
+            display: flex !important;
         } 
 
     </style>
@@ -240,7 +242,7 @@
             <!-- Collapsed stars logic: Show accurate average -->
             <div class="collapsed-stars">
                 {% for i in "12345" %}
-                    {% if forloop.counter <= avg_main %}
+                    {% if forloop.counter <= avg_main|default:0 %}
                         <div class="star filled">★</div>
                     {% else %}
                         <div class="star">★</div>
@@ -256,7 +258,7 @@
                 <div class="sidebar">
                     <div class="sidebar-stars">
                         {% for i in "12345" %}
-                            {% if forloop.counter <= avg_main %}
+                            {% if forloop.counter <= avg_main|default:0 %}
                                 <div class="mini-star filled">★</div>
                             {% else %}
                                 <div class="mini-star">★</div>
@@ -285,6 +287,20 @@
                             <button class="cta-btn-large" onclick="parent.location.href='/api/reviews/public-reviews/{{ user.id }}/'">
                                 {{ click_here_text|default:'CLICK HERE TO SEE REVIEWS' }}
                             </button>
+                            
+                            <div class="stats-bar">
+                                <div class="stats-left">
+                                    <span class="stats-pct">{{ positive_percentage }}%</span>
+                                    <span class="stats-label">{{ positive_label_text|default:'POSITIVE REVIEWS' }}</span>
+                                </div>
+                                <button class="btn-outline flex-col" onclick="parent.location.href='/api/reviews/public-reviews/{{ user.id }}/'" style="
+                                        display: flex;
+                                        flex-direction: column;
+                                        align-items: center;
+                                    "><div>{{ widget_strings.click_part1|default:'CLICK' }}</div><div>{{ widget_strings.click_part2|default:'HERE' }}</div>
+                                </button>
+                            </div>
+                            
                             <div class="verified-logo" style="
                                 display: flex;
                                 flex-direction: column;
@@ -306,7 +322,7 @@
                                 <span>{{ widget_strings.logistics|default:'LOGISTICS' }}</span>
                                 <span class="rating-stars">
                                     {% for i in "12345" %}
-                                        <div class="{% if forloop.counter <= avg_logistics|add:0 %}filled{% else %}empty{% endif %}">★</div>
+                                        <div class="{% if forloop.counter <= avg_logistics|default:0|add:0 %}filled{% else %}empty{% endif %}">★</div>
                                     {% endfor %}
                                 </span>
                             </div>
@@ -314,7 +330,7 @@
                                 <span>{{ widget_strings.delivery|default:'DELIVERY' }}</span>
                                 <span class="rating-stars">
                                     {% for i in "12345" %}
-                                        <div class="{% if forloop.counter <= avg_communication|add:0 %}filled{% else %}empty{% endif %}">★</div>
+                                        <div class="{% if forloop.counter <= avg_communication|default:0|add:0 %}filled{% else %}empty{% endif %}">★</div>
                                     {% endfor %}
                                 </span>
                             </div>
@@ -322,7 +338,7 @@
                                 <span>{{ widget_strings.communication|default:'COMMUNICATION' }}</span>
                                 <span class="rating-stars">
                                     {% for i in "12345" %}
-                                        <div class="{% if forloop.counter <= avg_communication|add:0 %}filled{% else %}empty{% endif %}">★</div>
+                                        <div class="{% if forloop.counter <= avg_communication|default:0|add:0 %}filled{% else %}empty{% endif %}">★</div>
                                     {% endfor %}
                                 </span>
                             </div>
@@ -338,13 +354,6 @@
                                         align-items: center;
                                     "><div>{{ widget_strings.click_part1|default:'CLICK' }}</div><div>{{ widget_strings.click_part2|default:'HERE' }}</div>
                                 </button>
-                                                                    
-                                {% if user.plan == 'pro' %}
-                                    <!-- Gold Badge Overlay - Positioned relative to stats-bar -->
-                                    <div class="pro-badge-img">
-                                        <img src="{% static 'reviews/images/lvl_badge_gold.png' %}" alt="Verified by Level">
-                                    </div>
-                                {% endif %}
                             </div>
                             <div class="verified-logo" style="
                                 display: flex;

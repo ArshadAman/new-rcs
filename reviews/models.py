@@ -4,14 +4,64 @@ from orders.models import Order
 from django.utils import timezone
 import uuid
 
+
+class Branch(models.Model):
+    """Branch/location for offline QR code reviews"""
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='branches')
+    name = models.CharField(max_length=200)
+    token = models.CharField(max_length=50, unique=True, db_index=True)  # Unique token for QR code
+    expected_reviews = models.PositiveIntegerField(default=0, help_text="Expected reviews for statistics (does not limit)")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Branch'
+        verbose_name_plural = 'Branches'
+    
+    def __str__(self):
+        return f"{self.name} ({self.user.business_name or self.user.username})"
+    
+    def save(self, *args, **kwargs):
+        if not self.token:
+            # Generate unique token
+            self.token = f"br_{uuid.uuid4().hex[:16]}"
+        super().save(*args, **kwargs)
+    
+    @property
+    def offline_reviews_count(self):
+        """Count of offline reviews for this branch in current month"""
+        from django.utils import timezone
+        now = timezone.now()
+        return self.reviews.filter(
+            created_at__year=now.year,
+            created_at__month=now.month,
+            is_published=True
+        ).count()
+    
+    @property
+    def total_reviews_count(self):
+        """Total count of all offline reviews for this branch"""
+        return self.reviews.filter(is_published=True).count()
+
+
 class Review(models.Model):
     RECOMMEND_CHOICES = [
         ('yes', 'Yes'),
         ('no', 'No'),
     ]
+    
+    SOURCE_CHOICES = [
+        ('online', 'Online'),
+        ('offline', 'Offline (QR)'),
+    ]
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='reviews', null=True, blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews')
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, related_name='reviews', null=True, blank=True)  # For offline reviews
+    source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default='online')  # online or offline
     manual_order_id = models.CharField(max_length=100, blank=True, null=True)
     manual_customer_name = models.CharField(max_length=200, blank=True, null=True)
     manual_customer_email = models.CharField(max_length=200, blank=True, null=True)
@@ -86,6 +136,13 @@ class Review(models.Model):
                 self.auto_publish_at = timezone.now() + timezone.timedelta(days=7)
             self.is_published = self.is_complete  # Only publish if complete
         super().save(*args, **kwargs)
+
+    @property
+    def customer_name(self):
+        """Get customer name from order or manual field"""
+        if self.order and self.order.customer_name:
+            return self.order.customer_name
+        return self.manual_customer_name
 
     def __str__(self):
         if self.order_id:

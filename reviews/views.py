@@ -243,6 +243,61 @@ CATEGORY_LABEL_TRANSLATIONS = {
         'connection_quality': 'Kvalita připojení',
         'price_performance': 'Poměr cena / výkon',
     },
+    'cs': {  # Alias for 'cz' - ISO 639-1 language code for Czech
+        'treatment_quality': 'Kvalita ošetření',
+        'staff_attentiveness': 'Pozornost personálu',
+        'service_comfort': 'Komfort služeb',
+        'service_result': 'Výsledek služby',
+        'customer_care': 'Péče o zákazníka',
+        'atmosphere_comfort': 'Atmosféra / Komfort',
+        'product_range': 'Sortiment zboží',
+        'staff_service': 'Obsluha personálu',
+        'shopping_comfort': 'Pohodlí při nakupování',
+        'website_usability': 'Použitelnost webu',  
+        'delivery_speed': 'Rychlost doručení',
+        'product_quality': 'Kvalita produktu',
+        'customer_support': 'Zákaznická podpora',
+        'cleanliness_comfort': 'Čistota a komfort',
+        'value_money': 'Poměr cena / kvalita',
+        'work_quality': 'Kvalita provedené práce',
+        'service_speed': 'Rychlost služby',
+        'price_transparency': 'Transparentnost cen',
+        'vehicle_quality': 'Kvalita vozidla',
+        'sales_consultant': 'Přístup prodejce',
+        'deal_transparency': 'Transparentnost obchodu',
+        'delivery_process': 'Proces předání vozidla',
+        'teaching_quality': 'Kvalita výuky',
+        'material_usefulness': 'Užitečnost studijních materiálů',
+        'learning_convenience': 'Pohodlí při studiu',
+        'trip_organization': 'Organizace zájezdu',
+        'manager_service': 'Služby manažera',
+        'expectations_match': 'Shoda s očekáváním',
+        'deadline_compliance': 'Dodržení termínů',
+        'cleanliness_accuracy': 'Čistota a přesnost',
+        'result_quality': 'Kvalita výsledku',
+        'response_speed': 'Rychlost reakce',
+        'communication_quality': 'Kvalita komunikace',
+        'shipment_condition': 'Stav zásilky',
+        'delivery_convenience': 'Pohodlí doručení',
+        'agent_professionalism': 'Profesionalita makléře',
+        'property_accuracy': 'Shoda nemovitosti s popisem',
+        'service_quality': 'Kvalita služby',
+        'responsiveness': 'Rychlost reakce',
+        'price_value': 'Cena / hodnota',
+        'care_quality': 'Kvalita péče',
+        'pet_attitude': 'Přístup ke zvířeti',
+        'booking_convenience': 'Pohodlí objednání',
+        'staff_competence': 'Odbornost personálu',
+        'terms_transparency': 'Transparentnost podmínek',
+        'resolution_speed': 'Rychlost vyřešení',
+        'staff_professionalism': 'Profesionalita personálu',
+        'creativity_approach': 'Kreativita a přístup',
+        'communication_punctuality': 'Komunikace a dochvilnost',
+        'design_functionality': 'Design a funkčnost',
+        'delivery_assembly': 'Doručení a montáž',
+        'connection_quality': 'Kvalita připojení',
+        'price_performance': 'Poměr cena / výkon',
+    },
     'sk': {
         'treatment_quality': 'Kvalita ošetrenia',
         'staff_attentiveness': 'Pozornosť personálu',
@@ -310,7 +365,14 @@ def _get_localized_category_questions(business_category, language_code):
     questions = [question.copy() for question in default_questions]
 
     if questions:
-        manual_labels = CATEGORY_LABEL_TRANSLATIONS.get(language_code or '')
+        # Check for translations - support both 'cs' and 'cz' for Czech
+        translation_key = language_code or ''
+        manual_labels = None
+        if translation_key in CATEGORY_LABEL_TRANSLATIONS:
+            manual_labels = CATEGORY_LABEL_TRANSLATIONS.get(translation_key)
+        elif translation_key == 'cs':
+            # Fallback: 'cs' can also use 'cz' translations
+            manual_labels = CATEGORY_LABEL_TRANSLATIONS.get('cz')
         remaining_indices = []
 
         for index, question in enumerate(questions):
@@ -321,6 +383,7 @@ def _get_localized_category_questions(business_category, language_code):
                 remaining_indices.append(index)
 
         if remaining_indices:
+            # Use original language_code for translation service (it expects 'cs', not 'cz')
             translated_labels = translate_sequence(
                 [questions[index]["label"] for index in remaining_indices],
                 language_code,
@@ -731,16 +794,23 @@ def iframe_(request, user_id):
                 'count': len(ratings)
             })
     
-    # Determine badge level based on average rating
-    avg_main_rating = avg('main_rating') or 0
-    if avg_main_rating >= 4.5:
+    # Determine badge level based on positive review percentage
+    # 98%+ → Gold, 95%+ → Silver, 90%+ → Bronze
+    if positive_percentage >= 98:
         badge_level = 'gold'
+        badge_url = 'https://www.level-4u.com/images/badgegold.png'
         level_color = '#FFDB01'  # Yellow
-    elif avg_main_rating >= 3.5:
+    elif positive_percentage >= 95:
         badge_level = 'silver'
+        badge_url = 'https://www.level-4u.com/images/badgesilver.png'
         level_color = '#808080'  # Grey
-    else:
+    elif positive_percentage >= 90:
         badge_level = 'bronze'
+        badge_url = 'https://www.level-4u.com/images/badgebronze.png'
+        level_color = '#FF8C00'  # Orange
+    else:
+        badge_level = 'bronze'  # Default to bronze if below 90%
+        badge_url = 'https://www.level-4u.com/images/badgebronze.png'
         level_color = '#FF8C00'  # Orange
 
     widget_strings = _build_widget_strings(language_code)
@@ -763,6 +833,7 @@ def iframe_(request, user_id):
         'category_questions': category_questions,
         'category_ratings_data': category_ratings_data,
         'badge_level': badge_level,
+        'badge_url': badge_url,
         'level_color': level_color,
         'widget_strings': widget_strings,
         'click_here_text': click_here_text,
@@ -872,16 +943,24 @@ def public_reviews(request, user_id):
     else:
         star_display = ['empty', 'empty', 'empty', 'empty', 'empty']
     
-    # Determine badge level based on average rating (default to bronze if no reviews)
-    if total_reviews == 0 or avg_rating == 0:
+    # Calculate positive review percentage
+    positive_reviews = reviews.filter(recommend='yes').count()
+    positive_percentage = round((positive_reviews / total_reviews * 100), 0) if total_reviews > 0 else 0
+    
+    # Determine badge level based on positive review percentage
+    # 98%+ → Gold, 95%+ → Silver, 90%+ → Bronze
+    if total_reviews == 0:
         badge_level = 'bronze'
         badge_url = 'https://www.level-4u.com/images/badgebronze.png'
-    elif avg_rating >= 4.5:
+    elif positive_percentage >= 98:
         badge_level = 'gold'
         badge_url = 'https://www.level-4u.com/images/badgegold.png'
-    elif avg_rating >= 3.5:
+    elif positive_percentage >= 95:
         badge_level = 'silver'
         badge_url = 'https://www.level-4u.com/images/badgesilver.png'
+    elif positive_percentage >= 90:
+        badge_level = 'bronze'
+        badge_url = 'https://www.level-4u.com/images/badgebronze.png'
     else:
         badge_level = 'bronze'
         badge_url = 'https://www.level-4u.com/images/badgebronze.png'
@@ -892,11 +971,22 @@ def public_reviews(request, user_id):
         language_code,
     )
     company_display = user.business_name or user.get_full_name() or user.username
-    description_paragraphs = [
+    
+    # Manual translations for description paragraphs
+    description_paragraphs_en = [
         f"Experience exceptional service with {company_display}. Our commitment to excellence ensures that every customer receives personalized attention and outstanding results.",
         "We pride ourselves on delivering high-quality solutions tailored to your needs, backed by a dedicated team that values your satisfaction above all else.",
     ]
-    description_paragraphs = translate_sequence(description_paragraphs, language_code)
+    
+    # Czech translations
+    if language_code == 'cs':
+        description_paragraphs = [
+            f"Zažijte výjimečný servis s {company_display}. Naše oddanost dokonalosti zajišťuje, že každý zákazník dostává personalizovanou pozornost a vynikající výsledky.",
+            "Jsme hrdí na poskytování vysoce kvalitních řešení přizpůsobených vašim potřebám, podporovaných oddaným týmem, který si cení vaší spokojenosti nade vše.",
+        ]
+    else:
+        # Use translation service for other languages
+        description_paragraphs = translate_sequence(description_paragraphs_en, language_code)
 
     translation_targets = {
         'page_title_suffix': 'Reviews',

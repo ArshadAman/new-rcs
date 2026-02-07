@@ -163,14 +163,34 @@ class CustomUser(AbstractUser):
     ]
     plan = models.CharField(max_length=10, choices=PLAN_CHOICES, default='basic')
     plan_expiration = models.DateTimeField(null=True, blank=True)
-    monthly_review_count = models.PositiveIntegerField(default=0)
+    monthly_review_count = models.PositiveIntegerField(default=0)  # Online reviews
     monthly_reply_count = models.PositiveIntegerField(default=0)
+    monthly_offline_review_count = models.PositiveIntegerField(default=0)  # Offline reviews (separate counter)
     trial_start = models.DateTimeField(null=True, blank=True)
     trial_end = models.DateTimeField(null=True, blank=True)
-
+    
+    # Custom limits for 'unique' plan (set manually in admin)
+    max_branches = models.PositiveIntegerField(null=True, blank=True, help_text="Max branches for unique plan")
+    online_limit_per_month = models.PositiveIntegerField(null=True, blank=True, help_text="Online review limit for unique plan")
+    offline_limit_per_month = models.PositiveIntegerField(null=True, blank=True, help_text="Offline review limit for unique plan")
 
     def __str__(self):
         return self.username
+    
+    def get_plan_limits(self):
+        """Get plan limits based on user's plan"""
+        PLAN_LIMITS = {
+            'basic': {'max_branches': 0, 'online_limit': 100, 'offline_limit': 0},  # No offline for basic
+            'advanced': {'max_branches': 5, 'online_limit': 400, 'offline_limit': 10000},
+            'pro': {'max_branches': 20, 'online_limit': 1000, 'offline_limit': 50000},
+            'unique': {
+                'max_branches': self.max_branches or 50,
+                'online_limit': self.online_limit_per_month or 5000,
+                'offline_limit': self.offline_limit_per_month or 100000,
+            },
+            'expired': {'max_branches': 0, 'online_limit': 0, 'offline_limit': 0},
+        }
+        return PLAN_LIMITS.get(self.plan, PLAN_LIMITS['basic'])
 
 class MonthlyRating(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

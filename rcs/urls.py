@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/orders/', include('orders.urls')),
     path('api/reviews/', include('reviews.urls')),
     path('api/payment/', include('payment.urls')),
+    path('api/offline/', include('reviews.offline_urls')),  # Offline (QR) review endpoints
     # Manual Mailing endpoints are included in orders.urls
 ]
 

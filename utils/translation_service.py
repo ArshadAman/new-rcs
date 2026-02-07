@@ -16,6 +16,8 @@ COUNTRY_LANGUAGE_MAP: Dict[str, LanguageCode] = {
     "czech republic": "cs",
     "czechia": "cs",
     "cesko": "cs",
+    "cz": "cs",  # Czech Republic country code
+    "sk": "sk",  # Slovakia country code
     "slovak": "sk",
     "slovakia": "sk",
     "slovak republic": "sk",
