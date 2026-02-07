@@ -1031,11 +1031,9 @@ def public_reviews(request, user_id):
 @permission_classes([IsAuthenticated])
 def user_reviews_api(request):
     user = request.user
-    if user.plan == 'basic':
-        reviews = Review.objects.filter(user=user).order_by('-created_at')
-    else:
-        reviews = Review.objects.filter(user=user, is_published=True).order_by('-created_at')
-        reviews = ReviewFilter(request.GET, queryset=reviews).qs
+    # Return all reviews for the logged-in user (dashboard/statistics); filter can restrict by is_published via GET
+    reviews = Review.objects.filter(user=user).order_by('-created_at')
+    reviews = ReviewFilter(request.GET, queryset=reviews).qs
     data = []
     for review in reviews:
         # Get business category information
