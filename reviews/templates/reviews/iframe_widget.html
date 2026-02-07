@@ -20,6 +20,7 @@
             --font-stack: "Montserrat", sans-serif;
         }
 
+        html, body { overflow: visible; overflow-x: visible; }
         body, button, input, select, textarea { margin: 0; padding: 0; background: transparent; font-family: var(--font-stack); -webkit-font-smoothing: antialiased; }
 
         #rcs-widget-container {
@@ -317,31 +318,44 @@
 
                         <!-- ADVANCED & PRO LAYOUT -->
                         {% if user.plan == 'advanced' or user.plan == 'pro' %}
-                            <!-- Explicit Category Structure to match Design -->
-                            <div class="rating-row">
-                                <span>{{ widget_strings.logistics|default:'LOGISTICS' }}</span>
-                                <span class="rating-stars">
-                                    {% for i in "12345" %}
-                                        <div class="{% if forloop.counter <= avg_logistics|default:0|add:0 %}filled{% else %}empty{% endif %}">★</div>
-                                    {% endfor %}
-                                </span>
-                            </div>
-                            <div class="rating-row">
-                                <span>{{ widget_strings.delivery|default:'DELIVERY' }}</span>
-                                <span class="rating-stars">
-                                    {% for i in "12345" %}
-                                        <div class="{% if forloop.counter <= avg_communication|default:0|add:0 %}filled{% else %}empty{% endif %}">★</div>
-                                    {% endfor %}
-                                </span>
-                            </div>
-                            <div class="rating-row">
-                                <span>{{ widget_strings.communication|default:'COMMUNICATION' }}</span>
-                                <span class="rating-stars">
-                                    {% for i in "12345" %}
-                                        <div class="{% if forloop.counter <= avg_communication|default:0|add:0 %}filled{% else %}empty{% endif %}">★</div>
-                                    {% endfor %}
-                                </span>
-                            </div>
+                            <!-- Category-based rating rows (from business category); fallback to default 3 if none -->
+                            {% if category_ratings_data %}
+                                {% for item in category_ratings_data %}
+                                <div class="rating-row">
+                                    <span>{{ item.label }}</span>
+                                    <span class="rating-stars">
+                                        {% for i in "12345" %}
+                                            <div class="{% if forloop.counter <= item.avg_stars %}filled{% else %}empty{% endif %}">★</div>
+                                        {% endfor %}
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="rating-row">
+                                    <span>{{ widget_strings.logistics|default:'LOGISTICS' }}</span>
+                                    <span class="rating-stars">
+                                        {% for i in "12345" %}
+                                            <div class="{% if forloop.counter <= avg_logistics|default:0|add:0 %}filled{% else %}empty{% endif %}">★</div>
+                                        {% endfor %}
+                                    </span>
+                                </div>
+                                <div class="rating-row">
+                                    <span>{{ widget_strings.delivery|default:'DELIVERY' }}</span>
+                                    <span class="rating-stars">
+                                        {% for i in "12345" %}
+                                            <div class="{% if forloop.counter <= avg_communication|default:0|add:0 %}filled{% else %}empty{% endif %}">★</div>
+                                        {% endfor %}
+                                    </span>
+                                </div>
+                                <div class="rating-row">
+                                    <span>{{ widget_strings.communication|default:'COMMUNICATION' }}</span>
+                                    <span class="rating-stars">
+                                        {% for i in "12345" %}
+                                            <div class="{% if forloop.counter <= avg_communication|default:0|add:0 %}filled{% else %}empty{% endif %}">★</div>
+                                        {% endfor %}
+                                    </span>
+                                </div>
+                            {% endif %}
 
                             <div class="stats-bar">
                                 <div class="stats-left">

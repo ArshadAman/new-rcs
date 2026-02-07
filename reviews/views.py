@@ -791,6 +791,7 @@ def iframe_(request, user_id):
                 'label': question['label'],
                 'field': field_name,
                 'avg_rating': avg_rating,
+                'avg_stars': min(5, max(0, int(round(avg_rating)))) if ratings else 0,
                 'count': len(ratings)
             })
     
