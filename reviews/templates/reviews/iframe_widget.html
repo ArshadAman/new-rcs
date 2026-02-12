@@ -445,6 +445,14 @@
                 }, 300);
             }
 
+            // Hover to open (primary interaction)
+            collapsed.addEventListener('mouseenter', function() { openWidget(); });
+            container.addEventListener('mouseleave', function() { 
+                // Close when mouse leaves entire widget container
+                closeWidget(); 
+            });
+            
+            // Click as backup (still works)
             collapsed.addEventListener('click', function(e) { e.stopPropagation(); openWidget(); });
             document.addEventListener('click', function(e) { 
                 if (isExpanded && !container.contains(e.target)) closeWidget(); 

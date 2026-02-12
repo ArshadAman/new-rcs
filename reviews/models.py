@@ -65,6 +65,7 @@ class Review(models.Model):
     manual_order_id = models.CharField(max_length=100, blank=True, null=True)
     manual_customer_name = models.CharField(max_length=200, blank=True, null=True)
     manual_customer_email = models.CharField(max_length=200, blank=True, null=True)
+    manual_customer_address = models.TextField(blank=True, null=True, help_text="Customer address (optional)")
     recommend = models.CharField(max_length=3, choices=RECOMMEND_CHOICES)
     main_rating = models.PositiveSmallIntegerField(default=5)
     logistics_rating = models.PositiveSmallIntegerField(null=True, blank=True)

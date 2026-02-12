@@ -31,6 +31,8 @@ def _build_form_strings(language_code):
         'email_placeholder': 'Enter email address',
         'order_id_label': 'Order ID',
         'order_id_placeholder': 'Enter order ID (optional)',
+        'address_label': 'Address (Optional)',
+        'address_placeholder': 'Enter your address (optional)',
         'recommend_question': 'Would you recommend the company to your friends or family?',
         'recommend_yes': 'YES',
         'recommend_no': 'NO',
@@ -67,6 +69,8 @@ def _build_form_strings(language_code):
             'email_placeholder': 'Zadejte e-mailovou adresu',
             'order_id_label': 'ID objednávky',
             'order_id_placeholder': 'Zadejte ID objednávky (volitelné)',
+            'address_label': 'Adresa (Volitelné)',
+            'address_placeholder': 'Zadejte svou adresu (volitelné)',
             'recommend_question': 'Doporučili byste společnost svým přátelům nebo rodině?',
             'recommend_yes': 'ANO',
             'recommend_no': 'NE',
@@ -102,6 +106,8 @@ def _build_form_strings(language_code):
             'email_placeholder': 'Zadajte e-mailovú adresu',
             'order_id_label': 'ID objednávky',
             'order_id_placeholder': 'Zadajte ID objednávky (voliteľné)',
+            'address_label': 'Adresa (Volitelné)',
+            'address_placeholder': 'Zadajte svoju adresu (voliteľné)',
             'recommend_question': 'Odporučili by ste spoločnosť svojim priateľom alebo rodine?',
             'recommend_yes': 'ÁNO',
             'recommend_no': 'NIE',
@@ -542,6 +548,10 @@ def review_form(request, token):
                 review_data['manual_order_id'] = manual_order_id
                 review_data['manual_customer_name'] = manual_customer_name
                 review_data['manual_customer_email'] = manual_customer_email
+                # Save address if provided
+                address = request.POST.get('address', '').strip()
+                if address:
+                    review_data['manual_customer_address'] = address
             Review.objects.create(**review_data)
             company.monthly_review_count += 1
             company.save()
@@ -576,6 +586,10 @@ def review_form(request, token):
                 review_data['manual_order_id'] = manual_order_id
                 review_data['manual_customer_name'] = manual_customer_name
                 review_data['manual_customer_email'] = manual_customer_email
+                # Save address if provided
+                address = request.POST.get('address', '').strip()
+                if address:
+                    review_data['manual_customer_address'] = address
             Review.objects.create(**review_data)
             company.monthly_review_count += 1
             company.save()
@@ -704,6 +718,10 @@ def manual_review_form(request):
                 'manual_customer_name': manual_customer_name,
                 'manual_customer_email': manual_customer_email,
             }
+            # Save address if provided
+            address = request.POST.get('address', '').strip()
+            if address:
+                review_data['manual_customer_address'] = address
             Review.objects.create(**review_data)
             company.monthly_review_count += 1
             company.save()
@@ -737,6 +755,10 @@ def manual_review_form(request):
                 'manual_customer_name': manual_customer_name,
                 'manual_customer_email': manual_customer_email,
             }
+            # Save address if provided
+            address = request.POST.get('address', '').strip()
+            if address:
+                review_data['manual_customer_address'] = address
             Review.objects.create(**review_data)
             company.monthly_review_count += 1
             company.save()
@@ -998,8 +1020,8 @@ def public_reviews(request, user_id):
         'filter_all': 'All Reviews',
         'filter_positive': 'Positive (3+ stars)',
         'filter_negative': 'Negative (≤2 stars)',
-        'recommend_yes': '✓ Recommend',
-        'recommend_no': '✗ Not Recommend',
+        'recommend_yes': '✓ Verified',
+        'recommend_no': '✗ Not Verified',
         'store_reply': 'Store Reply:',
         'review_count_label': 'Reviews:',
         'footer_text': '© 2025 Level 4 You. All rights reserved.',
@@ -1047,11 +1069,36 @@ def user_reviews_api(request):
             }
             category_questions = BusinessCategory.get_default_questions().get(review.user.business_category.name, [])
         
+        # Determine review source type
+        review_source_type = 'Online'  # default
+        if review.source == 'offline':
+            review_source_type = 'Offline (QR)'
+            branch_name = review.branch.name if review.branch else None
+        elif review.order:
+            # Check if order came from manual mailing campaign
+            from orders.models import MailingRecipient
+            customer_email = review.order.email if review.order else None
+            if customer_email:
+                # Check if there's a MailingRecipient with this email that has been reviewed
+                mailing_recipient = MailingRecipient.objects.filter(
+                    campaign__user=user,
+                    email=customer_email,
+                    status='reviewed'
+                ).first()
+                if mailing_recipient:
+                    review_source_type = 'Manual Mailing'
+        elif not review.order and (review.manual_order_id or review.manual_customer_name):
+            # Manual review form (no order, but has manual fields)
+            review_source_type = 'Manual Review'
+        else:
+            review_source_type = 'Online'
+        
         data.append({
             'id': review.id,
             'order_id': review.order.order_id if review.order else (review.manual_order_id if review.manual_order_id else None),
             'customer_name': review.order.customer_name if review.order else (review.manual_customer_name if review.manual_customer_name else 'Anonymous Customer'),
             'customer_email': review.order.email if review.order else (review.manual_customer_email if review.manual_customer_email else None),
+            'customer_address': review.manual_customer_address if review.manual_customer_address else None,
             'main_rating': review.main_rating,
             'logistics_rating': review.logistics_rating,
             'communication_rating': review.communication_rating,
@@ -1066,6 +1113,9 @@ def user_reviews_api(request):
             'created_at': review.created_at,
             'red_flagged': review.is_flagged_red,
             'auto_publish_at': review.auto_publish_at,
+            'source': review.source,  # 'online' or 'offline'
+            'source_type': review_source_type,  # 'Online', 'Manual Mailing', 'Offline (QR)', 'Manual Review'
+            'branch_name': review.branch.name if review.branch else None,
         })
     return Response({'reviews': data}, status=status.HTTP_200_OK)
 

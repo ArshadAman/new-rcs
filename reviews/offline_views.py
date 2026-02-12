@@ -439,6 +439,7 @@ def offline_review_form(request, token):
         comment = request.POST.get('comment', '').strip()
         customer_name = request.POST.get('customer_name', '').strip()
         customer_email = request.POST.get('email', '').strip()
+        customer_address = request.POST.get('address', '').strip()
         
         # Get category ratings
         category_ratings = {}
@@ -471,6 +472,7 @@ def offline_review_form(request, token):
                 comment=comment,
                 manual_customer_name=customer_name or 'Anonymous',
                 manual_customer_email=customer_email,
+                manual_customer_address=customer_address if customer_address else None,
                 category_ratings=category_ratings,
             )
             company.monthly_offline_review_count += 1
@@ -491,6 +493,7 @@ def offline_review_form(request, token):
                 comment=comment,
                 manual_customer_name=customer_name or 'Anonymous',
                 manual_customer_email=customer_email,
+                manual_customer_address=customer_address if customer_address else None,
                 category_ratings=category_ratings,
             )
             company.monthly_offline_review_count += 1

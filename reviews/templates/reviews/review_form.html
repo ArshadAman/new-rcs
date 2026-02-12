@@ -365,6 +365,11 @@
                     <input type="text" name="order_id" value="{{ order.order_id }}" {% if not order %}placeholder="{{ strings.order_id_placeholder|default:'Enter order ID (optional)' }}"{% else %}readonly{% endif %}>
                 </div>
                 
+                <div class="form-group">
+                    <label>{{ strings.address_label|default:'Address (Optional)' }}</label>
+                    <textarea name="address" rows="2" placeholder="{{ strings.address_placeholder|default:'Enter your address (optional)' }}"></textarea>
+                </div>
+                
                 <div class="recommend-section">
                     <label>{{ strings.recommend_question|default:'Would you recommend the company to your friends or family?' }}</label>
                     <div class="recommend-buttons">
