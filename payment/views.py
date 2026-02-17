@@ -61,6 +61,14 @@ def upgrade_plan(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_checkout_session(request):
+    # Validate Stripe key is configured
+    if not settings.STRIPE_SECRET_KEY:
+        return Response({'error': 'Stripe secret key not configured'}, status=500)
+    
+    # Log key mode for debugging (first few chars only)
+    key_preview = settings.STRIPE_SECRET_KEY[:20] + '...' if settings.STRIPE_SECRET_KEY else 'None'
+    print(f"DEBUG: Using Stripe key: {key_preview}")
+    
     stripe.api_key = settings.STRIPE_SECRET_KEY
     user = request.user
     plan = request.data.get('plan')
@@ -113,12 +121,15 @@ def create_checkout_session(request):
             'quantity': 1,
         }]
         
+        # Use FRONTEND_URL from settings for success/cancel URLs
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'https://www.level-4u.com')
+        
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=line_items,
             mode='subscription',
-            success_url=f'http://localhost:5173/payment-success?success=true&plan={plan}&session_id={{CHECKOUT_SESSION_ID}}',
-            cancel_url=f'http://localhost:5173/?canceled=true',
+            success_url=f'{frontend_url}/payment-success?success=true&plan={plan}&session_id={{CHECKOUT_SESSION_ID}}',
+            cancel_url=f'{frontend_url}/dashboard/upgrade-plan?canceled=true',
             metadata={
                 'user_id': str(user.id),
                 'plan': plan,

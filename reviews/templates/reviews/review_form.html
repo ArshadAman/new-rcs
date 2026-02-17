@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ strings.page_title|default:'Order Review' }} - {{ order.user.business_name|default:"Our Store" }}</title>
+    <title>{{ strings.page_title|default:'Order Review' }} - {% if order %}{{ order.user.business_name|default:"Our Store" }}{% else %}{{ user.business_name|default:"Our Store" }}{% endif %}</title>
     <style>
         * {
             margin: 0;

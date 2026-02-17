@@ -134,9 +134,11 @@ def _build_form_strings(language_code):
             'html_lang': 'sk',
         },
     }
-    if language_code in manual_overrides:
+    # Map ISO 639-1 'cs' (Czech) to internal key 'cz' for form strings
+    form_key = 'cz' if language_code == 'cs' else (language_code or '')
+    if form_key in manual_overrides:
         combined = base_strings.copy()
-        combined.update(manual_overrides[language_code])
+        combined.update(manual_overrides[form_key])
         return combined
 
     return base_strings
@@ -421,6 +423,9 @@ def _create_manual_order(company, data):
 
 
 def review_form(request, token):
+    recipient = None
+    recipient_country = ""
+    
     try:
         order = Order.objects.get(review_token=token)
         company = order.user
@@ -431,7 +436,11 @@ def review_form(request, token):
             recipient = MailingRecipient.objects.get(review_token=token)
             company = recipient.campaign.user
             order = None
+            # Use recipient's country for language if available, otherwise fall back to company's country
+            recipient_country = getattr(recipient, "country", "") or ""
         except MailingRecipient.DoesNotExist:
+            recipient = None
+            recipient_country = ""
             company_id = request.GET.get('company_id')
             if company_id:
                 try:
@@ -464,9 +473,12 @@ def review_form(request, token):
                     )
             order = None
 
-    # Direct country check as requested
-    country = getattr(company, "country", "") or ""
-    language_code = country.lower().strip()
+    # Use recipient's country for manual mailing; else use company's (business) country.
+    # CZ/SK → Czech/Slovak UI; rest → English.
+    country = (recipient_country if (recipient and recipient_country) else "") or (getattr(company, "country", "") or "")
+    language_code = get_language_for_country(country) if country else None
+    if not language_code:
+        language_code = "en"
     
     category_questions = _get_localized_category_questions(
         getattr(company, "business_category", None),

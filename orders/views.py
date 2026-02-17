@@ -199,7 +199,8 @@ def send_mailing(request):
                     campaign=campaign,
                     email=recipient_data['email'],
                     name=recipient_data.get('name', ''),
-                    order_number=recipient_data.get('orderNumber', '')
+                    order_number=recipient_data.get('orderNumber', ''),
+                    country=recipient_data.get('country', '')
                 )
             
             # Start sending emails asynchronously (registered Celery task)

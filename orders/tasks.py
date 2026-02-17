@@ -65,18 +65,40 @@ def send_mailing_emails(campaign_id: int) -> str:
         sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
         sent_count = 0
 
-        language_code = get_language_for_country(getattr(campaign.user, "country", None))
-        template_strings = translate_strings(
-            {
-                'button_text': 'Click Here to Review',
-                'closing_text': 'Thank you for your valuable feedback. We appreciate your time and trust in our service.',
-                'footer_text': '© 2025 Level 4 You. All rights reserved.',
-            },
-            language_code,
-        )
-
         for recipient in recipients:
             try:
+                # Use recipient's country for language, fallback to campaign user's country
+                recipient_country = getattr(recipient, "country", "") or ""
+                if recipient_country:
+                    language_code = get_language_for_country(recipient_country)
+                else:
+                    language_code = get_language_for_country(getattr(campaign.user, "country", None))
+                
+                # Only translate for Czech (cs) and Slovak (sk)
+                should_translate = language_code in ['cs', 'sk']
+                
+                # Template strings: use hardcoded Czech/Slovak so they always show correctly even without API
+                MANUAL_STRINGS = {
+                    'cs': {
+                        'button_text': 'Klikněte zde pro recenzi',
+                        'closing_text': 'Děkujeme za vaši cennou zpětnou vazbu. Vážíme si vašeho času a důvěry v naše služby.',
+                        'footer_text': '© 2025 Level 4 You. Všechna práva vyhrazena.',
+                    },
+                    'sk': {
+                        'button_text': 'Kliknite tu pre hodnotenie',
+                        'closing_text': 'Ďakujeme za vašu cennú spätnú väzbu. Vážime si váš čas a dôveru v naše služby.',
+                        'footer_text': '© 2025 Level 4 You. Všetky práva vyhradené.',
+                    },
+                }
+                if should_translate and language_code in MANUAL_STRINGS:
+                    template_strings = MANUAL_STRINGS[language_code]
+                else:
+                    template_strings = {
+                        'button_text': 'Click Here to Review',
+                        'closing_text': 'Thank you for your valuable feedback. We appreciate your time and trust in our service.',
+                        'footer_text': '© 2025 Level 4 You. All rights reserved.',
+                    }
+
                 # Replace variables in email content
                 subject = campaign.subject
                 body = campaign.body
@@ -96,7 +118,8 @@ def send_mailing_emails(campaign_id: int) -> str:
                 review_link = replacements['[Review Link]']
                 body_without_link = body.replace(review_link, '').strip()
 
-                if language_code:
+                # Translate email content only for Czech and Slovak
+                if should_translate and language_code:
                     translated_values = translate_sequence(
                         [subject, body, body_without_link],
                         language_code,

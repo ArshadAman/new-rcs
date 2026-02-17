@@ -77,6 +77,7 @@ class MailingRecipient(models.Model):
     email = models.EmailField()
     name = models.CharField(max_length=100, blank=True)
     order_number = models.CharField(max_length=50, blank=True)
+    country = models.CharField(max_length=100, blank=True, help_text="Recipient's country for language localization (e.g., 'Czech', 'Slovak', 'en')")
     review_token = models.UUIDField(default=uuid.uuid4, editable=False)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     sent_at = models.DateTimeField(null=True, blank=True)
