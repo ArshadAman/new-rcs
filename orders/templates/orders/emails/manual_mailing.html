@@ -2,93 +2,118 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light">
     <meta name="supported-color-schemes" content="light">
     <title>{{ subject }}</title>
     <style>
+        /* Reset and base styles */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            color: #ffffff;
-            max-width: 600px;
-            margin: 0 auto;
+            color: #e0e0e0;
+            margin: 0;
             padding: 0;
             background-color: #0a0a0a;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
-        .container {
-            background: #1a1a1a;
-            border-radius: 0 0 10px 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
-        .banner-container {
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
             width: 100%;
-            text-align: center;
+        }
+        img {
+            border: 0;
+            outline: none;
+            text-decoration: none;
+            display: block;
+        }
+        /* Container - full width, responsive */
+        .email-wrapper {
+            width: 100%;
+            background-color: #0a0a0a;
+            padding: 0;
             margin: 0;
         }
-        .banner-image {
-            width: 100%;
-            max-width: 600px;
-            height: auto;
-            display: block;
-            border-radius: 0;
-        }
-        .content {
-            padding: 40px 30px;
+        .container {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
             background: #1a1a1a;
+            overflow: hidden;
+        }
+        /* Banner - full width, edge to edge, no gaps */
+        .banner-container {
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            display: block;
+            background-color: #0a0a0a;
+        }
+        .banner-image {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: auto !important;
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: 0 !important;
+        }
+        /* Content area - edge to edge */
+        .content {
+            padding: 40px 20px;
+            background: #1a1a1a;
+            width: 100% !important;
+            max-width: 100% !important;
         }
         .manual-body,
         .manual-body * {
             color: #ffffff !important;
         }
-        .logo-container {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .logo {
-            height: 50px;
-            width: auto;
-        }
         h2 {
             color: #ffffff;
             font-size: 24px;
-            margin-bottom: 20px;
+            margin: 0 0 20px 0;
+            font-weight: 600;
         }
         p {
-            color: #ffffff;
+            color: #b0b0b0;
             font-size: 16px;
-            margin-bottom: 15px;
+            margin: 0 0 15px 0;
+            line-height: 1.6;
             white-space: pre-wrap;
+        }
+        /* CTA Button - centered, prominent */
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
         }
         .button {
             display: inline-block;
             background: #FFDB01;
             color: #0a0a0a;
-            padding: 20px 50px;
+            padding: 16px 48px;
             text-decoration: none;
-            border-radius: 8px;
-            margin: 30px 0 20px;
+            border-radius: 6px;
             font-weight: 700;
-            font-size: 18px;
-            transition: all 0.3s ease;
+            font-size: 16px;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(255, 219, 1, 0.3);
         }
         .button:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 219, 1, 0.4);
+            background: #e6c501;
         }
-        .button-container {
-            text-align: center;
-            margin: 40px 0;
-        }
+        /* Footer - edge to edge */
         .footer {
             text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
+            margin-top: 0;
+            padding: 30px 20px;
             border-top: 1px solid #333333;
             background: #1a1a1a;
+            width: 100% !important;
+            max-width: 100% !important;
         }
         .footer-logo {
             margin-bottom: 15px;
@@ -100,31 +125,80 @@
         .footer-copyright {
             color: #888888;
             font-size: 12px;
+            margin: 0;
+        }
+        /* Responsive styles */
+        @media only screen and (max-width: 600px) {
+            .content {
+                padding: 30px 15px !important;
+            }
+            h2 {
+                font-size: 22px !important;
+            }
+            p {
+                font-size: 15px !important;
+            }
+            .button {
+                padding: 14px 32px !important;
+                font-size: 15px !important;
+                width: 90%;
+                max-width: 280px;
+            }
+            .footer {
+                padding: 25px 15px !important;
+            }
         }
     </style>
 </head>
 <body style="background-color: #0a0a0a; margin: 0; padding: 0;" bgcolor="#0a0a0a">
-    <div class="container">
-        <div class="banner-container">
-            <img src="https://www.level-4u.com/images/image-1.jpg" alt="Banner" class="banner-image">
-        </div>
-        <div class="content">
-            <div class="manual-body">{{ body_without_link|safe }}</div>
-            
-            <div class="button-container">
-                <a href="{{ review_link }}" class="button">{{ strings.button_text }}</a>
-            </div>
-            
-            <p style="margin-top: 30px; font-size: 14px; color: #ffffff;">{{ strings.closing_text }}</p>
-        </div>
-        
-        <div class="footer">
-            <div class="footer-logo">
-                <img src="https://www.level-4u.com/images/logo.png" alt="Level 4 You" class="footer-logo-img">
-            </div>
-            <p class="footer-copyright">{{ strings.footer_text }}</p>
-        </div>
-    </div>
+    <!--[if mso]>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="width: 100%; margin: 0; padding: 0;">
+    <tr>
+    <td style="padding: 0; margin: 0;">
+    <![endif]-->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="width: 100% !important; margin: 0 !important; padding: 0 !important; background-color: #0a0a0a; max-width: 100% !important;">
+        <!-- Banner Image - Edge to Edge, Full Width -->
+        <tr>
+            <td width="100%" style="width: 100% !important; padding: 0 !important; margin: 0 !important; line-height: 0 !important; font-size: 0 !important; background-color: #0a0a0a;">
+                <!--[if mso]>
+                <img src="https://www.level-4u.com/images/image-1.jpg" alt="Banner" width="650" style="width: 650px; height: auto; display: block; margin: 0; padding: 0; border: 0;">
+                <![endif]-->
+                <!--[if !mso]><!-->
+                <img src="https://www.level-4u.com/images/image-1.jpg" alt="Banner" width="100%" style="width: 100% !important; max-width: 100% !important; height: auto !important; display: block !important; margin: 0 !important; padding: 0 !important; border: 0 !important; outline: none !important;">
+                <!--<![endif]-->
+            </td>
+        </tr>
+    </table>
+    <!--[if mso]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+    <!-- Content Container - Edge to Edge -->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="width: 100% !important; margin: 0 !important; padding: 0 !important; background-color: #1a1a1a; max-width: 100% !important;">
+        <tr>
+            <td style="padding: 40px 20px; background-color: #1a1a1a;">
+                <div class="manual-body">{{ body_without_link|safe }}</div>
+                
+                <div class="button-container">
+                    <a href="{{ review_link }}" class="button" style="display: inline-block; background: #FFDB01; color: #0a0a0a; padding: 16px 48px; text-decoration: none; border-radius: 6px; font-weight: 700; font-size: 16px; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 12px rgba(255, 219, 1, 0.3);">{{ strings.button_text }}</a>
+                </div>
+                
+                <p style="margin-top: 30px; font-size: 14px; color: #ffffff;">{{ strings.closing_text }}</p>
+            </td>
+        </tr>
+    </table>
+    
+    <!-- Footer - Edge to Edge -->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="width: 100% !important; margin: 0 !important; padding: 0 !important; background-color: #1a1a1a; max-width: 100% !important;">
+        <tr>
+            <td style="padding: 30px 20px; text-align: center; border-top: 1px solid #333333; background-color: #1a1a1a;">
+                <div class="footer-logo">
+                    <img src="https://www.level-4u.com/images/logo.png" alt="Level 4 You" class="footer-logo-img" style="height: 40px; width: auto; display: inline-block;">
+                </div>
+                <p class="footer-copyright" style="color: #888888; font-size: 12px; margin: 15px 0 0 0;">{{ strings.footer_text }}</p>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
-
