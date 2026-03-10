@@ -1,0 +1,6 @@
+email,name,order_number,country
+customer1@example.com,John Smith,ORD-1001,United States
+customer2@example.com,Jane Doe,ORD-1002,Czech
+customer3@example.com,Bob Wilson,,Slovak
+maria@example.com,Maria Garcia,ORD-1004,Germany
+feedback@company.com,Valued Customer,,

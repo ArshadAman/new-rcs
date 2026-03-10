@@ -13,6 +13,7 @@ from django.contrib import messages
 from .models import Branch, Review
 from users.models import CustomUser, BusinessCategory
 from .views import _build_form_strings, _get_localized_category_questions
+from utils.translation_service import get_language_for_country
 
 
 # ============================================
@@ -400,10 +401,12 @@ def offline_review_form(request, token):
         created_at__month=now.month
     ).count()
     
-    # Get language from company's country
+    # Get language from company's country (Czech -> cs, Slovak -> sk, etc.)
     country = getattr(company, "country", "") or ""
-    language_code = country.lower().strip()
-    
+    language_code = get_language_for_country(country) if country else None
+    if not language_code:
+        language_code = "en"
+
     category_questions = _get_localized_category_questions(
         getattr(company, "business_category", None),
         language_code,
