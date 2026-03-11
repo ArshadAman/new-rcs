@@ -43,15 +43,13 @@ def check_email_view(request):
     exists = CustomUser.objects.filter(email=email).exists()
     return Response({'exists': exists}, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def profile_view(request):
-    serializer = UserProfileSerializer(request.user, context={'request': request})
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-@api_view(['PUT', 'PATCH'])
-@permission_classes([IsAuthenticated])
-def update_profile_view(request):
+    if request.method == 'GET':
+        serializer = UserProfileSerializer(request.user, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    # PUT / PATCH
     serializer = UserProfileSerializer(request.user, data=request.data, partial=True, context={'request': request})
     if serializer.is_valid():
         serializer.save()
