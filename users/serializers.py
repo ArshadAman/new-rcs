@@ -36,15 +36,36 @@ class UserSignupSerializer(serializers.ModelSerializer):
         return user
 
 
+# Max logo size 5 MB; allowed content types for production safety
+MAX_LOGO_SIZE_BYTES = 5 * 1024 * 1024
+ALLOWED_LOGO_CONTENT_TYPES = {'image/jpeg', 'image/png', 'image/gif', 'image/webp'}
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
     business_category_name = serializers.CharField(source='business_category.display_name', read_only=True)
-    
+    marketing_banner = serializers.ImageField(required=False, allow_null=True)
+
+    def validate_marketing_banner(self, value):
+        if value is None:
+            return value
+        if value.size > MAX_LOGO_SIZE_BYTES:
+            raise serializers.ValidationError(
+                f'Image too large. Maximum size is {MAX_LOGO_SIZE_BYTES // (1024 * 1024)} MB.'
+            )
+        content_type = (getattr(value, 'content_type', None) or '').lower()
+        if content_type and content_type not in ALLOWED_LOGO_CONTENT_TYPES:
+            raise serializers.ValidationError(
+                'Invalid image type. Use JPEG, PNG, GIF, or WebP.'
+            )
+        return value
+
     class Meta:
         model = CustomUser
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
             'business_name', 'website_url', 'contact_number',
-            'date_of_birth', 'country', 'plan', 'business_category', 'business_category_name'
+            'date_of_birth', 'country', 'plan', 'business_category', 'business_category_name',
+            'marketing_banner',
         ]
         read_only_fields = ['id', 'username', 'email', 'plan']
     

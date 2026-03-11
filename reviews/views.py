@@ -487,12 +487,15 @@ def review_form(request, token):
     strings = _build_form_strings(language_code)
 
     def render_form(extra_context=None):
+        logo = getattr(company, 'marketing_banner', None)
+        business_logo_url = request.build_absolute_uri(company.marketing_banner.url) if logo else None
         context = {
             'order': order,
             'user': company,
             'category_questions': category_questions,
             'strings': strings,
             'document_lang': strings['html_lang'],
+            'business_logo_url': business_logo_url,
         }
         if extra_context:
             context.update(extra_context)
@@ -658,12 +661,15 @@ def manual_review_form(request):
     strings = _build_form_strings(language_code)
 
     def render_form(extra_context=None):
+        logo = getattr(company, 'marketing_banner', None)
+        business_logo_url = request.build_absolute_uri(company.marketing_banner.url) if logo else None
         context = {
             'order': order,
             'user': company,
             'category_questions': category_questions,
             'strings': strings,
             'document_lang': strings['html_lang'],
+            'business_logo_url': business_logo_url,
         }
         if extra_context:
             context.update(extra_context)

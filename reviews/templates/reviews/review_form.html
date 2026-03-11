@@ -310,7 +310,11 @@
     </style>
 </head>
 <body>
+    {% if business_logo_url %}
+    <img src="{{ business_logo_url }}" alt="{{ strings.banner_alt|default:'Banner' }}" class="banner-image">
+    {% else %}
     <img src="https://www.level-4u.com/images/image-1.jpg" alt="{{ strings.banner_alt|default:'Banner' }}" class="banner-image">
+    {% endif %}
     <div class="container">
         <div class="corner corner-tl"></div>
         <div class="corner corner-tr"></div>
