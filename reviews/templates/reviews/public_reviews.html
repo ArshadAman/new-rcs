@@ -605,6 +605,11 @@
             <div class="left-panel">
                 <h1>{{ user.business_name|default:user.get_full_name|default:user.username|upper }}</h1>
                 <div class="subtitle">{{ user.business_name|default:user.get_full_name|default:user.username }}</div>
+                {% if user.business_description %}
+                    <div class="description" style="margin-top: 10px;">
+                        {{ user.business_description|linebreaksbr }}
+                    </div>
+                {% endif %}
                 
                 {% if reviews %}
                     <div class="rating-display">
