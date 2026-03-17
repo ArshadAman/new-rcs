@@ -145,6 +145,7 @@ class BusinessCategory(models.Model):
 
 class CustomUser(AbstractUser):
     business_name = models.CharField(max_length=100, blank=True)
+    business_description = models.TextField(blank=True)
     website_url = models.URLField(max_length=200, blank=True)
     contact_number = models.CharField(max_length=20, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)

@@ -11,7 +11,7 @@ class UserSignupSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = [
             'username', 'email', 'password', 'password_confirm', 'first_name', 'last_name',
-            'business_name', 'website_url', 'contact_number',
+            'business_name', 'business_description', 'website_url', 'contact_number',
             'date_of_birth', 'country', 'plan', 'business_category'
         ]
 
@@ -63,7 +63,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
-            'business_name', 'website_url', 'contact_number',
+            'business_name', 'business_description', 'website_url', 'contact_number',
             'date_of_birth', 'country', 'plan', 'business_category', 'business_category_name',
             'marketing_banner',
         ]

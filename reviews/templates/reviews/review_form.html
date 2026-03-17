@@ -324,6 +324,11 @@
         <div class="header">
             <h1>{{ strings.header_title|default:'ORDER REVIEW' }}</h1>
             <p>{{ strings.header_subtitle|default:'Help us improve by sharing your experience' }}</p>
+            {% if user.business_description %}
+                <p style="margin-top: 10px; color: #e5e7eb; font-size: 0.95em; line-height: 1.5;">
+                    {{ user.business_description|linebreaksbr }}
+                </p>
+            {% endif %}
         </div>
         
         {% if success %}
