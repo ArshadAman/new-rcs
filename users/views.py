@@ -31,6 +31,7 @@ def signup_view(request):
             # Don't fail the signup if email fails
         
         return Response({'message': 'User created successfully. Welcome email sent!'}, status=status.HTTP_201_CREATED)
+    logger.warning("Signup validation failed", extra={"errors": serializer.errors, "email": request.data.get("email")})
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
