@@ -3,9 +3,20 @@ from .models import CustomUser, BusinessCategory
 from django.utils import timezone
 from datetime import timedelta
 
+class NullablePKRelatedField(serializers.PrimaryKeyRelatedField):
+    def to_internal_value(self, data):
+        if data == "" or data is None:
+            return None
+        return super().to_internal_value(data)
+
 class UserSignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     password_confirm = serializers.CharField(write_only=True)
+    business_category = NullablePKRelatedField(
+        queryset=BusinessCategory.objects.all(),
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = CustomUser

@@ -805,9 +805,11 @@ def iframe_(request, user_id):
     positive_reviews = reviews.filter(recommend='yes').count()
     positive_percentage = round((positive_reviews / total_reviews * 100), 0) if total_reviews > 0 else 0
 
-    # Direct country check as requested
+    # Language for widget labels (Czech -> cs, Slovak -> sk, etc.)
     country = getattr(user, "country", "") or ""
-    language_code = country.lower().strip()
+    language_code = get_language_for_country(country) if country else None
+    if not language_code:
+        language_code = "en"
 
     # Get category-specific questions for the user's business category
     category_questions = _get_localized_category_questions(
