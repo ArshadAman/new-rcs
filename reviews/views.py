@@ -790,7 +790,12 @@ def manual_review_form(request):
 
 @xframe_options_exempt
 def iframe_(request, user_id):
-    user = get_object_or_404(CustomUser, id=user_id)
+    try:
+        user = CustomUser.objects.get(id=user_id)
+    except (CustomUser.DoesNotExist, ValueError):
+        from django.http import HttpResponse
+        return HttpResponse("<h3>Business Profile Not Found</h3>", status=404)
+        
     reviews = Review.objects.filter(user=user, is_published=True)
     def avg(field):
         vals = [getattr(r, field) for r in reviews if getattr(r, field) is not None]
