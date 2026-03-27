@@ -56,6 +56,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     # 'drf_yasg',
+    'cloudinary_storage',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -144,8 +146,16 @@ STATIC_URL = '/static/'
 STATIC_ROOT = '/var/www/html/static/'
 
 # Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = '/var/www/html/media/'
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = '/var/www/html/media/'
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
