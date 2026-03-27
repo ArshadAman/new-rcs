@@ -1022,15 +1022,13 @@ def public_reviews(request, user_id):
     
     # Manual translations for description paragraphs
     description_paragraphs_en = [
-        f"Experience exceptional service with {company_display}. Our commitment to excellence ensures that every customer receives personalized attention and outstanding results.",
-        "We pride ourselves on delivering high-quality solutions tailored to your needs, backed by a dedicated team that values your satisfaction above all else.",
+        "Reviews on this page are collected through the LEVEL system – an independent platform that collects and verifies feedback from customers who have actually used the company's services. The system publishes only verified reviews, helping future customers and partners better understand real experiences, service quality, and overall satisfaction before making a decision.",
     ]
     
     # Czech translations
     if language_code == 'cs':
         description_paragraphs = [
-            f"Zažijte výjimečný servis s {company_display}. Naše oddanost dokonalosti zajišťuje, že každý zákazník dostává personalizovanou pozornost a vynikající výsledky.",
-            "Jsme hrdí na poskytování vysoce kvalitních řešení přizpůsobených vašim potřebám, podporovaných oddaným týmem, který si cení vaší spokojenosti nade vše.",
+            "Recenze na této stránce jsou shromažďovány prostřednictvím systému LEVEL – nezávislé platformy, která sbírá a ověřuje zpětnou vazbu od zákazníků, kteří skutečně využili služby dané společnosti. Systém zveřejňuje pouze ověřené recenze, čímž pomáhá budoucím zákazníkům a partnerům lépe pochopit reálné zkušenosti, kvalitu služeb a celkovou spokojenost ještě před přijetím rozhodnutí",
         ]
     else:
         # Use translation service for other languages
