@@ -1044,7 +1044,7 @@ def public_reviews(request, user_id):
         'filter_positive': 'Positive (3+ stars)',
         'filter_negative': 'Negative (≤2 stars)',
         'recommend_yes': '✓ Verified',
-        'recommend_no': '✗ Not Verified',
+        'recommend_no': 'Verified',
         'store_reply': 'Store Reply:',
         'review_count_label': 'Reviews:',
         'footer_text': '© 2025 Level 4 You. All rights reserved.',
