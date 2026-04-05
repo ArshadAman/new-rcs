@@ -790,12 +790,7 @@ def manual_review_form(request):
 
 @xframe_options_exempt
 def iframe_(request, user_id):
-    try:
-        user = CustomUser.objects.get(id=user_id)
-    except (CustomUser.DoesNotExist, ValueError):
-        from django.http import HttpResponse
-        return HttpResponse("<h3>Business Profile Not Found</h3>", status=404)
-        
+    user = get_object_or_404(CustomUser, id=user_id)
     reviews = Review.objects.filter(user=user, is_published=True)
     def avg(field):
         vals = [getattr(r, field) for r in reviews if getattr(r, field) is not None]
@@ -1022,13 +1017,15 @@ def public_reviews(request, user_id):
     
     # Manual translations for description paragraphs
     description_paragraphs_en = [
-        "Reviews on this page are collected through the LEVEL system – an independent platform that collects and verifies feedback from customers who have actually used the company's services. The system publishes only verified reviews, helping future customers and partners better understand real experiences, service quality, and overall satisfaction before making a decision.",
+        f"Experience exceptional service with {company_display}. Our commitment to excellence ensures that every customer receives personalized attention and outstanding results.",
+        "We pride ourselves on delivering high-quality solutions tailored to your needs, backed by a dedicated team that values your satisfaction above all else.",
     ]
     
     # Czech translations
     if language_code == 'cs':
         description_paragraphs = [
-            "Recenze na této stránce jsou shromažďovány prostřednictvím systému LEVEL – nezávislé platformy, která sbírá a ověřuje zpětnou vazbu od zákazníků, kteří skutečně využili služby dané společnosti. Systém zveřejňuje pouze ověřené recenze, čímž pomáhá budoucím zákazníkům a partnerům lépe pochopit reálné zkušenosti, kvalitu služeb a celkovou spokojenost ještě před přijetím rozhodnutí",
+            f"Zažijte výjimečný servis s {company_display}. Naše oddanost dokonalosti zajišťuje, že každý zákazník dostává personalizovanou pozornost a vynikající výsledky.",
+            "Jsme hrdí na poskytování vysoce kvalitních řešení přizpůsobených vašim potřebám, podporovaných oddaným týmem, který si cení vaší spokojenosti nade vše.",
         ]
     else:
         # Use translation service for other languages
@@ -1044,7 +1041,7 @@ def public_reviews(request, user_id):
         'filter_positive': 'Positive (3+ stars)',
         'filter_negative': 'Negative (≤2 stars)',
         'recommend_yes': '✓ Verified',
-        'recommend_no': 'Verified',
+        'recommend_no': '✗ Not Verified',
         'store_reply': 'Store Reply:',
         'review_count_label': 'Reviews:',
         'footer_text': '© 2025 Level 4 You. All rights reserved.',

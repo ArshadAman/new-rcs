@@ -119,13 +119,34 @@ class Review(models.Model):
                     ratings.append(int(self.website_usability_rating))
             
             if ratings:
-                self.main_rating = sum(ratings) / len(ratings)
+                avg = sum(ratings) / len(ratings)
+                self.main_rating = max(1, min(5, int(round(avg))))
             
             self.is_complete = True
             self.is_flagged_red = False
             self.is_published = True
             self.auto_publish_at = None
         else:
+            # Negative review: main_rating must reflect submitted star ratings (not model default=5)
+            neg_ratings = []
+            if self.category_ratings:
+                for v in self.category_ratings.values():
+                    if v is None or v == '':
+                        continue
+                    try:
+                        neg_ratings.append(int(v))
+                    except (TypeError, ValueError):
+                        continue
+            if not neg_ratings:
+                for r in (self.logistics_rating, self.communication_rating, self.website_usability_rating):
+                    if r is not None:
+                        neg_ratings.append(int(r))
+            if neg_ratings:
+                avg = sum(neg_ratings) / len(neg_ratings)
+                self.main_rating = max(1, min(5, int(round(avg))))
+            else:
+                self.main_rating = 1
+
             # If NO, require min 50 char comment for completion
             self.is_flagged_red = True
             if (self.comment and len(self.comment.strip()) >= 50):

@@ -505,83 +505,92 @@
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Set star bar widths
             document.querySelectorAll('.star-bar[data-width]').forEach(function(bar) {
                 bar.style.width = bar.getAttribute('data-width') + '%';
             });
-            
-            // Handle "See all reviews" click
-            const seeAllLinks = document.querySelectorAll('.see-all-reviews a');
-            console.log('Found see all links:', seeAllLinks.length);
-            
-            seeAllLinks.forEach(function(link) {
+
+            function getReviewCards() {
+                return document.querySelectorAll('.review-card');
+            }
+
+            function applyReviewFilter(filter) {
+                const reviewCards = getReviewCards();
+                reviewCards.forEach(function(card) {
+                    const rating = parseInt(card.getAttribute('data-rating'), 10);
+                    const r = isNaN(rating) ? 0 : rating;
+                    const recommend = (card.getAttribute('data-recommend') || '').toLowerCase();
+                    const isNegativeRecommend = recommend === 'no';
+
+                    if (filter === 'all') {
+                        card.classList.remove('hidden');
+                    } else if (filter === 'positive') {
+                        if (r > 2 && !isNegativeRecommend) {
+                            card.classList.remove('hidden');
+                        } else {
+                            card.classList.add('hidden');
+                        }
+                    } else if (filter === 'negative') {
+                        if (r <= 2 || isNegativeRecommend) {
+                            card.classList.remove('hidden');
+                        } else {
+                            card.classList.add('hidden');
+                        }
+                    }
+                });
+            }
+
+            function resetFilterToAll() {
+                document.querySelectorAll('.filter-btn').forEach(function(btn) {
+                    btn.classList.toggle('active', btn.getAttribute('data-filter') === 'all');
+                });
+                applyReviewFilter('all');
+            }
+
+            function openAllReviewsView() {
+                var heroBanner = document.querySelector('.hero-banner');
+                var mainContent = document.querySelector('.main-content');
+                var testimonialsSection = document.querySelector('.testimonials-section');
+                var allReviewsSection = document.getElementById('all-reviews-section');
+
+                if (heroBanner) heroBanner.style.display = 'none';
+                if (mainContent) mainContent.style.display = 'none';
+                if (testimonialsSection) testimonialsSection.style.display = 'none';
+
+                if (allReviewsSection) {
+                    allReviewsSection.style.display = 'block';
+                    resetFilterToAll();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+
+            document.querySelectorAll('.see-all-reviews a').forEach(function(link) {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('See all reviews clicked');
-                    
-                    // Hide sections
-                    const heroBanner = document.querySelector('.hero-banner');
-                    const mainContent = document.querySelector('.main-content');
-                    const testimonialsSection = document.querySelector('.testimonials-section');
-                    
-                    console.log('Elements found:', {
-                        heroBanner: !!heroBanner,
-                        mainContent: !!mainContent,
-                        testimonialsSection: !!testimonialsSection
-                    });
-                    
-                    if (heroBanner) heroBanner.style.display = 'none';
-                    if (mainContent) mainContent.style.display = 'none';
-                    if (testimonialsSection) testimonialsSection.style.display = 'none';
-                    
-                    // Show all reviews section
-                    const allReviewsSection = document.getElementById('all-reviews-section');
-                    console.log('All reviews section found:', !!allReviewsSection);
-                    if (allReviewsSection) {
-                        allReviewsSection.style.display = 'block';
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    } else {
-                        console.error('All reviews section not found');
-                    }
+                    openAllReviewsView();
                 });
             });
-            
-            // Filter reviews functionality
-            const filterButtons = document.querySelectorAll('.filter-btn');
-            const reviewCards = document.querySelectorAll('.review-card');
-            
+
+            document.querySelectorAll('.see-more-link').forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openAllReviewsView();
+                });
+            });
+
+            if (window.location.hash === '#all-reviews-section') {
+                openAllReviewsView();
+            }
+
+            var filterButtons = document.querySelectorAll('.filter-btn');
             filterButtons.forEach(function(button) {
                 button.addEventListener('click', function() {
-                    // Remove active class from all buttons
                     filterButtons.forEach(function(btn) {
                         btn.classList.remove('active');
                     });
-                    // Add active class to clicked button
                     this.classList.add('active');
-                    
-                    const filter = this.getAttribute('data-filter');
-                    
-                    // Filter reviews
-                    reviewCards.forEach(function(card) {
-                        const rating = parseFloat(card.getAttribute('data-rating')) || 0;
-                        
-                        if (filter === 'all') {
-                            card.classList.remove('hidden');
-                        } else if (filter === 'positive') {
-                            if (rating > 2) {
-                                card.classList.remove('hidden');
-                            } else {
-                                card.classList.add('hidden');
-                            }
-                        } else if (filter === 'negative') {
-                            if (rating <= 2) {
-                                card.classList.remove('hidden');
-                            } else {
-                                card.classList.add('hidden');
-                            }
-                        }
-                    });
+                    applyReviewFilter(this.getAttribute('data-filter'));
                 });
             });
         });
@@ -604,6 +613,7 @@
             <!-- Left Panel -->
             <div class="left-panel">
                 <h1>{{ user.business_name|default:user.get_full_name|default:user.username|upper }}</h1>
+                <div class="subtitle">{{ user.business_name|default:user.get_full_name|default:user.username }}</div>
                 {% if user.business_description %}
                     <div class="description" style="margin-top: 10px;">
                         {{ user.business_description|linebreaksbr }}
@@ -705,7 +715,7 @@
                 </div>
                 
                 <div class="see-all-reviews">
-                    <a href="#all-reviews">{{ public_strings.see_all_reviews_prefix|default:'See all' }} {{ reviews|length }} {{ public_strings.see_all_reviews_suffix|default:'reviews' }}</a>
+                    <a href="#all-reviews-section">{{ public_strings.see_all_reviews_prefix|default:'See all' }} {{ reviews|length }} {{ public_strings.see_all_reviews_suffix|default:'reviews' }}</a>
                 </div>
             </div>
         </div>
@@ -725,7 +735,7 @@
                 </div>
                 
                 {% for review in reviews %}
-                    <div class="review-card" data-rating="{{ review.main_rating|default:0|floatformat:0 }}">
+                    <div class="review-card" data-rating="{{ review.main_rating|to_int_rating }}" data-recommend="{{ review.recommend }}">
                         <div class="corner corner-top-left"></div>
                         <div class="corner corner-top-right"></div>
                         <div class="corner corner-bottom-left"></div>
@@ -751,26 +761,23 @@
                             {% if review.recommend == 'yes' %}
                                 {{ public_strings.recommend_yes|default:'✓ Verified' }}
                             {% else %}
-                                {{ public_strings.recommend_no|default:'Verified' }}
+                                {{ public_strings.recommend_no|default:'✗ Not Verified' }}
                             {% endif %}
                         </div>
                         
                         <div class="review-card-rating">
                             <div class="review-card-rating-stars">
+                                {% with mr=review.main_rating|to_int_rating %}
                                 {% for i in "12345" %}
                                     {% with star_num=forloop.counter %}
-                                        {% if star_num <= review.main_rating|add:0|floatformat:0|add:0 %}
+                                        {% if star_num <= mr %}
                                             <span class="star" style="color: #FF8C00; font-size: 18px;">★</span>
-                                        {% elif star_num|add:0 > review.main_rating|add:0|floatformat:0|add:0 and star_num|add:0|add:-1 < review.main_rating|add:0|floatformat:0|add:0 %}
-                                            <span class="star" style="position: relative; display: inline-block; color: #FF8C00; font-size: 18px;">
-                                                <span style="opacity: 0.3;">★</span>
-                                                <span style="position: absolute; left: 0; top: 0; width: 50%; overflow: hidden; color: #FF8C00;">★</span>
-                                            </span>
                                         {% else %}
                                             <span class="star" style="opacity: 0.3; color: #FF8C00; font-size: 18px;">★</span>
                                         {% endif %}
                                     {% endwith %}
                                 {% endfor %}
+                                {% endwith %}
                             </div>
                             <span class="review-card-rating-value">{{ review.main_rating|default:"-" }}/5</span>
                         </div>

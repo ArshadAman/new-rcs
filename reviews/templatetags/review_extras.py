@@ -30,3 +30,13 @@ def div(value, arg):
     except (ValueError, TypeError):
         return 0
 
+
+@register.filter
+def to_int_rating(value):
+    """Round rating for star display / filter JS (1–5)."""
+    if value is None:
+        return 0
+    try:
+        return max(0, min(5, int(round(float(value)))))
+    except (ValueError, TypeError):
+        return 0
