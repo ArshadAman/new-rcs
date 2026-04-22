@@ -2,7 +2,8 @@
 # Description: Automates SSL certificate renewal and reloads Nginx.
 # Created via cron schedule.
 
-cd /home/arshad-aman/Desktop/new-rcs || exit 1
+# Navigate to the script's directory automatically
+cd "$(dirname "$0")" || exit 1
 
 # Run certbot to renew certificates
 echo "[$(date)] Running certbot renewal..."

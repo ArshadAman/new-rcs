@@ -1,7 +1,8 @@
 #!/bin/bash
 # Description: Fixes corrupted Let's Encrypt directory and fetches a new certificate
 
-cd /home/arshad-aman/Desktop/new-rcs || exit 1
+# Automatically detect the directory the script is in
+cd "$(dirname "$0")" || exit 1
 
 if [ "$EUID" -ne 0 ]; then
   echo "Error: Please run this script with sudo."
