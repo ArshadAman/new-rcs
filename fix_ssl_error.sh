@@ -19,7 +19,7 @@ docker-compose restart nginx
 sleep 3
 
 echo "4. Requesting a fresh Let's Encrypt certificate..."
-docker-compose run --rm --entrypoint "" certbot certonly --webroot -w /var/www/certbot --force-renewal -d api.level-4u.com --register-unsafely-without-email --agree-tos --non-interactive
+docker-compose run --rm --entrypoint "" certbot certbot certonly --webroot -w /var/www/certbot --force-renewal -d api.level-4u.com --register-unsafely-without-email --agree-tos --non-interactive
 
 echo "5. Reloading Nginx to apply the new live certificates..."
 docker-compose exec -T nginx nginx -s reload
