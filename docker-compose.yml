@@ -93,7 +93,21 @@ services:
       - ./certbot/www:/var/www/certbot
     depends_on:
       - nginx
-    command: renew --webroot -w /var/www/certbot --quiet
+    entrypoint: "/bin/sh -c"
+    command: >
+      "
+      if ! certbot certificates | grep -q 'api.level-4u.com'; then
+        echo 'No valid Let is Encrypt cert found. Generating a new one...';
+        rm -rf /etc/letsencrypt/archive /etc/letsencrypt/renewal /etc/letsencrypt/accounts /etc/letsencrypt/live/api.level-4u.com;
+        certbot certonly --webroot -w /var/www/certbot -d api.level-4u.com --register-unsafely-without-email --agree-tos --non-interactive;
+      fi;
+      echo 'Entering renewal loop...';
+      trap exit TERM;
+      while :; do
+        sleep 12h & wait $${!};
+        certbot renew --webroot -w /var/www/certbot --quiet;
+      done
+      "
 
 volumes:
   postgres_data:
