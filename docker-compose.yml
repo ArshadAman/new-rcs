@@ -3,6 +3,7 @@ version: '3.8'
 services:
   db:
     image: postgres:14
+    restart: always
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -41,6 +42,7 @@ services:
 
   nginx:
     build: ./nginx
+    restart: always
     ports:
       - "80:80"
       - "443:443"
@@ -52,9 +54,11 @@ services:
       - static_volume:/var/www/html/static
     depends_on:
       - web
+    command: /bin/sh -c "while :; do sleep 12h; nginx -s reload; done & nginx -g 'daemon off;'"
 
   celery:
     build: .
+    restart: always
     command: celery -A rcs worker --loglevel=info
     env_file:
       - .env
@@ -67,6 +71,7 @@ services:
 
   celery-beat:
     build: .
+    restart: always
     command: celery -A rcs beat --loglevel=info
     env_file:
       - .env
@@ -79,6 +84,7 @@ services:
 
   redis:
     image: redis
+    restart: always
     ports:
       - "6379:6379"
     volumes:
@@ -86,6 +92,7 @@ services:
 
   certbot:
     image: certbot/certbot
+    restart: always
     volumes:
       - ./nginx/certs:/etc/letsencrypt
       - ./nginx/conf.d:/etc/nginx/conf.d
