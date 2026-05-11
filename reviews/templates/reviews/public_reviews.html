@@ -757,12 +757,8 @@
                             </div>
                         </div>
                         
-                        <div class="review-card-recommend {{ review.recommend }}">
-                            {% if review.recommend == 'yes' %}
-                                {{ public_strings.recommend_yes|default:'✓ Verified' }}
-                            {% else %}
-                                {{ public_strings.recommend_no|default:'✗ Not Verified' }}
-                            {% endif %}
+                        <div class="review-card-recommend yes">
+                            {{ public_strings.recommend_yes|default:'✓ Verified' }}
                         </div>
                         
                         <div class="review-card-rating">
