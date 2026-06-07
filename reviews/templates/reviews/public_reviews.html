@@ -810,7 +810,7 @@
                         
                         {% if review.reply %}
                             <div class="review-card-reply">
-                                <span class="review-card-reply-label">{{ public_strings.store_reply|default:'Store Reply:' }}</span>
+                                <span class="review-card-reply-label">{{ public_strings.store_reply|default:'Company response:' }}</span>
                                 {{ review.reply|linebreaksbr }}
                             </div>
                         {% endif %}
