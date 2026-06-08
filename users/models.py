@@ -152,6 +152,7 @@ class CustomUser(AbstractUser):
     country = models.CharField(max_length=50, blank=True)
     widget_clicks = models.PositiveIntegerField(default=0)
     marketing_banner = models.ImageField(upload_to='marketing_banners/', null=True, blank=True)
+    business_logo = models.ImageField(upload_to='business_logos/', null=True, blank=True)
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
     email = models.EmailField(unique=True)  # Make email unique
     business_category = models.ForeignKey(BusinessCategory, on_delete=models.SET_NULL, null=True, blank=True)
