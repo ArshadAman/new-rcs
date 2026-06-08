@@ -1015,21 +1015,9 @@ def public_reviews(request, user_id):
     )
     company_display = user.business_name or user.get_full_name() or user.username
     
-    # Manual translations for description paragraphs
-    description_paragraphs_en = [
-        f"Experience exceptional service with {company_display}. Our commitment to excellence ensures that every customer receives personalized attention and outstanding results.",
-        "We pride ourselves on delivering high-quality solutions tailored to your needs, backed by a dedicated team that values your satisfaction above all else.",
+    description_paragraphs = [
+        "Recenze na této stránce jsou shromažďovány prostřednictvím systému LEVEL, nezávislé platformy pro sběr a ověřování zpětné vazby od lidí, kteří skutečně studovali na školách EDUCAnet nebo s nimi byli v kontaktu. Systém zveřejňuje pouze ověřené recenze, aby budoucím studentům, rodičům i partnerům pomohl lépe porozumět reálným zkušenostem, kvalitě vzdělávání a životu na škole před tím, než učiní své rozhodnutí.",
     ]
-    
-    # Czech translations
-    if language_code == 'cs':
-        description_paragraphs = [
-            f"Zažijte výjimečný servis s {company_display}. Naše oddanost dokonalosti zajišťuje, že každý zákazník dostává personalizovanou pozornost a vynikající výsledky.",
-            "Jsme hrdí na poskytování vysoce kvalitních řešení přizpůsobených vašim potřebám, podporovaných oddaným týmem, který si cení vaší spokojenosti nade vše.",
-        ]
-    else:
-        # Use translation service for other languages
-        description_paragraphs = translate_sequence(description_paragraphs_en, language_code)
 
     translation_targets = {
         'page_title_suffix': 'Reviews',
