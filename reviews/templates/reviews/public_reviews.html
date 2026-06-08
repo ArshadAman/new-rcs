@@ -613,7 +613,11 @@
             <!-- Left Panel -->
             <div class="left-panel">
                 <h1>{{ user.business_name|default:user.get_full_name|default:user.username|upper }}</h1>
-                <div class="subtitle">{{ user.business_name|default:user.get_full_name|default:user.username }}</div>
+                {% if user.business_logo %}
+                    <div style="margin-bottom: 20px;">
+                        <img src="{{ user.business_logo.url }}" alt="{{ user.business_name|default:'Business Logo' }}" style="height: 60px; width: auto; object-fit: contain;" />
+                    </div>
+                {% endif %}
                 {% if user.business_description %}
                     <div class="description" style="margin-top: 10px;">
                         {{ user.business_description|linebreaksbr }}
@@ -638,6 +642,36 @@
                         </div>
                         <span class="review-count">{{ public_strings.review_count_label|default:'Reviews:' }} {{ total_reviews }}</span>
                     </div>
+                {% endif %}
+
+                <!-- Contact Details -->
+                {% if user.contact_number or user.email or user.website_url or user.country %}
+                <div style="margin: 18px 0 24px 0; display: flex; flex-direction: column; gap: 8px; font-size: 15px; color: #cccccc;">
+                    {% if user.contact_number %}
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #FF8C00;">📞</span>
+                        <span>{{ user.contact_number }}</span>
+                    </div>
+                    {% endif %}
+                    {% if user.email %}
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #FF8C00;">✉️</span>
+                        <span>{{ user.email }}</span>
+                    </div>
+                    {% endif %}
+                    {% if user.website_url %}
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #FF8C00;">🌐</span>
+                        <a href="{{ user.website_url }}" target="_blank" style="color: #87CEEB; text-decoration: none;">{{ user.website_url }}</a>
+                    </div>
+                    {% endif %}
+                    {% if user.country %}
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #FF8C00;">📍</span>
+                        <span>{{ user.country }}</span>
+                    </div>
+                    {% endif %}
+                </div>
                 {% endif %}
 
                 <div class="description">
